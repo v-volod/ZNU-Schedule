@@ -9,11 +9,14 @@ public class App extends Application {
 
     private static App mInstance = new App();
 
-    public static final String PACKAGE_NAME = mInstance.getPackageName();
-
-    public static App getInstance() {
-        return mInstance;
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        mInstance = this;
     }
 
+    public static synchronized App getInstance() {
+        return mInstance;
+    }
 
 }
