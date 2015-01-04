@@ -7,7 +7,7 @@ import android.app.Application;
  */
 public class App extends Application {
 
-    private static App mInstance = new App();
+    private static App mInstance;
 
     @Override
     public void onCreate() {
