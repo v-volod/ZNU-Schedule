@@ -12,7 +12,7 @@
 
     </style>
 
-
+    <!-- Login Screen Styles -->
     <style name="LoginScreen" parent="AppTheme.Base">
         <item name="android:textViewStyle">@style/LoginTextViewStyle</item>
     </style>
@@ -21,21 +21,7 @@
         <item name="android:textColor">@color/white</item>
     </style>
 
-    <!-- Login Screen Styles -->
-
-    <!--<TextView-->
-        <!--android:id="@+id/tagline"-->
-        <!--style="@style/Tagline"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignLeft="@+id/app_logo"-->
-        <!--android:layout_alignRight="@+id/app_logo"-->
-        <!--android:layout_below="@+id/app_logo"-->
-        <!--android:layout_centerInParent="true"-->
-        <!--android:layout_marginBottom="64dp"-->
-        <!--android:text="@string/tagline_text"-->
-        <!--android:textColor="@color/white_opacity"/>-->
-
+    <!-- Elements -->
     <style name="Login_screen_element">
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_width">match_parent</item>
@@ -59,7 +45,5 @@
         <item name="android:paddingBottom">16dp</item>
         <item name="android:textSize">21sp</item>
     </style>
-
-
 
 </resources>

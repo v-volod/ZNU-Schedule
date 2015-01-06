@@ -8,8 +8,6 @@
         android:right="2dp"
         android:top="2dp"/>
 
-
-
     <solid android:color="@color/colorAccentDark"/>
     <corners android:radius="4dp"/>
 
