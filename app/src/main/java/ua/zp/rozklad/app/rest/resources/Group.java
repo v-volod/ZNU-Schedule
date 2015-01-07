@@ -11,11 +11,15 @@ public class Group implements Resources {
     private int id;
     private int departmentId;
     private String name;
+    private long lastUpdate;
 
     public Group(JSONObject groupJson) throws JSONException {
         id = groupJson.getInt("id");
-        departmentId = groupJson.getInt("department_id");
+        // TODO: Fix departament_id -> department_id in API
+        departmentId = groupJson.getInt("departament_id");
         name = groupJson.getString("name");
+        // TODO: Fetch last update time from api.
+        lastUpdate = System.currentTimeMillis();
     }
 
     public int getId() {
@@ -28,5 +32,9 @@ public class Group implements Resources {
 
     public String getName() {
         return name;
+    }
+
+    public long getLastUpdate() {
+        return lastUpdate;
     }
 }
