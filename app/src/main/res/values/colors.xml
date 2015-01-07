@@ -5,6 +5,9 @@
     <color name="colorPrimaryDark">#1976d2</color>
     <color name="colorAccent">#1abc9c</color>
     <color name="colorAccentDark">#16a085</color>
+    <color name="button_search_normal">#009688</color>
+    <color name="button_search_focused">#00897b</color>
+    <color name="button_search_pressed">#00796b</color>
     <color name="white">#fff</color>
     <color name="white_opacity">#99FFFFFF</color>
 

@@ -37,13 +37,13 @@
         <EditText
             android:id="@+id/inputGroup"
             style="@style/Login_screen_element"
-            android:background="@drawable/input_group_edittext"
+            android:background="@drawable/edittext_input_group"
             android:layout_below="@+id/tagline"
 
             android:hint="@string/hint_group"
             android:layout_marginLeft="4dp"
             android:layout_marginRight="4dp"
-            android:drawableLeft="@drawable/search"
+            android:drawableLeft="@drawable/ic_search"
             android:drawablePadding="8dp"
             android:maxLines="1"
             android:minLines="1"/>
@@ -51,13 +51,13 @@
         <Button
             android:id="@+id/searchButton"
             style="@style/Login_screen_element"
-            android:background="@drawable/search_button"
+            android:background="@drawable/button_search"
             android:layout_height="wrap_content"
             android:layout_below="@+id/inputGroup"
             android:layout_marginTop="14dp"
             android:text="@string/search_button"
-            android:layout_marginLeft="4dp"
-            android:layout_marginRight="4dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
             android:textColor="@color/white"/>
 
     </RelativeLayout>
