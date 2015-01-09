@@ -1,20 +1,16 @@
 package ua.zp.rozklad.app.rest;
 
-import com.android.volley.ParseError;
+import android.text.TextUtils;
+
 import com.android.volley.Response;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.VolleyError;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-
-import ua.zp.rozklad.app.App;
-import ua.zp.rozklad.app.rest.resources.Resources;
 
 /**
  * @author Vojko Vladimir
  */
-public class RESTMethod {
+public abstract class RESTMethod<T> implements Response.ErrorListener {
 
     private static final String SITE_URL = "http://rozklad.5132.pp.ua/";
     private static final String API = "api/v1/";
@@ -23,57 +19,102 @@ public class RESTMethod {
     private static final String FORMAT_JSON = "format=json";
     private static final String ID_SUFFIX = "&id=%s";
     private static final String ID_IN_SUFFIX = "&id__in=%s";
-    private static final String OBJECTS = "objects";
+    private static final String S_SUFFIX = "s=%s";
 
-    private static final String MODEL_URL_FORMAT =
+    protected static final String MODEL_URL_FORMAT =
             API_URL + "%s/?" + FORMAT_JSON;
-    private static final String MODEL_ID_URL_FORMAT =
+    protected static final String MODEL_BY_ID_URL_FORMAT =
             API_URL + "%s/?" + FORMAT_JSON + ID_SUFFIX;
-    private static final String MODEL_ID_IN_URL_FORMAT =
+    protected static final String MODEL_BY_ID_IN_URL_FORMAT =
             API_URL + "%s/?" + FORMAT_JSON + ID_IN_SUFFIX;
+    protected static final String MODEL_SEARCH_BY_NAME =
+            API_URL + "%s/search/?" + FORMAT_JSON + "?" + S_SUFFIX;
+    protected static final String MODEL_BY_MODEL_URL_FORMAT =
+            API_URL + "%s/?" + FORMAT_JSON + "%s=%s";
 
-    private interface Model {
+    protected static interface Model {
+        String DEPARTMENT = "department";
         String GROUP = "group";
+        String LECTURER = "teacher";
+        String SUBJECT = "lesson";
+        // TODO: define and add to API if it needed
+        /*String ACADEMIC_HOUR = "academic_hour";*/
+        String CAMPUS = "campus";
+        String AUDIENCE = "audience";
+        // TODO: define and add to API if it needed
+        /*String CLASS_TYPE = "lesson_type";*/
+        String SCHEDULE = "timetable";
     }
 
-    public interface ResponseCallback<T>
-            extends Response.Listener<T>, Response.ErrorListener {
+    public static interface Key {
+        String OBJECTS = "objects";
+        String ID = "id";
+        String DEPARTMENT_ID = "department_id";
+        String GROUP_ID = "group_id";
+        String TEACHER_ID = "teacher_id";
+        String LESSON_ID = "lesson_id";
+        String CAMPUS_ID = "campus_id";
+        String AUDIENCE = "audience";
+        String AUDIENCE_ID = AUDIENCE + "_id";
+        String TIME_ID = "time_id";
+        String NAME = "name";
+        String DAY = "day";
+        String PERIODICITY = "periodicity";
+        String DATE_START = "date_start";
+        String DATE_END = "date_end";
+        String LAST_UPDATE = "last_update";
+        String NUM = "num";
+        String TIME_START = "time_start";
+        String TIME_END = "time_end";
     }
 
-    public static void GET(final ResponseCallback<JSONObject> callback,
-                           final int resourcesType, String... params) {
-        switch (resourcesType) {
-            case Resources.Type.GROUP_BY_ID:
-                JsonObjectRequest request = new JsonObjectRequest(
-                        String.format(MODEL_ID_URL_FORMAT, Model.GROUP, params[0]),
-                        null,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                try {
-                                    callback.onResponse(getObject(response));
-                                } catch (JSONException e) {
-                                    callback.onErrorResponse(new ParseError());
-                                }
-                            }
-                        },
-                        callback);
-                App.getInstance().addToRequestQueue(request);
-                break;
+    public static interface ResponseCode {
+        int INVALID_REQUEST = -1;
+        int PARSE_RESPONSE_ERROR = 101;
+        // TODO: Define own result code for all subclasses of VolleyError
+        int VOLLEY_ERROR = 102;
+        int OK = 200;
+        int UNKNOWN_ERROR = 500;
+    }
+
+    protected String requestUrl = null;
+    protected ResponseCallback<T> callback;
+
+    public RESTMethod(ResponseCallback<T> callback) {
+        this.callback = callback;
+    }
+
+    public void execute() {
+        if (TextUtils.isEmpty(requestUrl)) {
+            callback.onError(ResponseCode.INVALID_REQUEST);
         }
     }
 
-    private static JSONObject getObject(JSONObject response) throws JSONException {
-        JSONArray objects = getObjects(response);
-        if (objects.length() == 1) {
-            return objects.getJSONObject(0);
+    protected String generateIds(String... params) {
+        String result = "";
+
+        for (int i = 0; i < params.length; i++) {
+            result += params;
+            if (i < params.length - 1) {
+                result += ",";
+            }
         }
 
-        throw new JSONException("Invalid response");
+        return result;
     }
 
-    private static JSONArray getObjects(JSONObject response) throws JSONException {
-        return response.getJSONArray("objects");
+    protected static int getResponseCode(Exception exception) {
+        if (exception instanceof VolleyError) {
+            return ResponseCode.VOLLEY_ERROR;
+        } else if (exception instanceof JSONException) {
+            return ResponseCode.PARSE_RESPONSE_ERROR;
+        } else {
+            return ResponseCode.UNKNOWN_ERROR;
+        }
     }
 
+    @Override
+    public void onErrorResponse(VolleyError error) {
+        callback.onError(getResponseCode(error));
+    }
 }

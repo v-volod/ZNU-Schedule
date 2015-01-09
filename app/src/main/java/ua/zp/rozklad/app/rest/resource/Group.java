@@ -1,25 +1,25 @@
-package ua.zp.rozklad.app.rest.resources;
+package ua.zp.rozklad.app.rest.resource;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ua.zp.rozklad.app.rest.RESTMethod;
+
 /**
  * @author Vojko Vladimir
  */
-public class Group implements Resources {
+public class Group extends Resource {
 
     private int id;
     private int departmentId;
     private String name;
     private long lastUpdate;
 
-    public Group(JSONObject groupJson) throws JSONException {
-        id = groupJson.getInt("id");
-        // TODO: Fix departament_id -> department_id in API
-        departmentId = groupJson.getInt("departament_id");
-        name = groupJson.getString("name");
-        // TODO: Fetch last update time from api.
-        lastUpdate = System.currentTimeMillis();
+    public Group(JSONObject json) throws JSONException {
+        id = json.getInt(RESTMethod.Key.ID);
+        departmentId = json.getInt(RESTMethod.Key.DEPARTMENT_ID);
+        name = json.getString(RESTMethod.Key.DEPARTMENT_ID);
+        lastUpdate = json.getLong(RESTMethod.Key.LAST_UPDATE);
     }
 
     public int getId() {
@@ -37,4 +37,5 @@ public class Group implements Resources {
     public long getLastUpdate() {
         return lastUpdate;
     }
+
 }

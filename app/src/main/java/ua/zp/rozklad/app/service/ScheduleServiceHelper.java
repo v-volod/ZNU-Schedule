@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import ua.zp.rozklad.app.rest.resources.Resources;
-
 /**
  * @author Vojko Vladimir
  */
@@ -22,7 +20,6 @@ public class ScheduleServiceHelper {
 
     public static interface Extra {
         String REQUEST_ID = "REQUEST_ID";
-
         String RESULT_CODE = "RESULT_CODE";
     }
 
@@ -30,7 +27,7 @@ public class ScheduleServiceHelper {
 
     private static final Object lock = new Object();
 
-    private Map<String, Long> pendingRequests = new HashMap<String, Long>();
+    private Map<String, Long> pendingRequests = new HashMap<>();
     private Context context;
 
     private ScheduleServiceHelper(Context context) {
@@ -48,9 +45,15 @@ public class ScheduleServiceHelper {
         return mInstance;
     }
 
-    public long getGroup(String groupId) {
-        long requestId = generateRequestID();
-        pendingRequests.put(GROUP_HASH_KEY, requestId);
+    public long getGroupById(int groupId) {
+        long requestId;
+
+        if (pendingRequests.containsKey(GROUP_HASH_KEY)) {
+            requestId = pendingRequests.get(GROUP_HASH_KEY);
+        } else {
+            requestId = generateRequestID();
+            pendingRequests.put(GROUP_HASH_KEY, requestId);
+        }
 
         ResultReceiver serviceCallback = new ResultReceiver(null) {
             @Override
@@ -71,14 +74,15 @@ public class ScheduleServiceHelper {
             }
         };
 
-        Intent intent = new Intent(context, ScheduleService.class);
-        intent.putExtra(ScheduleService.Extra.METHOD, ScheduleService.METHOD_GET);
-        intent.putExtra(ScheduleService.Extra.RESOURCE_TYPE, Resources.Type.GROUP_BY_ID);
-        intent.putExtra(ScheduleService.Extra.GROUP_ID, groupId);
-        intent.putExtra(ScheduleService.Extra.SERVICE_CALLBACK, serviceCallback);
-        intent.putExtra(Extra.REQUEST_ID, requestId);
-
-        context.startService(intent);
+        // Initiate get groups
+//        Intent intent = new Intent(context, ScheduleService.class);
+////        intent.putExtra(ScheduleService.Extra.METHOD, ScheduleService.METHOD_GET);
+////        intent.putExtra(ScheduleService.Extra.RESOURCE_TYPE, Resource.Type.GROUP_BY_ID);
+////        intent.putExtra(ScheduleService.Extra.REQUEST_PARAMS, params);
+//        intent.putExtra(ScheduleService.Extra.SERVICE_CALLBACK, serviceCallback);
+//        intent.putExtra(Extra.REQUEST_ID, requestId);
+//
+//        context.startService(intent);
 
         return requestId;
     }
