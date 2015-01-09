@@ -36,6 +36,7 @@ public class ScheduleContract {
     }
 
     interface AcademicHourColumns {
+        String NUM = "num";
         String START_TIME = "start_time";
         String END_TIME = "end_time";
     }
@@ -79,6 +80,8 @@ public class ScheduleContract {
     private static final String PATH_AUDIENCE = "audience";
     private static final String PATH_CLASS_TYPE = "class_type";
     private static final String PATH_SCHEDULE = "schedule";
+    private static final String PATH_SEARCH_DEPARTMENT = "search_department";
+    private static final String PATH_SEARCH_GROUP = "search_group";
 
     public static class Department implements DepartmentColumns, BaseColumns {
         public static final Uri CONTENT_URI =
@@ -290,6 +293,51 @@ public class ScheduleContract {
          */
         public static Uri buildScheduleUri(String scheduleId) {
             return CONTENT_URI.buildUpon().appendPath(scheduleId).build();
+        }
+    }
+
+    public static class SearchDepartment implements DepartmentColumns, BaseColumns {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_SEARCH_DEPARTMENT).build();
+
+        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
+                + "/vnd." + CONTENT_AUTHORITY + ".search_department";
+        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
+                + "/vnd." + CONTENT_AUTHORITY + ".search_department";
+
+        public static final String[] TABLE_SUMMARY = {
+                _ID,
+                DEPARTMENT_NAME
+        };
+
+        /**
+         * Build {@link Uri} for requested department.
+         */
+        public static Uri buildSearchDepartmentUri(String departmentId) {
+            return CONTENT_URI.buildUpon().appendPath(departmentId).build();
+        }
+    }
+
+    public static class SearchGroup implements GroupColumns, BaseColumns {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_SEARCH_GROUP).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".search_group";
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".search_group";
+
+        public static final String[] TABLE_SUMMARY = {
+                _ID,
+                DEPARTMENT_ID,
+                GROUP_NAME
+        };
+
+        /**
+         * Build {@link Uri} for requested group.
+         */
+        public static Uri buildSearchGroupUri(String groupId) {
+            return CONTENT_URI.buildUpon().appendPath(groupId).build();
         }
     }
 }

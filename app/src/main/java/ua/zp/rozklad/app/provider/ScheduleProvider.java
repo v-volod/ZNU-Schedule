@@ -18,6 +18,8 @@ import ua.zp.rozklad.app.provider.ScheduleContract.Department;
 import ua.zp.rozklad.app.provider.ScheduleContract.Group;
 import ua.zp.rozklad.app.provider.ScheduleContract.Lecturer;
 import ua.zp.rozklad.app.provider.ScheduleContract.Schedule;
+import ua.zp.rozklad.app.provider.ScheduleContract.SearchDepartment;
+import ua.zp.rozklad.app.provider.ScheduleContract.SearchGroup;
 import ua.zp.rozklad.app.provider.ScheduleContract.Subject;
 import ua.zp.rozklad.app.provider.ScheduleDatabase.Tables;
 
@@ -51,6 +53,10 @@ public class ScheduleProvider extends ContentProvider {
         int CLASS_TYPE_ID = 801;
         int SCHEDULE = 900;
         int SCHEDULE_ID = 901;
+        int SEARCH_DEPARTMENT = 1000;
+        int SEARCH_DEPARTMENT_ID = 1001;
+        int SEARCH_GROUP = 1100;
+        int SEARCH_GROUP_ID = 1101;
     }
 
     /**
@@ -87,6 +93,12 @@ public class ScheduleProvider extends ContentProvider {
 
         matcher.addURI(authority, "schedule", URI_CODE.SCHEDULE);
         matcher.addURI(authority, "schedule/#", URI_CODE.SCHEDULE_ID);
+
+        matcher.addURI(authority, "search_department", URI_CODE.SEARCH_DEPARTMENT);
+        matcher.addURI(authority, "search_department/#", URI_CODE.SEARCH_DEPARTMENT_ID);
+
+        matcher.addURI(authority, "search_group", URI_CODE.SEARCH_GROUP);
+        matcher.addURI(authority, "search_group/#", URI_CODE.SEARCH_GROUP_ID);
 
         return matcher;
     }
@@ -140,6 +152,14 @@ public class ScheduleProvider extends ContentProvider {
                 return Schedule.CONTENT_TYPE;
             case URI_CODE.SCHEDULE_ID:
                 return Schedule.CONTENT_ITEM_TYPE;
+            case URI_CODE.SEARCH_DEPARTMENT:
+                return SearchDepartment.CONTENT_TYPE;
+            case URI_CODE.SEARCH_DEPARTMENT_ID:
+                return SearchDepartment.CONTENT_ITEM_TYPE;
+            case URI_CODE.SEARCH_GROUP:
+                return SearchGroup.CONTENT_TYPE;
+            case URI_CODE.SEARCH_GROUP_ID:
+                return SearchGroup.CONTENT_ITEM_TYPE;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
@@ -189,6 +209,14 @@ public class ScheduleProvider extends ContentProvider {
                 return ContentUris.withAppendedId(uri, id);
             case URI_CODE.SCHEDULE:
                 id = db.insertOrThrow(Tables.SCHEDULE, null, values);
+                notifyChange(uri);
+                return ContentUris.withAppendedId(uri, id);
+            case URI_CODE.SEARCH_DEPARTMENT:
+                id = db.insertOrThrow(Tables.SEARCH_DEPARTMENT, null, values);
+                notifyChange(uri);
+                return ContentUris.withAppendedId(uri, id);
+            case URI_CODE.SEARCH_GROUP:
+                id = db.insertOrThrow(Tables.SEARCH_GROUP, null, values);
                 notifyChange(uri);
                 return ContentUris.withAppendedId(uri, id);
             default:
@@ -297,6 +325,26 @@ public class ScheduleProvider extends ContentProvider {
                     where += " AND " + selection;
                 }
                 deleteCount = db.delete(Tables.SCHEDULE, where, selectionArgs);
+                break;
+            case URI_CODE.SEARCH_DEPARTMENT:
+                deleteCount = db.delete(Tables.SEARCH_DEPARTMENT, selection, selectionArgs);
+                break;
+            case URI_CODE.SEARCH_DEPARTMENT_ID:
+                where = SearchDepartment._ID + " = " + uri.getLastPathSegment();
+                if (!TextUtils.isEmpty(selection)) {
+                    where += " AND " + selection;
+                }
+                deleteCount = db.delete(Tables.SEARCH_DEPARTMENT, where, selectionArgs);
+                break;
+            case URI_CODE.SEARCH_GROUP:
+                deleteCount = db.delete(Tables.SEARCH_GROUP, selection, selectionArgs);
+                break;
+            case URI_CODE.SEARCH_GROUP_ID:
+                where = SearchGroup._ID + " = " + uri.getLastPathSegment();
+                if (!TextUtils.isEmpty(selection)) {
+                    where += " AND " + selection;
+                }
+                deleteCount = db.delete(Tables.SEARCH_GROUP, where, selectionArgs);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
@@ -409,6 +457,26 @@ public class ScheduleProvider extends ContentProvider {
                 }
                 updateCount = db.update(Tables.SCHEDULE, values, where, selectionArgs);
                 break;
+            case URI_CODE.SEARCH_DEPARTMENT:
+                updateCount = db.update(Tables.SEARCH_DEPARTMENT, values, selection, selectionArgs);
+                break;
+            case URI_CODE.SEARCH_DEPARTMENT_ID:
+                where = SearchDepartment._ID + " = " + uri.getLastPathSegment();
+                if (!TextUtils.isEmpty(selection)) {
+                    where += " AND " + selection;
+                }
+                updateCount = db.update(Tables.SEARCH_DEPARTMENT, values, where, selectionArgs);
+                break;
+            case URI_CODE.SEARCH_GROUP:
+                updateCount = db.update(Tables.SEARCH_GROUP, values, selection, selectionArgs);
+                break;
+            case URI_CODE.SEARCH_GROUP_ID:
+                where = SearchGroup._ID + " = " + uri.getLastPathSegment();
+                if (!TextUtils.isEmpty(selection)) {
+                    where += " AND " + selection;
+                }
+                updateCount = db.update(Tables.SEARCH_GROUP, values, where, selectionArgs);
+                break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
@@ -493,6 +561,20 @@ public class ScheduleProvider extends ContentProvider {
                 queryBuilder.setTables(Tables.SCHEDULE);
                 queryBuilder.appendWhere(Schedule._ID + " = " + uri.getLastPathSegment());
                 break;
+            case URI_CODE.SEARCH_DEPARTMENT:
+                queryBuilder.setTables(Tables.SEARCH_DEPARTMENT);
+                break;
+            case URI_CODE.SEARCH_DEPARTMENT_ID:
+                queryBuilder.setTables(Tables.SEARCH_DEPARTMENT);
+                queryBuilder.appendWhere(SearchDepartment._ID + " = " + uri.getLastPathSegment());
+                break;
+            case URI_CODE.SEARCH_GROUP:
+                queryBuilder.setTables(Tables.SEARCH_GROUP);
+                break;
+            case URI_CODE.SEARCH_GROUP_ID:
+                queryBuilder.setTables(Tables.SEARCH_GROUP);
+                queryBuilder.appendWhere(SearchGroup._ID + " = " + uri.getLastPathSegment());
+                break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
@@ -513,6 +595,7 @@ public class ScheduleProvider extends ContentProvider {
 
     private void notifyChange(Uri uri) {
         getContext().getContentResolver().notifyChange(uri, null);
+        // TODO: Notify dependent URIs after changes.
     }
 
 }
