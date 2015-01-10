@@ -172,56 +172,52 @@ public class ScheduleProvider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
+        String table;
         long id;
 
         switch (match) {
             case URI_CODE.DEPARTMENT:
-                id = db.insertOrThrow(Tables.DEPARTMENT, null, values);
-                notifyChange(uri);
-                return ContentUris.withAppendedId(uri, id);
+                table = Tables.DEPARTMENT;
+                break;
             case URI_CODE.GROUP:
-                id = db.insertOrThrow(Tables.GROUP, null, values);
-                notifyChange(uri);
-                return ContentUris.withAppendedId(uri, id);
+                table = Tables.GROUP;
+                break;
             case URI_CODE.LECTURER:
-                id = db.insertOrThrow(Tables.LECTURER, null, values);
-                notifyChange(uri);
-                return ContentUris.withAppendedId(uri, id);
+                table = Tables.LECTURER;
+                break;
             case URI_CODE.SUBJECT:
-                id = db.insertOrThrow(Tables.SUBJECT, null, values);
-                notifyChange(uri);
-                return ContentUris.withAppendedId(uri, id);
+                table = Tables.SUBJECT;
+                break;
             case URI_CODE.ACADEMIC_HOUR:
-                id = db.insertOrThrow(Tables.ACADEMIC_HOUR, null, values);
-                notifyChange(uri);
-                return ContentUris.withAppendedId(uri, id);
+                table = Tables.ACADEMIC_HOUR;
+                break;
             case URI_CODE.CAMPUS:
-                id = db.insertOrThrow(Tables.CAMPUS, null, values);
-                notifyChange(uri);
-                return ContentUris.withAppendedId(uri, id);
+                table = Tables.CAMPUS;
+                break;
             case URI_CODE.AUDIENCE:
-                id = db.insertOrThrow(Tables.AUDIENCE, null, values);
-                notifyChange(uri);
-                return ContentUris.withAppendedId(uri, id);
+                table = Tables.AUDIENCE;
+                break;
             case URI_CODE.CLASS_TYPE:
-                id = db.insertOrThrow(Tables.CLASS_TYPE, null, values);
-                notifyChange(uri);
-                return ContentUris.withAppendedId(uri, id);
+                table = Tables.AUDIENCE;
+                break;
             case URI_CODE.SCHEDULE:
-                id = db.insertOrThrow(Tables.SCHEDULE, null, values);
-                notifyChange(uri);
-                return ContentUris.withAppendedId(uri, id);
+                table = Tables.SCHEDULE;
+                break;
             case URI_CODE.SEARCH_DEPARTMENT:
-                id = db.insertOrThrow(Tables.SEARCH_DEPARTMENT, null, values);
-                notifyChange(uri);
-                return ContentUris.withAppendedId(uri, id);
+                table = Tables.SEARCH_DEPARTMENT;
+                break;
             case URI_CODE.SEARCH_GROUP:
-                id = db.insertOrThrow(Tables.SEARCH_GROUP, null, values);
-                notifyChange(uri);
-                return ContentUris.withAppendedId(uri, id);
+                table = Tables.SEARCH_GROUP;
+                break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
+
+        id = db.insertOrThrow(table, null, values);
+
+        notifyChange(uri);
+
+        return ContentUris.withAppendedId(uri, id);
     }
 
     /**
@@ -231,124 +227,94 @@ public class ScheduleProvider extends ContentProvider {
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         int deleteCount;
-        String where;
+        String table;
+        String where = null;
 
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
             case URI_CODE.DEPARTMENT:
-                deleteCount = db.delete(Tables.DEPARTMENT, selection, selectionArgs);
+                table = Tables.DEPARTMENT;
                 break;
             case URI_CODE.DEPARTMENT_ID:
+                table = Tables.DEPARTMENT;
                 where = Department._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                deleteCount = db.delete(Tables.DEPARTMENT, where, selectionArgs);
                 break;
             case URI_CODE.GROUP:
-                deleteCount = db.delete(Tables.GROUP, selection, selectionArgs);
+                table = Tables.GROUP;
                 break;
             case URI_CODE.GROUP_ID:
+                table = Tables.GROUP;
                 where = Group._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                deleteCount = db.delete(Tables.GROUP, where, selectionArgs);
                 break;
             case URI_CODE.LECTURER:
-                deleteCount = db.delete(Tables.LECTURER, selection, selectionArgs);
+                table = Tables.LECTURER;
                 break;
             case URI_CODE.LECTURER_ID:
+                table = Tables.LECTURER;
                 where = Lecturer._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                deleteCount = db.delete(Tables.LECTURER, where, selectionArgs);
                 break;
             case URI_CODE.SUBJECT:
-                deleteCount = db.delete(Tables.SUBJECT, selection, selectionArgs);
+                table = Tables.SUBJECT;
                 break;
             case URI_CODE.SUBJECT_ID:
+                table = Tables.SUBJECT;
                 where = Subject._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                deleteCount = db.delete(Tables.SUBJECT, where, selectionArgs);
                 break;
             case URI_CODE.ACADEMIC_HOUR:
-                deleteCount = db.delete(Tables.ACADEMIC_HOUR, selection, selectionArgs);
+                table = Tables.ACADEMIC_HOUR;
                 break;
             case URI_CODE.ACADEMIC_HOUR_ID:
+                table = Tables.ACADEMIC_HOUR;
                 where = AcademicHour._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                deleteCount = db.delete(Tables.ACADEMIC_HOUR, where, selectionArgs);
                 break;
             case URI_CODE.CAMPUS:
-                deleteCount = db.delete(Tables.CAMPUS, selection, selectionArgs);
+                table = Tables.CAMPUS;
                 break;
             case URI_CODE.CAMPUS_ID:
+                table = Tables.CAMPUS;
                 where = Campus._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                deleteCount = db.delete(Tables.CAMPUS, where, selectionArgs);
                 break;
             case URI_CODE.AUDIENCE:
-                deleteCount = db.delete(Tables.AUDIENCE, selection, selectionArgs);
+                table = Tables.AUDIENCE;
                 break;
             case URI_CODE.AUDIENCE_ID:
+                table = Tables.AUDIENCE;
                 where = Audience._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                deleteCount = db.delete(Tables.AUDIENCE, where, selectionArgs);
                 break;
             case URI_CODE.CLASS_TYPE:
-                deleteCount = db.delete(Tables.CLASS_TYPE, selection, selectionArgs);
+                table = Tables.CLASS_TYPE;
                 break;
             case URI_CODE.CLASS_TYPE_ID:
+                table = Tables.CLASS_TYPE;
                 where = ClassType._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                deleteCount = db.delete(Tables.CLASS_TYPE, where, selectionArgs);
                 break;
             case URI_CODE.SCHEDULE:
-                deleteCount = db.delete(Tables.SCHEDULE, selection, selectionArgs);
+                table = Tables.SCHEDULE;
                 break;
             case URI_CODE.SCHEDULE_ID:
+                table = Tables.SCHEDULE;
                 where = Schedule._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                deleteCount = db.delete(Tables.SCHEDULE, where, selectionArgs);
                 break;
             case URI_CODE.SEARCH_DEPARTMENT:
-                deleteCount = db.delete(Tables.SEARCH_DEPARTMENT, selection, selectionArgs);
+                table = Tables.SEARCH_DEPARTMENT;
                 break;
             case URI_CODE.SEARCH_DEPARTMENT_ID:
+                table = Tables.SEARCH_DEPARTMENT;
                 where = SearchDepartment._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                deleteCount = db.delete(Tables.SEARCH_DEPARTMENT, where, selectionArgs);
                 break;
             case URI_CODE.SEARCH_GROUP:
-                deleteCount = db.delete(Tables.SEARCH_GROUP, selection, selectionArgs);
+                table = Tables.SEARCH_GROUP;
                 break;
             case URI_CODE.SEARCH_GROUP_ID:
+                table = Tables.SEARCH_GROUP;
                 where = SearchGroup._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                deleteCount = db.delete(Tables.SEARCH_GROUP, where, selectionArgs);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
+
+        deleteCount = db.delete(table, appendSelection(where, selection), selectionArgs);
 
         notifyChange(uri);
 
@@ -362,124 +328,94 @@ public class ScheduleProvider extends ContentProvider {
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         int updateCount;
-        String where;
+        String table;
+        String where = null;
 
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
             case URI_CODE.DEPARTMENT:
-                updateCount = db.update(Tables.DEPARTMENT, values, selection, selectionArgs);
+                table = Tables.DEPARTMENT;
                 break;
             case URI_CODE.DEPARTMENT_ID:
+                table = Tables.DEPARTMENT;
                 where = Department._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                updateCount = db.update(Tables.DEPARTMENT, values, where, selectionArgs);
                 break;
             case URI_CODE.GROUP:
-                updateCount = db.update(Tables.GROUP, values, selection, selectionArgs);
+                table = Tables.GROUP;
                 break;
             case URI_CODE.GROUP_ID:
+                table = Tables.GROUP;
                 where = Group._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                updateCount = db.update(Tables.GROUP, values, where, selectionArgs);
                 break;
             case URI_CODE.LECTURER:
-                updateCount = db.update(Tables.LECTURER, values, selection, selectionArgs);
+                table = Tables.LECTURER;
                 break;
             case URI_CODE.LECTURER_ID:
+                table = Tables.LECTURER;
                 where = Lecturer._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                updateCount = db.update(Tables.LECTURER, values, where, selectionArgs);
                 break;
             case URI_CODE.SUBJECT:
-                updateCount = db.update(Tables.SUBJECT, values, selection, selectionArgs);
+                table = Tables.SUBJECT;
                 break;
             case URI_CODE.SUBJECT_ID:
+                table = Tables.SUBJECT;
                 where = Subject._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                updateCount = db.update(Tables.SUBJECT, values, where, selectionArgs);
                 break;
             case URI_CODE.ACADEMIC_HOUR:
-                updateCount = db.update(Tables.ACADEMIC_HOUR, values, selection, selectionArgs);
+                table = Tables.ACADEMIC_HOUR;
                 break;
             case URI_CODE.ACADEMIC_HOUR_ID:
+                table = Tables.ACADEMIC_HOUR;
                 where = AcademicHour._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                updateCount = db.update(Tables.ACADEMIC_HOUR, values, where, selectionArgs);
                 break;
             case URI_CODE.CAMPUS:
-                updateCount = db.update(Tables.CAMPUS, values, selection, selectionArgs);
+                table = Tables.CAMPUS;
                 break;
             case URI_CODE.CAMPUS_ID:
+                table = Tables.CAMPUS;
                 where = Campus._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                updateCount = db.update(Tables.CAMPUS, values, where, selectionArgs);
                 break;
             case URI_CODE.AUDIENCE:
-                updateCount = db.update(Tables.AUDIENCE, values, selection, selectionArgs);
+                table = Tables.AUDIENCE;
                 break;
             case URI_CODE.AUDIENCE_ID:
+                table = Tables.AUDIENCE;
                 where = Audience._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                updateCount = db.update(Tables.AUDIENCE, values, where, selectionArgs);
                 break;
             case URI_CODE.CLASS_TYPE:
-                updateCount = db.update(Tables.CLASS_TYPE, values, selection, selectionArgs);
+                table = Tables.CLASS_TYPE;
                 break;
             case URI_CODE.CLASS_TYPE_ID:
+                table = Tables.CLASS_TYPE;
                 where = ClassType._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                updateCount = db.update(Tables.CLASS_TYPE, values, where, selectionArgs);
                 break;
             case URI_CODE.SCHEDULE:
-                updateCount = db.update(Tables.SCHEDULE, values, selection, selectionArgs);
+                table = Tables.SCHEDULE;
                 break;
             case URI_CODE.SCHEDULE_ID:
+                table = Tables.SCHEDULE;
                 where = Schedule._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                updateCount = db.update(Tables.SCHEDULE, values, where, selectionArgs);
                 break;
             case URI_CODE.SEARCH_DEPARTMENT:
-                updateCount = db.update(Tables.SEARCH_DEPARTMENT, values, selection, selectionArgs);
+                table = Tables.SEARCH_DEPARTMENT;
                 break;
             case URI_CODE.SEARCH_DEPARTMENT_ID:
+                table = Tables.SEARCH_DEPARTMENT;
                 where = SearchDepartment._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                updateCount = db.update(Tables.SEARCH_DEPARTMENT, values, where, selectionArgs);
                 break;
             case URI_CODE.SEARCH_GROUP:
-                updateCount = db.update(Tables.SEARCH_GROUP, values, selection, selectionArgs);
+                table = Tables.SEARCH_GROUP;
                 break;
             case URI_CODE.SEARCH_GROUP_ID:
+                table = Tables.SEARCH_GROUP;
                 where = SearchGroup._ID + " = " + uri.getLastPathSegment();
-                if (!TextUtils.isEmpty(selection)) {
-                    where += " AND " + selection;
-                }
-                updateCount = db.update(Tables.SEARCH_GROUP, values, where, selectionArgs);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
+
+        updateCount = db.update(table, values, appendSelection(where, selection), selectionArgs);
 
         notifyChange(uri);
 
@@ -586,6 +522,7 @@ public class ScheduleProvider extends ContentProvider {
                 selectionArgs,
                 null,
                 null,
+                // TODO: Add default sort order, for all tables
                 sortOrder);
 
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
@@ -596,6 +533,17 @@ public class ScheduleProvider extends ContentProvider {
     private void notifyChange(Uri uri) {
         getContext().getContentResolver().notifyChange(uri, null);
         // TODO: Notify dependent URIs after changes.
+    }
+
+    private String appendSelection(String where, String selection) {
+        if (TextUtils.isEmpty(where)) {
+            return selection;
+        } else {
+            if (!TextUtils.isEmpty(selection)) {
+                where += " AND " + selection;
+            }
+            return where;
+        }
     }
 
 }
