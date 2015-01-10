@@ -5,12 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 
-import java.util.ArrayList;
-
-import ua.zp.rozklad.app.rest.GetGroupsMethod;
-import ua.zp.rozklad.app.rest.ResponseCallback;
-import ua.zp.rozklad.app.rest.resource.Group;
-
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
  * a service on a separate handler thread.
@@ -18,13 +12,6 @@ import ua.zp.rozklad.app.rest.resource.Group;
  * @author Vojko Vladimir
  */
 public class ScheduleService extends IntentService {
-
-    public static final String METHOD_GET = "GET";
-
-    public interface Method {
-        String GET = "GET";
-        String UPDATE = "UPDATE";
-    }
 
     public interface Extra {
         String METHOD = "ua.zp.rozklad.app.service.METHOD_EXTRA";
@@ -53,5 +40,4 @@ public class ScheduleService extends IntentService {
         resultData.putParcelable(Extra.ORIGINAL_INTENT, requestIntent);
         return resultData;
     }
-
 }

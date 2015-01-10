@@ -18,7 +18,7 @@ public class Group extends Resource {
     public Group(JSONObject json) throws JSONException {
         id = json.getInt(RESTMethod.Key.ID);
         departmentId = json.getInt(RESTMethod.Key.DEPARTMENT_ID);
-        name = json.getString(RESTMethod.Key.DEPARTMENT_ID);
+        name = json.getString(RESTMethod.Key.NAME);
         lastUpdate = json.getLong(RESTMethod.Key.LAST_UPDATE);
     }
 

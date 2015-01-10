@@ -25,6 +25,7 @@ public class Schedule extends Resource {
     private int periodicity;
     private long startDate;
     private long endDate;
+    private int classType;
     private long lastUpdate;
 
     public Schedule(JSONObject json) throws JSONException {
@@ -38,6 +39,7 @@ public class Schedule extends Resource {
         periodicity = json.getInt(RESTMethod.Key.PERIODICITY);
         startDate = parseDate(json.getString(RESTMethod.Key.DATE_START));
         endDate = parseDate(json.getString(RESTMethod.Key.DATE_END));
+        classType = json.getInt(RESTMethod.Key.LESSON_TYPE);
         lastUpdate = json.getLong(RESTMethod.Key.LAST_UPDATE);
     }
 
@@ -79,6 +81,10 @@ public class Schedule extends Resource {
 
     public long getEndDate() {
         return endDate;
+    }
+
+    public int getClassType() {
+        return classType;
     }
 
     public long getLastUpdate() {

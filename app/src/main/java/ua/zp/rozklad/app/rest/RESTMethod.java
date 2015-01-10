@@ -28,7 +28,7 @@ public abstract class RESTMethod<T> implements Response.ErrorListener {
     protected static final String MODEL_BY_ID_IN_URL_FORMAT =
             API_URL + "%s/?" + FORMAT_JSON + ID_IN_SUFFIX;
     protected static final String MODEL_SEARCH_BY_NAME =
-            API_URL + "%s/search/?" + FORMAT_JSON + "?" + S_SUFFIX;
+            API_URL + "%s/search/?" + FORMAT_JSON + "&" + S_SUFFIX;
     protected static final String MODEL_BY_MODEL_URL_FORMAT =
             API_URL + "%s/?" + FORMAT_JSON + "%s=%s";
 
@@ -66,6 +66,7 @@ public abstract class RESTMethod<T> implements Response.ErrorListener {
         String NUM = "num";
         String TIME_START = "time_start";
         String TIME_END = "time_end";
+        String LESSON_TYPE = "lesson_type";
     }
 
     public static interface ResponseCode {

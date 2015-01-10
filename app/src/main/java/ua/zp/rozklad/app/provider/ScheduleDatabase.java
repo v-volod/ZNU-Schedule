@@ -35,8 +35,6 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
         String AUDIENCE = "audience";
         String CLASS_TYPE = "class_type";
         String SCHEDULE = "schedule";
-        String SEARCH_DEPARTMENT = "search_department";
-        String SEARCH_GROUP = "search_group";
     }
 
     public ScheduleDatabase(Context context) {
@@ -93,18 +91,6 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
                 + ScheduleColumns.START_DATE + " INTEGER NOT NULL, "
                 + ScheduleColumns.END_DATE + " INTEGER NOT NULL, "
                 + ScheduleColumns.CLASS_TYPE_ID + " INTEGER NOT NULL, "
-                + SyncColumns.UPDATED + " INTEGER NOT NULL)");
-        /**
-         * Search cache tables
-         * */
-        db.execSQL("CREATE TABLE " + Tables.SEARCH_DEPARTMENT + " ("
-                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + Department.DEPARTMENT_NAME + " TEXT NOT NULL, "
-                + SyncColumns.UPDATED + " INTEGER NOT NULL)");
-        db.execSQL("CREATE TABLE " + Tables.SEARCH_GROUP + " ("
-                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + GroupColumns.DEPARTMENT_ID + " INTEGER NOT NULL, "
-                + GroupColumns.GROUP_NAME + " TEXT NOT NULL, "
                 + SyncColumns.UPDATED + " INTEGER NOT NULL)");
     }
 
