@@ -13,7 +13,7 @@ import static java.lang.Integer.parseInt;
 /**
  * @author Vojko Vladimir
  */
-public class Schedule extends Resource {
+public class ScheduleItem extends Resource {
 
     private int id;
     private int groupId;
@@ -28,7 +28,7 @@ public class Schedule extends Resource {
     private int classType;
     private long lastUpdate;
 
-    public Schedule(JSONObject json) throws JSONException {
+    public ScheduleItem(JSONObject json) throws JSONException {
         id = json.getInt(RESTMethod.Key.ID);
         groupId = json.getInt(RESTMethod.Key.GROUP_ID);
         subjectId = json.getInt(RESTMethod.Key.LESSON_ID);

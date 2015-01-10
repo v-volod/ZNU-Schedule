@@ -1,6 +1,6 @@
 package ua.zp.rozklad.app.rest;
 
-import com.android.volley.Response.Listener;
+import com.android.volley.Response;
 import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONArray;
@@ -10,40 +10,36 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import ua.zp.rozklad.app.App;
-import ua.zp.rozklad.app.rest.resource.Group;
+import ua.zp.rozklad.app.rest.resource.ScheduleItem;
 
 /**
  * @author Vojko Vladimir
  */
-public class GetGroupsMethod extends RESTMethod<ArrayList<Group>> {
+public class GetScheduleItemsMethod extends RESTMethod<ArrayList<ScheduleItem>> {
 
-    public static interface Filter {
-        int NONE = 0;
-        int BY_ID = 1;
-        int BY_ID_IN = 2;
-        int BY_NAME = 3;
-        int BY_DEPARTMENT_ID = 4;
+    public interface Filter {
+        int BY_GROUP_ID = 1;
+        int BY_LECTURER_ID = 2;
+        int BY_GROUP_AND_LECTURER_IDS = 3;
     }
 
-    public GetGroupsMethod(ResponseCallback<ArrayList<Group>> callback, int filter,
-                           String... params) {
+    public GetScheduleItemsMethod(ResponseCallback<ArrayList<ScheduleItem>> callback, int filter,
+                                  String... params) {
         super(callback);
-        final String MODEL = Model.GROUP;
+        final String MODEL = Model.TIMETABLE;
         switch (filter) {
-            case Filter.BY_ID:
-                requestUrl = String.format(MODEL_BY_ID_URL_FORMAT, MODEL, params[0]);
-                break;
-            case Filter.BY_ID_IN:
-                requestUrl = String.format(MODEL_BY_ID_IN_URL_FORMAT, MODEL, generateIds(params));
-                break;
-            case Filter.BY_NAME:
-                requestUrl = String.format(MODEL_SEARCH_BY_NAME, MODEL, params[0]);
-                break;
-            case Filter.BY_DEPARTMENT_ID:
+            case Filter.BY_GROUP_ID:
                 requestUrl = String.format(MODEL_URL_FORMAT, MODEL) +
-                        buildModelFilter(Model.DEPARTMENT, params[0]);
-            case Filter.NONE:
-                requestUrl = String.format(MODEL_URL_FORMAT, MODEL);
+                        buildModelFilter(Model.GROUP, params[0]);
+                break;
+            case Filter.BY_LECTURER_ID:
+                requestUrl = String.format(MODEL_URL_FORMAT, MODEL) +
+                        buildModelFilter(Model.TEACHER, params[0]);
+                break;
+            case Filter.BY_GROUP_AND_LECTURER_IDS:
+                requestUrl = String.format(MODEL_URL_FORMAT, MODEL) +
+                        buildModelFilter(Model.GROUP, params[0]) +
+                        buildModelFilter(Model.TEACHER, params[1]);
                 break;
         }
     }
@@ -54,15 +50,15 @@ public class GetGroupsMethod extends RESTMethod<ArrayList<Group>> {
         JsonObjectRequest request = new JsonObjectRequest(
                 requestUrl,
                 null,
-                new Listener<JSONObject>() {
+                new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
                             JSONArray objects = response.getJSONArray(Key.OBJECTS);
-                            ArrayList<Group> groups = new ArrayList<>();
+                            ArrayList<ScheduleItem> groups = new ArrayList<>();
 
                             for (int i = 0; i < objects.length(); i++) {
-                                groups.add(new Group(objects.getJSONObject(i)));
+                                groups.add(new ScheduleItem(objects.getJSONObject(i)));
                             }
 
                             callback.onResponse(ResponseCode.OK, groups);

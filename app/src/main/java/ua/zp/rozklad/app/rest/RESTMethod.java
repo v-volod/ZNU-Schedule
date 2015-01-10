@@ -29,21 +29,17 @@ public abstract class RESTMethod<T> implements Response.ErrorListener {
             API_URL + "%s/?" + FORMAT_JSON + ID_IN_SUFFIX;
     protected static final String MODEL_SEARCH_BY_NAME =
             API_URL + "%s/search/?" + FORMAT_JSON + "&" + S_SUFFIX;
-    protected static final String MODEL_BY_MODEL_URL_FORMAT =
-            API_URL + "%s/?" + FORMAT_JSON + "%s=%s";
 
     protected static interface Model {
         String DEPARTMENT = "department";
         String GROUP = "group";
-        String LECTURER = "teacher";
-        String SUBJECT = "lesson";
-        // TODO: define and add to API if it needed
-        /*String ACADEMIC_HOUR = "academic_hour";*/
+        String TEACHER = "teacher";
+        String LESSON = "lesson";
+        String TIME = "time";
         String CAMPUS = "campus";
         String AUDIENCE = "audience";
-        // TODO: define and add to API if it needed
-        /*String CLASS_TYPE = "lesson_type";*/
-        String SCHEDULE = "timetable";
+        String LESSON_TYPE = "lesson_type";
+        String TIMETABLE = "timetable";
     }
 
     public static interface Key {
@@ -89,6 +85,10 @@ public abstract class RESTMethod<T> implements Response.ErrorListener {
         if (TextUtils.isEmpty(requestUrl)) {
             callback.onError(ResponseCode.INVALID_REQUEST);
         }
+    }
+
+    protected String buildModelFilter(String model, String param) {
+        return "&" + model + "=" + param;
     }
 
     protected String generateIds(String... params) {
