@@ -1,6 +1,6 @@
 package ua.zp.rozklad.app.rest;
 
-import com.android.volley.Response.Listener;
+import com.android.volley.Response;
 import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONArray;
@@ -10,25 +10,23 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import ua.zp.rozklad.app.App;
-import ua.zp.rozklad.app.rest.resource.Group;
+import ua.zp.rozklad.app.rest.resource.Department;
 
 /**
  * @author Vojko Vladimir
  */
-public class GetGroupsMethod extends RESTMethod<ArrayList<Group>> {
+public class GetDepartmentsMethod extends RESTMethod<ArrayList<Department>> {
 
     public static interface Filter {
         int NONE = 0;
         int BY_ID = 1;
         int BY_ID_IN = 2;
-        int BY_NAME = 3;
-        int BY_DEPARTMENT_ID = 4;
     }
 
-    public GetGroupsMethod(ResponseCallback<ArrayList<Group>> callback, int filter,
-                           String... params) {
+    public GetDepartmentsMethod(ResponseCallback<ArrayList<Department>> callback, int filter,
+                                String... params) {
         super(callback);
-        final String MODEL = Model.GROUP;
+        final String MODEL = Model.DEPARTMENT;
         switch (filter) {
             case Filter.BY_ID:
                 requestUrl = String.format(MODEL_BY_ID_URL_FORMAT, MODEL, params[0]);
@@ -36,12 +34,6 @@ public class GetGroupsMethod extends RESTMethod<ArrayList<Group>> {
             case Filter.BY_ID_IN:
                 requestUrl = String.format(MODEL_BY_ID_IN_URL_FORMAT, MODEL, generateIds(params));
                 break;
-            case Filter.BY_NAME:
-                requestUrl = String.format(MODEL_SEARCH_BY_NAME, MODEL, params[0]);
-                break;
-            case Filter.BY_DEPARTMENT_ID:
-                requestUrl = String.format(MODEL_BY_MODEL_URL_FORMAT, MODEL, Model.DEPARTMENT,
-                        params[0]);
             case Filter.NONE:
                 requestUrl = String.format(MODEL_URL_FORMAT, MODEL);
                 break;
@@ -54,18 +46,18 @@ public class GetGroupsMethod extends RESTMethod<ArrayList<Group>> {
         JsonObjectRequest request = new JsonObjectRequest(
                 requestUrl,
                 null,
-                new Listener<JSONObject>() {
+                new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
                             JSONArray objects = response.getJSONArray(Key.OBJECTS);
-                            ArrayList<Group> groups = new ArrayList<>();
+                            ArrayList<Department> departments = new ArrayList<>();
 
                             for (int i = 0; i < objects.length(); i++) {
-                                groups.add(new Group(objects.getJSONObject(i)));
+                                departments.add(new Department(objects.getJSONObject(i)));
                             }
 
-                            callback.onResponse(ResponseCode.OK, groups);
+                            callback.onResponse(ResponseCode.OK, departments);
                         } catch (JSONException e) {
                             callback.onError(getResponseCode(e));
                         }
