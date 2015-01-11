@@ -16,14 +16,6 @@ import ua.zp.rozklad.app.rest.resource.Department;
  */
 public class GetDepartmentsMethod extends RESTMethod<ArrayList<Department>, JSONObject> {
 
-    public static interface Filter {
-
-        int NONE = 0;
-
-        int BY_ID = 1;
-        int BY_ID_IN = 2;
-    }
-
     public GetDepartmentsMethod(ResponseCallback<ArrayList<Department>> callback) {
         super(callback);
     }

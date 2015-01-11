@@ -68,6 +68,17 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
         String LESSON_TYPE = "lesson_type";
     }
 
+    public interface Filter {
+        int NONE = 0;
+        int BY_ID = 1;
+        int BY_ID_IN = 3;
+        int BY_NAME = 4;
+        int BY_DEPARTMENT_ID = 5;
+        int BY_GROUP_ID = 6;
+        int BY_LECTURER_ID = 7;
+        int BY_GROUP_AND_LECTURER_IDS = 8;
+    }
+
     public static interface ResponseCode {
         int INVALID_REQUEST = -1;
         int PARSE_RESPONSE_ERROR = 101;

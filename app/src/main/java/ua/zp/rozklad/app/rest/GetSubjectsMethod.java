@@ -16,13 +16,6 @@ import ua.zp.rozklad.app.rest.resource.Subject;
  */
 public class GetSubjectsMethod extends RESTMethod<ArrayList<Subject>, JSONObject> {
 
-    public interface Filter {
-
-        int NONE = 0;
-        int BY_ID = 1;
-        int BY_ID_IN = 3;
-    }
-
     public GetSubjectsMethod(ResponseCallback<ArrayList<Subject>> callback) {
         super(callback);
     }

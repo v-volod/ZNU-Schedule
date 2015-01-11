@@ -16,12 +16,6 @@ import ua.zp.rozklad.app.rest.resource.ScheduleItem;
  */
 public class GetScheduleItemsMethod extends RESTMethod<ArrayList<ScheduleItem>, JSONObject> {
 
-    public interface Filter {
-        int BY_GROUP_ID = 1;
-        int BY_LECTURER_ID = 2;
-        int BY_GROUP_AND_LECTURER_IDS = 3;
-    }
-
     public GetScheduleItemsMethod(ResponseCallback<ArrayList<ScheduleItem>> callback) {
         super(callback);
     }

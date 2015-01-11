@@ -16,14 +16,6 @@ import ua.zp.rozklad.app.rest.resource.Group;
  */
 public class GetGroupsMethod extends RESTMethod<ArrayList<Group>, JSONObject> {
 
-    public static interface Filter {
-        int NONE = 0;
-        int BY_ID = 1;
-        int BY_ID_IN = 2;
-        int BY_NAME = 3;
-        int BY_DEPARTMENT_ID = 4;
-    }
-
     public GetGroupsMethod(ResponseCallback<ArrayList<Group>> callback) {
         super(callback);
     }
