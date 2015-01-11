@@ -2,15 +2,18 @@ package ua.zp.rozklad.app.rest;
 
 import android.text.TextUtils;
 
+import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
 import org.json.JSONException;
 
+import ua.zp.rozklad.app.App;
+
 /**
  * @author Vojko Vladimir
  */
-public abstract class RESTMethod<T> implements Response.ErrorListener {
+public abstract class RESTMethod<R, T> implements Response.ErrorListener, Response.Listener<T> {
 
     private static final String SITE_URL = "http://rozklad.5132.pp.ua/";
     private static final String API = "api/v1/";
@@ -75,17 +78,23 @@ public abstract class RESTMethod<T> implements Response.ErrorListener {
     }
 
     protected String requestUrl = null;
-    protected ResponseCallback<T> callback;
+    protected ResponseCallback<R> callback;
 
-    public RESTMethod(ResponseCallback<T> callback) {
+    public RESTMethod(ResponseCallback<R> callback) {
         this.callback = callback;
     }
+
+    public abstract void prepare(int filter, String... params);
 
     public void execute() {
         if (TextUtils.isEmpty(requestUrl)) {
             callback.onError(ResponseCode.INVALID_REQUEST);
+        } else {
+            App.getInstance().addToRequestQueue(buildRequest());
         }
     }
+
+    protected abstract Request buildRequest();
 
     protected String buildModelFilter(String model, String param) {
         return "&" + model + "=" + param;
@@ -95,7 +104,7 @@ public abstract class RESTMethod<T> implements Response.ErrorListener {
         String result = "";
 
         for (int i = 0; i < params.length; i++) {
-            result += params;
+            result += params[i];
             if (i < params.length - 1) {
                 result += ",";
             }

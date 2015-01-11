@@ -1,6 +1,6 @@
 package ua.zp.rozklad.app.rest;
 
-import com.android.volley.Response.Listener;
+import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONArray;
@@ -9,13 +9,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.rest.resource.Group;
 
 /**
  * @author Vojko Vladimir
  */
-public class GetGroupsMethod extends RESTMethod<ArrayList<Group>> {
+public class GetGroupsMethod extends RESTMethod<ArrayList<Group>, JSONObject> {
 
     public static interface Filter {
         int NONE = 0;
@@ -25,9 +24,12 @@ public class GetGroupsMethod extends RESTMethod<ArrayList<Group>> {
         int BY_DEPARTMENT_ID = 4;
     }
 
-    public GetGroupsMethod(ResponseCallback<ArrayList<Group>> callback, int filter,
-                           String... params) {
+    public GetGroupsMethod(ResponseCallback<ArrayList<Group>> callback) {
         super(callback);
+    }
+
+    @Override
+    public void prepare(int filter, String... params) {
         final String MODEL = Model.GROUP;
         switch (filter) {
             case Filter.BY_ID:
@@ -49,29 +51,23 @@ public class GetGroupsMethod extends RESTMethod<ArrayList<Group>> {
     }
 
     @Override
-    public void execute() {
-        super.execute();
-        JsonObjectRequest request = new JsonObjectRequest(
-                requestUrl,
-                null,
-                new Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            JSONArray objects = response.getJSONArray(Key.OBJECTS);
-                            ArrayList<Group> groups = new ArrayList<>();
+    protected Request buildRequest() {
+        return new JsonObjectRequest(requestUrl, null, this, this);
+    }
 
-                            for (int i = 0; i < objects.length(); i++) {
-                                groups.add(new Group(objects.getJSONObject(i)));
-                            }
+    @Override
+    public void onResponse(JSONObject response) {
+        try {
+            JSONArray objects = response.getJSONArray(Key.OBJECTS);
+            ArrayList<Group> groups = new ArrayList<>();
 
-                            callback.onResponse(ResponseCode.OK, groups);
-                        } catch (JSONException e) {
-                            callback.onError(getResponseCode(e));
-                        }
-                    }
-                },
-                this);
-        App.getInstance().addToRequestQueue(request);
+            for (int i = 0; i < objects.length(); i++) {
+                groups.add(new Group(objects.getJSONObject(i)));
+            }
+
+            callback.onResponse(ResponseCode.OK, groups);
+        } catch (JSONException e) {
+            callback.onError(getResponseCode(e));
+        }
     }
 }
