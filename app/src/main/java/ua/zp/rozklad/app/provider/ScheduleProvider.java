@@ -13,7 +13,6 @@ import android.text.TextUtils;
 import ua.zp.rozklad.app.provider.ScheduleContract.AcademicHour;
 import ua.zp.rozklad.app.provider.ScheduleContract.Audience;
 import ua.zp.rozklad.app.provider.ScheduleContract.Campus;
-import ua.zp.rozklad.app.provider.ScheduleContract.ClassType;
 import ua.zp.rozklad.app.provider.ScheduleContract.Department;
 import ua.zp.rozklad.app.provider.ScheduleContract.Group;
 import ua.zp.rozklad.app.provider.ScheduleContract.Lecturer;
@@ -47,8 +46,6 @@ public class ScheduleProvider extends ContentProvider {
         int CAMPUS_ID = 601;
         int AUDIENCE = 700;
         int AUDIENCE_ID = 701;
-        int CLASS_TYPE = 800;
-        int CLASS_TYPE_ID = 801;
         int SCHEDULE = 900;
         int SCHEDULE_ID = 901;
     }
@@ -81,9 +78,6 @@ public class ScheduleProvider extends ContentProvider {
 
         matcher.addURI(authority, "audience", URI_CODE.AUDIENCE);
         matcher.addURI(authority, "audience/#", URI_CODE.AUDIENCE_ID);
-
-        matcher.addURI(authority, "class_type", URI_CODE.CLASS_TYPE);
-        matcher.addURI(authority, "class_type/#", URI_CODE.CLASS_TYPE_ID);
 
         matcher.addURI(authority, "schedule", URI_CODE.SCHEDULE);
         matcher.addURI(authority, "schedule/#", URI_CODE.SCHEDULE_ID);
@@ -132,10 +126,6 @@ public class ScheduleProvider extends ContentProvider {
                 return Audience.CONTENT_TYPE;
             case URI_CODE.AUDIENCE_ID:
                 return Audience.CONTENT_ITEM_TYPE;
-            case URI_CODE.CLASS_TYPE:
-                return ClassType.CONTENT_TYPE;
-            case URI_CODE.CLASS_TYPE_ID:
-                return ClassType.CONTENT_ITEM_TYPE;
             case URI_CODE.SCHEDULE:
                 return Schedule.CONTENT_TYPE;
             case URI_CODE.SCHEDULE_ID:
@@ -175,9 +165,6 @@ public class ScheduleProvider extends ContentProvider {
                 table = Tables.CAMPUS;
                 break;
             case URI_CODE.AUDIENCE:
-                table = Tables.AUDIENCE;
-                break;
-            case URI_CODE.CLASS_TYPE:
                 table = Tables.AUDIENCE;
                 break;
             case URI_CODE.SCHEDULE:
@@ -255,13 +242,6 @@ public class ScheduleProvider extends ContentProvider {
             case URI_CODE.AUDIENCE_ID:
                 table = Tables.AUDIENCE;
                 where = Audience._ID + " = " + uri.getLastPathSegment();
-                break;
-            case URI_CODE.CLASS_TYPE:
-                table = Tables.CLASS_TYPE;
-                break;
-            case URI_CODE.CLASS_TYPE_ID:
-                table = Tables.CLASS_TYPE;
-                where = ClassType._ID + " = " + uri.getLastPathSegment();
                 break;
             case URI_CODE.SCHEDULE:
                 table = Tables.SCHEDULE;
@@ -343,13 +323,6 @@ public class ScheduleProvider extends ContentProvider {
                 table = Tables.AUDIENCE;
                 where = Audience._ID + " = " + uri.getLastPathSegment();
                 break;
-            case URI_CODE.CLASS_TYPE:
-                table = Tables.CLASS_TYPE;
-                break;
-            case URI_CODE.CLASS_TYPE_ID:
-                table = Tables.CLASS_TYPE;
-                where = ClassType._ID + " = " + uri.getLastPathSegment();
-                break;
             case URI_CODE.SCHEDULE:
                 table = Tables.SCHEDULE;
                 break;
@@ -428,13 +401,6 @@ public class ScheduleProvider extends ContentProvider {
             case URI_CODE.AUDIENCE_ID:
                 queryBuilder.setTables(Tables.AUDIENCE);
                 queryBuilder.appendWhere(Audience._ID + " = " + uri.getLastPathSegment());
-                break;
-            case URI_CODE.CLASS_TYPE:
-                queryBuilder.setTables(Tables.CLASS_TYPE);
-                break;
-            case URI_CODE.CLASS_TYPE_ID:
-                queryBuilder.setTables(Tables.CLASS_TYPE);
-                queryBuilder.appendWhere(ClassType._ID + " = " + uri.getLastPathSegment());
                 break;
             case URI_CODE.SCHEDULE:
                 queryBuilder.setTables(Tables.SCHEDULE);

@@ -50,10 +50,6 @@ public class ScheduleContract {
         String AUDIENCE_NUMBER = "audience_number";
     }
 
-    interface ClassTypeColumns {
-        String CLASS_TYPE_NAME = "class_type_name";
-    }
-
     interface ScheduleColumns {
         String GROUP_ID = "group_id";
         String SUBJECT_ID = "subject_id";
@@ -64,7 +60,7 @@ public class ScheduleContract {
         String PERIODICITY = "periodicity";
         String START_DATE = "start_date";
         String END_DATE = "end_date";
-        String CLASS_TYPE_ID = "class_type_id";
+        String CLASS_TYPE = "class_type";
     }
 
     public static final String CONTENT_AUTHORITY = "ua.zp.rozklad.app.provider";
@@ -78,7 +74,6 @@ public class ScheduleContract {
     private static final String PATH_ACADEMIC_HOUR = "academic_hour";
     private static final String PATH_CAMPUS = "campus";
     private static final String PATH_AUDIENCE = "audience";
-    private static final String PATH_CLASS_TYPE = "class_type";
     private static final String PATH_SCHEDULE = "schedule";
 
     public static class Department implements DepartmentColumns, BaseColumns {
@@ -241,28 +236,6 @@ public class ScheduleContract {
         }
     }
 
-    public static class ClassType implements ClassTypeColumns, BaseColumns {
-        public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_CLASS_TYPE).build();
-
-        public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".class_type";
-        public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".class_type";
-
-        public static final String[] TABLE_SUMMARY = {
-                _ID,
-                CLASS_TYPE_NAME
-        };
-
-        /**
-         * Build {@link Uri} for requested class type.
-         */
-        public static Uri buildClassTypeUri(String classTypeId) {
-            return CONTENT_URI.buildUpon().appendPath(classTypeId).build();
-        }
-    }
-
     public static class Schedule implements ScheduleColumns, BaseColumns {
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_SCHEDULE).build();
@@ -283,7 +256,7 @@ public class ScheduleContract {
                 PERIODICITY,
                 START_DATE,
                 END_DATE,
-                CLASS_TYPE_ID
+                CLASS_TYPE
         };
 
         /**

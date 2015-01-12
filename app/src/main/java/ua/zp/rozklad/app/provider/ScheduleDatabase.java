@@ -8,7 +8,6 @@ import android.provider.BaseColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.AcademicHourColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.AudienceColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.CampusColumns;
-import ua.zp.rozklad.app.provider.ScheduleContract.ClassTypeColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.Department;
 import ua.zp.rozklad.app.provider.ScheduleContract.GroupColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.LecturerColumns;
@@ -75,10 +74,6 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
                 + AudienceColumns.CAMPUS_ID + " INTEGER NOT NULL, "
                 + AudienceColumns.AUDIENCE_NUMBER + " TEXT NOT NULL, "
                 + SyncColumns.UPDATED + " INTEGER NOT NULL)");
-        db.execSQL("CREATE TABLE " + Tables.CLASS_TYPE + " ("
-                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + ClassTypeColumns.CLASS_TYPE_NAME + " TEXT NOT NULL, "
-                + SyncColumns.UPDATED + " INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE " + Tables.SCHEDULE + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + ScheduleColumns.GROUP_ID + " INTEGER NOT NULL, "
@@ -90,7 +85,7 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
                 + ScheduleColumns.PERIODICITY + " INTEGER NOT NULL, "
                 + ScheduleColumns.START_DATE + " INTEGER NOT NULL, "
                 + ScheduleColumns.END_DATE + " INTEGER NOT NULL, "
-                + ScheduleColumns.CLASS_TYPE_ID + " INTEGER NOT NULL, "
+                + ScheduleColumns.CLASS_TYPE + " INTEGER NOT NULL, "
                 + SyncColumns.UPDATED + " INTEGER NOT NULL)");
     }
 
