@@ -17,6 +17,7 @@ public class ScheduleItem extends Resource {
 
     private int id;
     private int groupId;
+    private int subgroup;
     private int subjectId;
     private int dayOfWeek;
     private int academicHourId;
@@ -31,6 +32,7 @@ public class ScheduleItem extends Resource {
     public ScheduleItem(JSONObject json) throws JSONException {
         id = json.getInt(RESTMethod.Key.ID);
         groupId = json.getInt(RESTMethod.Key.GROUP_ID);
+        subgroup = json.getInt(RESTMethod.Key.SUBGROUP);
         subjectId = json.getInt(RESTMethod.Key.LESSON_ID);
         dayOfWeek = json.getInt(RESTMethod.Key.DAY);
         academicHourId = json.getInt(RESTMethod.Key.TIME_ID);
@@ -49,6 +51,10 @@ public class ScheduleItem extends Resource {
 
     public int getGroupId() {
         return groupId;
+    }
+
+    public int getSubgroup() {
+        return subgroup;
     }
 
     public int getSubjectId() {

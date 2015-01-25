@@ -1,12 +1,16 @@
 package ua.zp.rozklad.app.rest;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.RequestFuture;
 
 import org.json.JSONException;
+
+import java.util.concurrent.ExecutionException;
 
 import ua.zp.rozklad.app.App;
 
@@ -41,7 +45,6 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
         String TIME = "time";
         String CAMPUS = "campus";
         String AUDIENCE = "audience";
-        String LESSON_TYPE = "lesson_type";
         String TIMETABLE = "timetable";
     }
 
@@ -66,6 +69,8 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
         String TIME_START = "time_start";
         String TIME_END = "time_end";
         String LESSON_TYPE = "lesson_type";
+        String SUBGROUP = "subgroup";
+        String SUBGROUP_COUNT = "subgroup_count";
     }
 
     public interface Filter {
@@ -91,19 +96,18 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
     protected String requestUrl = null;
     protected ResponseCallback<R> callback;
 
-    public RESTMethod(ResponseCallback<R> callback) {
-        this.callback = callback;
-    }
-
     public abstract void prepare(int filter, String... params);
 
-    public void execute() {
+    public void execute(ResponseCallback<R> callback) {
+        this.callback = callback;
         if (TextUtils.isEmpty(requestUrl)) {
             callback.onError(ResponseCode.INVALID_REQUEST);
         } else {
             App.getInstance().addToRequestQueue(buildRequest());
         }
     }
+
+    public abstract MethodResponse<R> executeBlocking();
 
     protected abstract Request buildRequest();
 
@@ -124,10 +128,13 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
         return result;
     }
 
-    protected static int getResponseCode(Exception exception) {
-        if (exception instanceof VolleyError) {
+    protected static int generateResponseCode(Throwable throwable) {
+        Log.d("ScheduleLOGS", throwable.toString());
+        if (throwable instanceof ExecutionException) {
+            return generateResponseCode(throwable.getCause());
+        } else if (throwable instanceof VolleyError) {
             return ResponseCode.VOLLEY_ERROR;
-        } else if (exception instanceof JSONException) {
+        } else if (throwable instanceof JSONException) {
             return ResponseCode.PARSE_RESPONSE_ERROR;
         } else {
             return ResponseCode.UNKNOWN_ERROR;
@@ -136,6 +143,6 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
 
     @Override
     public void onErrorResponse(VolleyError error) {
-        callback.onError(getResponseCode(error));
+        callback.onError(generateResponseCode(error));
     }
 }

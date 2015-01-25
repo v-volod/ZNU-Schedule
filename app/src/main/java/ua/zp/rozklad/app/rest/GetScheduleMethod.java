@@ -2,6 +2,7 @@ package ua.zp.rozklad.app.rest;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.RequestFuture;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -9,16 +10,14 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import ua.zp.rozklad.app.App;
+import ua.zp.rozklad.app.rest.resource.Lecturer;
 import ua.zp.rozklad.app.rest.resource.ScheduleItem;
 
 /**
  * @author Vojko Vladimir
  */
-public class GetScheduleItemsMethod extends RESTMethod<ArrayList<ScheduleItem>, JSONObject> {
-
-    public GetScheduleItemsMethod(ResponseCallback<ArrayList<ScheduleItem>> callback) {
-        super(callback);
-    }
+public class GetScheduleMethod extends RESTMethod<ArrayList<ScheduleItem>, JSONObject> {
 
     @Override
     public void prepare(int filter, String... params) {
@@ -41,6 +40,27 @@ public class GetScheduleItemsMethod extends RESTMethod<ArrayList<ScheduleItem>, 
     }
 
     @Override
+    public MethodResponse<ArrayList<ScheduleItem>> executeBlocking() {
+        RequestFuture<JSONObject> future = RequestFuture.newFuture();
+
+        JsonObjectRequest request = new JsonObjectRequest(requestUrl, null, future, future);
+        App.getInstance().addToRequestQueue(request);
+
+        try {
+            JSONArray objects = future.get().getJSONArray(Key.OBJECTS);
+            ArrayList<ScheduleItem> groups = new ArrayList<>();
+
+            for (int i = 0; i < objects.length(); i++) {
+                groups.add(new ScheduleItem(objects.getJSONObject(i)));
+            }
+
+            return new MethodResponse<>(ResponseCode.OK, groups);
+        } catch (Exception e) {
+            return new MethodResponse<>(generateResponseCode(e), null);
+        }
+    }
+
+    @Override
     protected Request buildRequest() {
         return new JsonObjectRequest(requestUrl, null, this, this);
     }
@@ -55,9 +75,9 @@ public class GetScheduleItemsMethod extends RESTMethod<ArrayList<ScheduleItem>, 
                 groups.add(new ScheduleItem(objects.getJSONObject(i)));
             }
 
-            callback.onResponse(ResponseCode.OK, groups);
+            callback.onResponse(groups);
         } catch (JSONException e) {
-            callback.onError(getResponseCode(e));
+            callback.onError(generateResponseCode(e));
         }
     }
 }

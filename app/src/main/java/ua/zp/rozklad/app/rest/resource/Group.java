@@ -13,12 +13,14 @@ public class Group extends Resource {
     private int id;
     private int departmentId;
     private String name;
+    private int subgroupCount;
     private long lastUpdate;
 
     public Group(JSONObject json) throws JSONException {
         id = json.getInt(RESTMethod.Key.ID);
         departmentId = json.getInt(RESTMethod.Key.DEPARTMENT_ID);
         name = json.getString(RESTMethod.Key.NAME);
+        subgroupCount = json.getInt(RESTMethod.Key.SUBGROUP_COUNT);
         lastUpdate = json.getLong(RESTMethod.Key.LAST_UPDATE);
     }
 
@@ -32,6 +34,10 @@ public class Group extends Resource {
 
     public String getName() {
         return name;
+    }
+
+    public int getSubgroupCount() {
+        return subgroupCount;
     }
 
     public long getLastUpdate() {

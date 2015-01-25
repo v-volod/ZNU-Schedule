@@ -2,6 +2,7 @@ package ua.zp.rozklad.app.rest;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.RequestFuture;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -9,16 +10,13 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.rest.resource.AcademicHour;
 
 /**
  * @author Vojko Vladimir
  */
 public class GetAcademicHoursMethod extends RESTMethod<ArrayList<AcademicHour>, JSONObject> {
-
-    public GetAcademicHoursMethod(ResponseCallback<ArrayList<AcademicHour>> callback) {
-        super(callback);
-    }
 
     @Override
     public void prepare(int filter, String... params) {
@@ -37,6 +35,27 @@ public class GetAcademicHoursMethod extends RESTMethod<ArrayList<AcademicHour>, 
     }
 
     @Override
+    public MethodResponse<ArrayList<AcademicHour>> executeBlocking() {
+        RequestFuture<JSONObject> future = RequestFuture.newFuture();
+
+        JsonObjectRequest request = new JsonObjectRequest(requestUrl, null, future, future);
+        App.getInstance().addToRequestQueue(request);
+
+        try {
+            JSONArray objects = future.get().getJSONArray(Key.OBJECTS);
+            ArrayList<AcademicHour> academicHours = new ArrayList<>();
+
+            for (int i = 0; i < objects.length(); i++) {
+                academicHours.add(new AcademicHour(objects.getJSONObject(i)));
+            }
+
+            return new MethodResponse<>(ResponseCode.OK, academicHours);
+        } catch (Exception e) {
+            return new MethodResponse<>(generateResponseCode(e), null);
+        }
+    }
+
+    @Override
     protected Request buildRequest() {
         return new JsonObjectRequest(requestUrl, null, this, this);
     }
@@ -51,9 +70,9 @@ public class GetAcademicHoursMethod extends RESTMethod<ArrayList<AcademicHour>, 
                 academicHours.add(new AcademicHour(objects.getJSONObject(i)));
             }
 
-            callback.onResponse(ResponseCode.OK, academicHours);
+            callback.onResponse(academicHours);
         } catch (JSONException e) {
-            callback.onError(getResponseCode(e));
+            callback.onError(generateResponseCode(e));
         }
     }
 }

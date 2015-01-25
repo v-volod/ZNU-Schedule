@@ -2,6 +2,7 @@ package ua.zp.rozklad.app.rest;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.RequestFuture;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -9,16 +10,14 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import ua.zp.rozklad.app.App;
+import ua.zp.rozklad.app.rest.resource.Audience;
 import ua.zp.rozklad.app.rest.resource.Campus;
 
 /**
  * @author Vojko Vladimir
  */
 public class GetCampusesMethod extends RESTMethod<ArrayList<Campus>, JSONObject> {
-
-    public GetCampusesMethod(ResponseCallback<ArrayList<Campus>> callback) {
-        super(callback);
-    }
 
     @Override
     public void prepare(int filter, String... params) {
@@ -37,6 +36,27 @@ public class GetCampusesMethod extends RESTMethod<ArrayList<Campus>, JSONObject>
     }
 
     @Override
+    public MethodResponse<ArrayList<Campus>> executeBlocking() {
+        RequestFuture<JSONObject> future = RequestFuture.newFuture();
+
+        JsonObjectRequest request = new JsonObjectRequest(requestUrl, null, future, future);
+        App.getInstance().addToRequestQueue(request);
+
+        try {
+            JSONArray objects = future.get().getJSONArray(Key.OBJECTS);
+            ArrayList<Campus> campuses = new ArrayList<>();
+
+            for (int i = 0; i < objects.length(); i++) {
+                campuses.add(new Campus(objects.getJSONObject(i)));
+            }
+
+            return new MethodResponse<>(ResponseCode.OK, campuses);
+        } catch (Exception e) {
+            return new MethodResponse<>(generateResponseCode(e), null);
+        }
+    }
+
+    @Override
     protected Request buildRequest() {
         return new JsonObjectRequest(requestUrl, null, this, this);
     }
@@ -51,9 +71,9 @@ public class GetCampusesMethod extends RESTMethod<ArrayList<Campus>, JSONObject>
                 campuses.add(new Campus(objects.getJSONObject(i)));
             }
 
-            callback.onResponse(ResponseCode.OK, campuses);
+            callback.onResponse(campuses);
         } catch (JSONException e) {
-            callback.onError(getResponseCode(e));
+            callback.onError(generateResponseCode(e));
         }
     }
 }

@@ -5,7 +5,7 @@ package ua.zp.rozklad.app.rest;
  */
 public interface ResponseCallback<T> {
 
-    void onResponse(int responseCode, T t);
+    void onResponse(T t);
 
     void onError(int responseCode);
 }

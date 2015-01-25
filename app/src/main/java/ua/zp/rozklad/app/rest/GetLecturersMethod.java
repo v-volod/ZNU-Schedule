@@ -12,28 +12,22 @@ import java.util.ArrayList;
 
 import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.rest.resource.Group;
+import ua.zp.rozklad.app.rest.resource.Lecturer;
 
 /**
  * @author Vojko Vladimir
  */
-public class GetGroupsMethod extends RESTMethod<ArrayList<Group>, JSONObject> {
+public class GetLecturersMethod extends RESTMethod<ArrayList<Lecturer>, JSONObject> {
 
     @Override
     public void prepare(int filter, String... params) {
-        final String MODEL = Model.GROUP;
+        final String MODEL = Model.TEACHER;
         switch (filter) {
             case Filter.BY_ID:
                 requestUrl = String.format(MODEL_BY_ID_URL_FORMAT, MODEL, params[0]);
                 break;
             case Filter.BY_ID_IN:
                 requestUrl = String.format(MODEL_BY_ID_IN_URL_FORMAT, MODEL, generateIds(params));
-                break;
-            case Filter.BY_NAME:
-                requestUrl = String.format(MODEL_SEARCH_BY_NAME, MODEL, params[0]);
-                break;
-            case Filter.BY_DEPARTMENT_ID:
-                requestUrl = String.format(MODEL_URL_FORMAT, MODEL) +
-                        buildModelFilter(Model.DEPARTMENT, params[0]);
                 break;
             case Filter.NONE:
                 requestUrl = String.format(MODEL_URL_FORMAT, MODEL);
@@ -42,7 +36,7 @@ public class GetGroupsMethod extends RESTMethod<ArrayList<Group>, JSONObject> {
     }
 
     @Override
-    public MethodResponse<ArrayList<Group>> executeBlocking() {
+    public MethodResponse<ArrayList<Lecturer>> executeBlocking() {
         RequestFuture<JSONObject> future = RequestFuture.newFuture();
 
         JsonObjectRequest request = new JsonObjectRequest(requestUrl, null, future, future);
@@ -50,13 +44,13 @@ public class GetGroupsMethod extends RESTMethod<ArrayList<Group>, JSONObject> {
 
         try {
             JSONArray objects = future.get().getJSONArray(Key.OBJECTS);
-            ArrayList<Group> groups = new ArrayList<>();
+            ArrayList<Lecturer> lecturers = new ArrayList<>();
 
             for (int i = 0; i < objects.length(); i++) {
-                groups.add(new Group(objects.getJSONObject(i)));
+                lecturers.add(new Lecturer(objects.getJSONObject(i)));
             }
 
-            return new MethodResponse<>(ResponseCode.OK, groups);
+            return new MethodResponse<>(ResponseCode.OK, lecturers);
         } catch (Exception e) {
             return new MethodResponse<>(generateResponseCode(e), null);
         }
@@ -71,13 +65,13 @@ public class GetGroupsMethod extends RESTMethod<ArrayList<Group>, JSONObject> {
     public void onResponse(JSONObject response) {
         try {
             JSONArray objects = response.getJSONArray(Key.OBJECTS);
-            ArrayList<Group> groups = new ArrayList<>();
+            ArrayList<Lecturer> lecturers = new ArrayList<>();
 
             for (int i = 0; i < objects.length(); i++) {
-                groups.add(new Group(objects.getJSONObject(i)));
+                lecturers.add(new Lecturer(objects.getJSONObject(i)));
             }
 
-            callback.onResponse(groups);
+            callback.onResponse(lecturers);
         } catch (JSONException e) {
             callback.onError(generateResponseCode(e));
         }
