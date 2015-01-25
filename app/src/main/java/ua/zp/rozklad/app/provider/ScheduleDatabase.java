@@ -8,8 +8,6 @@ import android.provider.BaseColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.AcademicHourColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.AudienceColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.CampusColumns;
-import ua.zp.rozklad.app.provider.ScheduleContract.Department;
-import ua.zp.rozklad.app.provider.ScheduleContract.GroupColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.LecturerColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.ScheduleColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.SubjectColumns;
@@ -25,14 +23,11 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
     private static final int CUR_DATABASE_VERSION = DEBUG_VERSION;
 
     interface Tables {
-        String DEPARTMENT = "department";
-        String GROUP = "`group`";
         String LECTURER = "lecturer";
         String SUBJECT = "subject";
         String ACADEMIC_HOUR = "academic_hour";
         String CAMPUS = "campus";
         String AUDIENCE = "audience";
-        String CLASS_TYPE = "class_type";
         String SCHEDULE = "schedule";
     }
 
@@ -42,15 +37,6 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE " + Tables.DEPARTMENT + " ("
-                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + Department.DEPARTMENT_NAME + " TEXT NOT NULL, "
-                + SyncColumns.UPDATED + " INTEGER NOT NULL)");
-        db.execSQL("CREATE TABLE " + Tables.GROUP + " ("
-                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + GroupColumns.DEPARTMENT_ID + " INTEGER NOT NULL, "
-                + GroupColumns.GROUP_NAME + " TEXT NOT NULL, "
-                + SyncColumns.UPDATED + " INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE " + Tables.LECTURER + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + LecturerColumns.LECTURER_NAME + " TEXT NOT NULL, "
@@ -63,8 +49,7 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + AcademicHourColumns.NUM + " INTEGER NOT NULL, "
                 + AcademicHourColumns.START_TIME + " INTEGER NOT NULL, "
-                + AcademicHourColumns.END_TIME + " INTEGER NOT NULL, "
-                + SyncColumns.UPDATED + " INTEGER NOT NULL)");
+                + AcademicHourColumns.END_TIME + " INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE " + Tables.CAMPUS + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + CampusColumns.CAMPUS_NAME + " TEXT NOT NULL, "
@@ -76,6 +61,7 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
                 + SyncColumns.UPDATED + " INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE " + Tables.SCHEDULE + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + ScheduleColumns.SUBGROUP + " INTEGER NOT NULL, "
                 + ScheduleColumns.GROUP_ID + " INTEGER NOT NULL, "
                 + ScheduleColumns.SUBJECT_ID + " INTEGER NOT NULL, "
                 + ScheduleColumns.DAY_OF_WEEK + " INTEGER NOT NULL, "

@@ -13,8 +13,6 @@ import android.text.TextUtils;
 import ua.zp.rozklad.app.provider.ScheduleContract.AcademicHour;
 import ua.zp.rozklad.app.provider.ScheduleContract.Audience;
 import ua.zp.rozklad.app.provider.ScheduleContract.Campus;
-import ua.zp.rozklad.app.provider.ScheduleContract.Department;
-import ua.zp.rozklad.app.provider.ScheduleContract.Group;
 import ua.zp.rozklad.app.provider.ScheduleContract.Lecturer;
 import ua.zp.rozklad.app.provider.ScheduleContract.Schedule;
 import ua.zp.rozklad.app.provider.ScheduleContract.Subject;
@@ -98,14 +96,6 @@ public class ScheduleProvider extends ContentProvider {
     public String getType(Uri uri) {
         final int match = sUriMatcher.match(uri);
         switch (match) {
-            case URI_CODE.DEPARTMENT:
-                return Department.CONTENT_TYPE;
-            case URI_CODE.DEPARTMENT_ID:
-                return Department.CONTENT_ITEM_TYPE;
-            case URI_CODE.GROUP:
-                return Group.CONTENT_TYPE;
-            case URI_CODE.GROUP_ID:
-                return Group.CONTENT_ITEM_TYPE;
             case URI_CODE.LECTURER:
                 return Lecturer.CONTENT_TYPE;
             case URI_CODE.LECTURER_ID:
@@ -146,12 +136,6 @@ public class ScheduleProvider extends ContentProvider {
         long id;
 
         switch (match) {
-            case URI_CODE.DEPARTMENT:
-                table = Tables.DEPARTMENT;
-                break;
-            case URI_CODE.GROUP:
-                table = Tables.GROUP;
-                break;
             case URI_CODE.LECTURER:
                 table = Tables.LECTURER;
                 break;
@@ -194,20 +178,6 @@ public class ScheduleProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
-            case URI_CODE.DEPARTMENT:
-                table = Tables.DEPARTMENT;
-                break;
-            case URI_CODE.DEPARTMENT_ID:
-                table = Tables.DEPARTMENT;
-                where = Department._ID + " = " + uri.getLastPathSegment();
-                break;
-            case URI_CODE.GROUP:
-                table = Tables.GROUP;
-                break;
-            case URI_CODE.GROUP_ID:
-                table = Tables.GROUP;
-                where = Group._ID + " = " + uri.getLastPathSegment();
-                break;
             case URI_CODE.LECTURER:
                 table = Tables.LECTURER;
                 break;
@@ -274,20 +244,6 @@ public class ScheduleProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
-            case URI_CODE.DEPARTMENT:
-                table = Tables.DEPARTMENT;
-                break;
-            case URI_CODE.DEPARTMENT_ID:
-                table = Tables.DEPARTMENT;
-                where = Department._ID + " = " + uri.getLastPathSegment();
-                break;
-            case URI_CODE.GROUP:
-                table = Tables.GROUP;
-                break;
-            case URI_CODE.GROUP_ID:
-                table = Tables.GROUP;
-                where = Group._ID + " = " + uri.getLastPathSegment();
-                break;
             case URI_CODE.LECTURER:
                 table = Tables.LECTURER;
                 break;
@@ -353,20 +309,6 @@ public class ScheduleProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
-            case URI_CODE.DEPARTMENT:
-                queryBuilder.setTables(Tables.DEPARTMENT);
-                break;
-            case URI_CODE.DEPARTMENT_ID:
-                queryBuilder.setTables(Tables.DEPARTMENT);
-                queryBuilder.appendWhere(Department._ID + " = " + uri.getLastPathSegment());
-                break;
-            case URI_CODE.GROUP:
-                queryBuilder.setTables(Tables.GROUP);
-                break;
-            case URI_CODE.GROUP_ID:
-                queryBuilder.setTables(Tables.GROUP);
-                queryBuilder.appendWhere(Group._ID + " = " + uri.getLastPathSegment());
-                break;
             case URI_CODE.LECTURER:
                 queryBuilder.setTables(Tables.LECTURER);
                 break;

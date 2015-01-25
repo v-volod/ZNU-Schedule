@@ -18,15 +18,6 @@ public class ScheduleContract {
         String UPDATED = "updated";
     }
 
-    interface DepartmentColumns {
-        String DEPARTMENT_NAME = "department_name";
-    }
-
-    interface GroupColumns {
-        String DEPARTMENT_ID = "department_id";
-        String GROUP_NAME = "group_name";
-    }
-
     interface LecturerColumns {
         String LECTURER_NAME = "lecturer_name";
     }
@@ -52,6 +43,7 @@ public class ScheduleContract {
 
     interface ScheduleColumns {
         String GROUP_ID = "group_id";
+        String SUBGROUP = "subgroup";
         String SUBJECT_ID = "subject_id";
         String DAY_OF_WEEK = "day_of_week";
         String ACADEMIC_HOUR_ID = "academic_hour_id";
@@ -67,8 +59,6 @@ public class ScheduleContract {
 
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
-    private static final String PATH_DEPARTMENT = "department";
-    private static final String PATH_GROUP = "group";
     private static final String PATH_LECTURER = "lecturer";
     private static final String PATH_SUBJECT = "subject";
     private static final String PATH_ACADEMIC_HOUR = "academic_hour";
@@ -76,52 +66,7 @@ public class ScheduleContract {
     private static final String PATH_AUDIENCE = "audience";
     private static final String PATH_SCHEDULE = "schedule";
 
-    public static class Department implements DepartmentColumns, BaseColumns {
-        public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_DEPARTMENT).build();
-
-        public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".department";
-        public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".department";
-
-        public static final String[] TABLE_SUMMARY = {
-                _ID,
-                DEPARTMENT_NAME
-        };
-
-        /**
-         * Build {@link Uri} for requested department.
-         */
-        public static Uri buildDepartmentUri(String departmentId) {
-            return CONTENT_URI.buildUpon().appendPath(departmentId).build();
-        }
-    }
-
-    public static class Group implements GroupColumns, BaseColumns {
-        public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_GROUP).build();
-
-        public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".group";
-        public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".group";
-
-        public static final String[] TABLE_SUMMARY = {
-                _ID,
-                DEPARTMENT_ID,
-                GROUP_NAME
-        };
-
-        /**
-         * Build {@link Uri} for requested group.
-         */
-        public static Uri buildGroupUri(String groupId) {
-            return CONTENT_URI.buildUpon().appendPath(groupId).build();
-        }
-    }
-
-    public static class Lecturer implements LecturerColumns, BaseColumns {
+    public static class Lecturer implements LecturerColumns, BaseColumns, SyncColumns {
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_LECTURER).build();
 
@@ -132,18 +77,19 @@ public class ScheduleContract {
 
         public static final String[] TABLE_SUMMARY = {
                 _ID,
-                LECTURER_NAME
+                LECTURER_NAME,
+                UPDATED
         };
 
         /**
          * Build {@link Uri} for requested lecturer.
          */
-        public static Uri buildLecturerUri(String lecturerId) {
-            return CONTENT_URI.buildUpon().appendPath(lecturerId).build();
+        public static Uri buildLecturerUri(int lecturerId) {
+            return CONTENT_URI.buildUpon().appendPath(String.valueOf(lecturerId)).build();
         }
     }
 
-    public static class Subject implements SubjectColumns, BaseColumns {
+    public static class Subject implements SubjectColumns, BaseColumns, SyncColumns {
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_SUBJECT).build();
 
@@ -154,14 +100,21 @@ public class ScheduleContract {
 
         public static final String[] TABLE_SUMMARY = {
                 _ID,
-                SUBJECT_NAME
+                SUBJECT_NAME,
+                UPDATED
         };
+
+        public static interface COLUMN_ID {
+            int _ID = 0;
+            int SUBJECT_NAME = 1;
+            int UPDATED = 2;
+        }
 
         /**
          * Build {@link Uri} for requested subject.
          */
-        public static Uri buildSubjectUri(String subjectId) {
-            return CONTENT_URI.buildUpon().appendPath(subjectId).build();
+        public static Uri buildSubjectUri(int subjectId) {
+            return CONTENT_URI.buildUpon().appendPath(String.valueOf(subjectId)).build();
         }
     }
 
@@ -180,18 +133,18 @@ public class ScheduleContract {
         public static final String[] TABLE_SUMMARY = {
                 _ID,
                 START_TIME,
-                END_TIME
+                END_TIME,
         };
 
         /**
          * Build {@link Uri} for requested academic hour.
          */
-        public static Uri buildAcademicHourUri(String subjectId) {
-            return CONTENT_URI.buildUpon().appendPath(subjectId).build();
+        public static Uri buildAcademicHourUri(int subjectId) {
+            return CONTENT_URI.buildUpon().appendPath(String.valueOf(subjectId)).build();
         }
     }
 
-    public static class Campus implements CampusColumns, BaseColumns {
+    public static class Campus implements CampusColumns, BaseColumns, SyncColumns {
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_CAMPUS).build();
 
@@ -202,18 +155,19 @@ public class ScheduleContract {
 
         public static final String[] TABLE_SUMMARY = {
                 _ID,
-                CAMPUS_NAME
+                CAMPUS_NAME,
+                UPDATED
         };
 
         /**
          * Build {@link Uri} for requested campus.
          */
-        public static Uri buildCampusUri(String campus) {
-            return CONTENT_URI.buildUpon().appendPath(campus).build();
+        public static Uri buildCampusUri(int campusId) {
+            return CONTENT_URI.buildUpon().appendPath(String.valueOf(campusId)).build();
         }
     }
 
-    public static class Audience implements AudienceColumns, BaseColumns {
+    public static class Audience implements AudienceColumns, BaseColumns, SyncColumns {
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_AUDIENCE).build();
 
@@ -225,18 +179,19 @@ public class ScheduleContract {
         public static final String[] TABLE_SUMMARY = {
                 _ID,
                 CAMPUS_ID,
-                AUDIENCE_NUMBER
+                AUDIENCE_NUMBER,
+                UPDATED
         };
 
         /**
          * Build {@link Uri} for requested audience.
          */
-        public static Uri buildAudienceUri(String audienceId) {
-            return CONTENT_URI.buildUpon().appendPath(audienceId).build();
+        public static Uri buildAudienceUri(int audienceId) {
+            return CONTENT_URI.buildUpon().appendPath(String.valueOf(audienceId)).build();
         }
     }
 
-    public static class Schedule implements ScheduleColumns, BaseColumns {
+    public static class Schedule implements ScheduleColumns, BaseColumns, SyncColumns {
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_SCHEDULE).build();
 
@@ -248,6 +203,7 @@ public class ScheduleContract {
         public static final String[] TABLE_SUMMARY = {
                 _ID,
                 GROUP_ID,
+                SUBGROUP,
                 SUBJECT_ID,
                 DAY_OF_WEEK,
                 ACADEMIC_HOUR_ID,
@@ -256,14 +212,31 @@ public class ScheduleContract {
                 PERIODICITY,
                 START_DATE,
                 END_DATE,
-                CLASS_TYPE
+                CLASS_TYPE,
+                UPDATED
         };
+
+        public static interface COLUMN_ID {
+            int _ID = 0;
+            int GROUP_ID = 1;
+            int SUBGROUP = 2;
+            int SUBJECT_ID = 3;
+            int DAY_OF_WEEK = 4;
+            int ACADEMIC_HOUR_ID = 5;
+            int LECTURER_ID = 6;
+            int AUDIENCE_ID = 7;
+            int PERIODICITY = 8;
+            int START_DATE = 9;
+            int END_DATE = 10;
+            int CLASS_TYPE = 11;
+            int UPDATED = 12;
+        }
 
         /**
          * Build {@link Uri} for requested schedule.
          */
-        public static Uri buildScheduleUri(String scheduleId) {
-            return CONTENT_URI.buildUpon().appendPath(scheduleId).build();
+        public static Uri buildScheduleUri(int scheduleId) {
+            return CONTENT_URI.buildUpon().appendPath(String.valueOf(scheduleId)).build();
         }
     }
 }
