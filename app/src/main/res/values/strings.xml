@@ -1,3 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ZNU-Schedule</string>
+
+    <string name="app_name">@string/znu_schedule</string>
+    <string name="znu_schedule">Розклад ЗНУ</string>
+    <string name="schedule">Розклад</string>
+
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="one_account_allowed">Only one account allowed</string>
+
 </resources>
