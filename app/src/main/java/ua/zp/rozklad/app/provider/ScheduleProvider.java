@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import ua.zp.rozklad.app.provider.ScheduleContract.AcademicHour;
 import ua.zp.rozklad.app.provider.ScheduleContract.Audience;
 import ua.zp.rozklad.app.provider.ScheduleContract.Campus;
+import ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
 import ua.zp.rozklad.app.provider.ScheduleContract.Lecturer;
 import ua.zp.rozklad.app.provider.ScheduleContract.Schedule;
 import ua.zp.rozklad.app.provider.ScheduleContract.Subject;
@@ -46,6 +47,7 @@ public class ScheduleProvider extends ContentProvider {
         int AUDIENCE_ID = 701;
         int SCHEDULE = 900;
         int SCHEDULE_ID = 901;
+        int FULL_SCHEDULE = 902;
     }
 
     /**
@@ -79,6 +81,8 @@ public class ScheduleProvider extends ContentProvider {
 
         matcher.addURI(authority, "schedule", URI_CODE.SCHEDULE);
         matcher.addURI(authority, "schedule/#", URI_CODE.SCHEDULE_ID);
+
+        matcher.addURI(authority, "full_schedule/", URI_CODE.FULL_SCHEDULE);
 
         return matcher;
     }
@@ -120,6 +124,8 @@ public class ScheduleProvider extends ContentProvider {
                 return Schedule.CONTENT_TYPE;
             case URI_CODE.SCHEDULE_ID:
                 return Schedule.CONTENT_ITEM_TYPE;
+            case URI_CODE.FULL_SCHEDULE:
+                return FullSchedule.CONTENT_TYPE;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
@@ -351,6 +357,10 @@ public class ScheduleProvider extends ContentProvider {
                 queryBuilder.setTables(Tables.SCHEDULE);
                 queryBuilder.appendWhere(Schedule._ID + " = " + uri.getLastPathSegment());
                 break;
+            case URI_CODE.FULL_SCHEDULE: {
+                queryBuilder.setTables(FullSchedule.SUMMARY.TABLES);
+                break;
+            }
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
@@ -385,5 +395,4 @@ public class ScheduleProvider extends ContentProvider {
             return where;
         }
     }
-
 }
