@@ -71,6 +71,7 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
         String LESSON_TYPE = "lesson_type";
         String SUBGROUP = "subgroup";
         String SUBGROUP_COUNT = "subgroup_count";
+        String COURSE = "course";
     }
 
     public interface Filter {
