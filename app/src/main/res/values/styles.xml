@@ -21,29 +21,37 @@
         <item name="android:textColor">@color/white</item>
     </style>
 
-    <!-- Elements -->
-    <style name="Login_screen_element">
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_width">match_parent</item>
-
-        <item name="android:layout_alignLeft">@+id/app_logo</item>
-        <item name="android:layout_alignRight">@+id/app_logo</item>
-        <item name="android:layout_below">@+id/app_logo</item>
+    <!-- AppTextLogo -->
+    <style name="AppTextLogo">
+        <item name="android:textSize">@dimen/app_text_logo_text_size</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- App_logo -->
-    <style name="App_logo">
-        <item name="android:layout_gravity">center</item>
-        <item name="android:gravity">center</item>
-        <item name="android:textSize">48sp</item>
+    <!-- TagLine -->
+    <style name="TagLineText">
+        <item name="android:textSize">@dimen/text_size_subhead_material</item>
+        <item name="android:textColor">@color/white_opacity</item>
     </style>
 
-    <!-- Tagline -->
-    <style name="Tagline" parent="Login_screen_element">
+    <style name="TagLine" parent="TagLineText">
         <item name="android:layout_gravity">center</item>
         <item name="android:gravity">center</item>
-        <item name="android:paddingBottom">16dp</item>
-        <item name="android:textSize">21sp</item>
+        <item name="android:layout_marginTop">@dimen/tag_line_margin_top</item>
+        <item name="android:layout_marginBottom">@dimen/tag_line_margin_bottom</item>
+    </style>
+
+    <style name="TagLineChooser">
+        <item name="android:singleLine">true</item>
+        <item name="android:textSize">@dimen/text_size_subhead_material</item>
+        <item name="android:textColorHint">@color/white_opacity</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <!-- LoginChooser -->
+    <style name="LoginChooser">
+        <item name="android:layout_marginBottom">@dimen/login_chooser_margin_bottom</item>
     </style>
 
 </resources>

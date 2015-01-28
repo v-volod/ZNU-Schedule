@@ -1,139 +1,139 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="ua.zp.rozklad.app.ui.LoginActivity">
+    android:animateLayoutChanges="true">
 
-    <!-- Login progress -->
-    <ProgressBar
-        android:id="@+id/login_progress"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:visibility="visible" />
-
-    <LinearLayout
-        android:visibility="gone"
-        android:id="@+id/department_list"
-        android:orientation="vertical"
+    <ImageView
+        android:id="@+id/backgroundImg"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bg_campus_3_blurred" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:clickable="true">
 
         <TextView
-            android:text="Department: "
-            android:textSize="22dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <Spinner
-            android:id="@+id/departments"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:visibility="gone"
-        android:id="@+id/group_list"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:text="Group: "
-            android:textSize="22dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <Spinner
-            android:id="@+id/groups"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/login"
-        android:visibility="gone"
-        android:text="Login"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <!-- Merge conflict -->
-    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:visibility="gone"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical">
-
-        <ImageView
-            android:id="@+id/backgroundImg"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/bg_blur" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:id="@+id/app_logo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:gravity="center"
+            android:layout_centerInParent="true"
+            android:text="@string/znu_schedule"
+            style="@style/AppTextLogo" />
+
+        <TextView
+            android:id="@+id/tag_line"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/app_logo"
+            android:layout_alignLeft="@+id/app_logo"
+            android:layout_alignEnd="@+id/app_logo"
+            android:layout_alignRight="@+id/app_logo"
+            android:layout_below="@+id/app_logo"
+            android:text="@string/tag_line_text"
+            style="@style/TagLine" />
+
+        <LinearLayout
+            android:visibility="gone"
+            android:id="@+id/department_chooser"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:clickable="true"
-            android:layout_gravity="left|bottom">
+            android:layout_alignStart="@+id/app_logo"
+            android:layout_alignLeft="@+id/app_logo"
+            android:layout_alignEnd="@+id/app_logo"
+            android:layout_alignRight="@+id/app_logo"
+            android:layout_below="@id/tag_line"
+            style="@style/LoginChooser">
 
-            <TextView
-                android:id="@+id/app_logo"
-                style="@style/App_logo"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/app_name"
-                android:textColor="@color/white" />
+                android:orientation="horizontal"
+                android:visibility="visible">
 
-            <TextView
-                android:id="@+id/tagline"
-                style="@style/Tagline"
+                <TextView
+                    android:id="@+id/department_name"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/choose_department_hint"
+                    style="@style/TagLineChooser" />
 
-                android:layout_centerInParent="true"
-                android:layout_marginBottom="32dp"
-                android:text="@string/tagline_text"
-                android:textColor="@color/white_opacity" />
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:alpha="0.99"
+                    android:src="@drawable/ic_expand_more_white_18dp" />
+            </LinearLayout>
 
-            <EditText
-                android:id="@+id/inputGroup"
-                style="@style/Login_screen_element"
-                android:background="@drawable/edittext_input_group"
-                android:layout_below="@+id/tagline"
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/white_opacity" />
+        </LinearLayout>
 
-                android:hint="@string/hint_group"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
-                android:drawableLeft="@drawable/ic_search"
-                android:drawablePadding="8dp"
-                android:maxLines="1"
-                android:minLines="1" />
+        <LinearLayout
+            android:visibility="gone"
+            android:id="@+id/group_chooser"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:layout_alignStart="@+id/app_logo"
+            android:layout_alignLeft="@+id/app_logo"
+            android:layout_alignEnd="@+id/app_logo"
+            android:layout_alignRight="@+id/app_logo"
+            android:layout_below="@id/department_chooser"
+            style="@style/LoginChooser">
 
-            <Button
-                android:id="@+id/searchButton"
-                style="@style/Login_screen_element"
-                android:background="@drawable/button_search"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/inputGroup"
-                android:layout_marginTop="14dp"
-                android:text="@string/search_button"
-                android:layout_marginLeft="0dp"
-                android:layout_marginRight="0dp"
-                android:textColor="@color/white" />
+                android:orientation="horizontal"
+                android:visibility="visible">
 
-        </RelativeLayout>
+                <TextView
+                    android:id="@+id/group_name"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/choose_group_hint"
+                    style="@style/TagLineChooser" />
 
-    </FrameLayout>
-    <!-- Merge conflict -->
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:alpha="0.99"
+                    android:src="@drawable/ic_expand_more_white_18dp" />
+            </LinearLayout>
 
-</LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/white_opacity" />
+        </LinearLayout>
 
+        <Button
+            android:visibility="gone"
+            android:id="@+id/login_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/app_logo"
+            android:layout_alignLeft="@+id/app_logo"
+            android:layout_alignEnd="@+id/app_logo"
+            android:layout_alignRight="@+id/app_logo"
+            android:layout_below="@+id/group_chooser"
+            android:text="@string/login_button"
+            android:background="@drawable/button_login"
+            android:textColor="@color/white" />
+    </RelativeLayout>
 
-
+</FrameLayout>

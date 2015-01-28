@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- AppTextLogo -->
+    <dimen name="app_text_logo_text_size">64sp</dimen>
+</resources>

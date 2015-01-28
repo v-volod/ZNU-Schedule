@@ -71,4 +71,14 @@
     <dimen name="control_corner_material">2dp</dimen>
     <dimen name="alert_dialog_padding_material">24dp</dimen>
     <dimen name="alert_dialog_padding_top_material">18dp</dimen>
+
+    <!-- AppTextLogo -->
+    <dimen name="app_text_logo_text_size">36sp</dimen>
+
+    <!-- TagLine -->
+    <dimen name="tag_line_margin_top">18dp</dimen>
+    <dimen name="tag_line_margin_bottom">36dp</dimen>
+
+    <!-- LoginChooser -->
+    <dimen name="login_chooser_margin_bottom">16dp</dimen>
 </resources>
