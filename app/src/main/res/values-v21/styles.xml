@@ -6,7 +6,7 @@
     </style>
 
     <!-- Login Screen Style -->
-    <style name="LoginScreen" parent="AppTheme.Base">
+    <style name="LoginScreen" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 </resources>

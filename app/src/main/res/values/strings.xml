@@ -14,11 +14,14 @@
     <string name="title_activity_login">Авторизація</string>
 
     <!-- NavigationDrawer List Items -->
+    <string name="nav_drawer_group_qualifier">Група</string>
     <string name="nav_drawer_item_schedule">Розклад</string>
     <string name="nav_drawer_item_subjects">Предмети</string>
     <string name="nav_drawer_item_lecturers">Викладачі</string>
     <string name="nav_drawer_item_settings">Налаштування</string>
     <string name="nav_drawer_item_about_recall">Довідка й відгук</string>
+    <string name="nav_drawer_open">Відкрити</string>
+    <string name="nav_drawer_close">Закрити</string>
 
     <string name="one_account_allowed">Only one account allowed</string>
     <string name="volley_error">Volley Error</string>
