@@ -7,16 +7,22 @@
     <string name="action_settings">Налаштування</string>
     <string name="tag_line_text">Завжди актуальний розклад в твоїй кишені</string>
     <string name="choose_department_hint">Оберіть факультет&#8230;</string>
+    <string name="choose_group_hint">Оберіть групу&#8230;</string>
     <string name="cancel">відмінити</string>
     <string name="login_button">УВІЙТИ</string>
-
-    <string name="hint_group">Номер групи</string>
-    <string name="title_activity_main">MainActivity</string>
-    <string name="title_activity_login">LoginActivity</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="one_account_allowed">Only one account allowed</string>
-    <string name="choose_group_hint">Оберіть групу&#8230;</string>
-    <string name="volley_error">Volley Error</string>
     <string name="no_schedule">Поки що розклад відсутній</string>
+    <string name="title_activity_login">Авторизація</string>
+
+    <!-- NavigationDrawer List Items -->
+    <string name="nav_drawer_item_schedule">Розклад</string>
+    <string name="nav_drawer_item_subjects">Предмети</string>
+    <string name="nav_drawer_item_lecturers">Викладачі</string>
+    <string name="nav_drawer_item_settings">Налаштування</string>
+    <string name="nav_drawer_item_about_recall">Довідка й відгук</string>
+
+    <string name="one_account_allowed">Only one account allowed</string>
+    <string name="volley_error">Volley Error</string>
+
+    <string name="lorem_ipsum_short">Lorem ipsum dolor sit amet.</string>
 
 </resources>

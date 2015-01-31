@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ua.zp.rozklad.app.ui.widget.ScrimInsetsFrameLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/nav_drawer_width"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    android:fitsSystemWindows="true"
+    android:background="@color/white"
+    app:insetForeground="@color/status_bar_inset_foreground">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/nav_drawer_chosen_group_height">
+
+                <ImageView
+                    android:id="@+id/campus_cover_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/bg_campus_3_blurred" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingTop="@dimen/status_bar_height"
+                    android:paddingLeft="@dimen/key_line_1"
+                    android:paddingRight="@dimen/key_line_1">
+
+                    <ImageView
+                        android:id="@+id/university_logo"
+                        android:layout_width="@dimen/university_logo_size"
+                        android:layout_height="@dimen/university_logo_size"
+                        android:layout_marginTop="@dimen/key_line_1"
+                        android:src="@drawable/ic_znu_logo_64dp" />
+
+                    <RelativeLayout
+                        android:id="@+id/change_group_box"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:id="@+id/change_group_box_indicator"
+                            android:layout_height="36dp"
+                            android:layout_width="36dp"
+                            android:layout_alignParentRight="true"
+                            android:layout_alignParentBottom="true"
+                            android:visibility="visible"
+                            android:scaleType="center"
+                            android:src="@drawable/ic_arrow_drop_down_white_24dp" />
+
+                        <TextView
+                            android:id="@+id/department_name_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_toLeftOf="@id/change_group_box_indicator"
+                            android:layout_alignParentBottom="true"
+                            android:textSize="@dimen/text_size_small_material"
+                            android:textColor="@color/body_text_1_inverse"
+                            android:maxLines="1"
+                            android:singleLine="true"
+                            android:ellipsize="end" />
+
+                        <TextView
+                            android:id="@+id/group_name_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="2dp"
+                            android:layout_above="@id/department_name_text"
+                            android:layout_alignLeft="@id/department_name_text"
+                            android:layout_alignRight="@id/department_name_text"
+                            android:textSize="@dimen/text_size_small_material"
+                            android:textStyle="bold"
+                            android:textColor="@color/body_text_1_inverse"
+                            android:maxLines="1"
+                            android:singleLine="true"
+                            android:ellipsize="end" />
+                    </RelativeLayout>
+
+                </RelativeLayout>
+
+            </FrameLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_drawer_items_list"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="8dp" />
+        </LinearLayout>
+
+    </ScrollView>
+
+</ua.zp.rozklad.app.ui.widget.ScrimInsetsFrameLayout>

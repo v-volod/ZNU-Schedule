@@ -81,4 +81,12 @@
 
     <!-- LoginChooser -->
     <dimen name="login_chooser_margin_bottom">16dp</dimen>
+
+    <!-- NavigationDrawer -->
+    <dimen name="key_line_1">16dp</dimen>
+    <dimen name="nav_drawer_width">304dp</dimen>
+    <dimen name="nav_drawer_chosen_group_height">147dp</dimen>
+
+    <dimen name="university_logo_size">64dp</dimen>
+    <dimen name="status_bar_height">0dp</dimen>
 </resources>

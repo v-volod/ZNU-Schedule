@@ -1,6 +1,12 @@
-
 <resources>
+
     <style name="AppTheme" parent="AppTheme.Base">
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <!-- Login Screen Style -->
+    <style name="LoginScreen" parent="AppTheme.Base">
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 </resources>
