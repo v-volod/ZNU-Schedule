@@ -6,11 +6,17 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,6 +32,7 @@ import java.util.ArrayList;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAuthenticator;
 import ua.zp.rozklad.app.provider.ScheduleContract;
+import ua.zp.rozklad.app.ui.tabs.SlidingTabLayout;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -94,6 +101,8 @@ public class MainActivity extends ActionBarActivity {
     private Handler handler;
 
     private Toolbar appBar;
+    private ViewPager pager;
+    private SlidingTabLayout tabs;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -124,6 +133,23 @@ public class MainActivity extends ActionBarActivity {
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerLayout.setStatusBarBackground(R.color.colorPrimaryDark);
+
+        pager = (ViewPager) findViewById(R.id.pager);
+        pager.setAdapter(new PagerAdapter(getSupportFragmentManager()));
+        tabs = (SlidingTabLayout) findViewById(R.id.tabs);
+        tabs.setCustomTabView(R.layout.tab_indicator, android.R.id.text1);
+
+//        setSlidingTabLayoutContentDescriptions();
+
+        tabs.setSelectedIndicatorColors(getResources().getColor(R.color.colorPrimaryDark));
+
+        tabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
+            @Override
+            public int getIndicatorColor(int position) {
+                return getResources().getColor(R.color.colorAccent);
+            }
+        });
+        tabs.setViewPager(pager);
 
         handler = new Handler();
 
@@ -320,4 +346,52 @@ public class MainActivity extends ActionBarActivity {
             }
         }
     }
+
+    private class PagerAdapter extends FragmentPagerAdapter {
+
+        String[] tabs;
+        public PagerAdapter(FragmentManager fm) {
+            super(fm);
+            tabs = getResources().getStringArray(R.array.tabs);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            TestFragment fragment = TestFragment.getInstance(position);
+            return fragment;
+        }
+
+        @Override
+        public int getCount() {
+            return tabs.length;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return tabs[position];
+        }
+    }
+
+    private static class TestFragment extends Fragment {
+        private TextView position;
+        public static TestFragment getInstance(int position) {
+            TestFragment frag = new TestFragment();
+            Bundle args = new Bundle();
+            args.putInt("position", position);
+            frag.setArguments(args);
+            return frag;
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+            View layout = inflater.inflate(R.layout.fragment_test, container, false);
+            position = (TextView) layout.findViewById(R.id.position);
+            Bundle bundle = getArguments();
+            if (bundle != null) {
+                position.setText("Page position is " + bundle.getInt("position"));
+            }
+            return layout;
+        }
+    }
+
 }
