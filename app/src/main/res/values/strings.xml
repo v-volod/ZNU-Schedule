@@ -29,6 +29,12 @@
     <string name="one_account_allowed">Only one account allowed</string>
     <string name="volley_error">Volley Error</string>
 
+    <!-- Lorem Ipsum values -->
     <string name="lorem_ipsum_short">Lorem ipsum dolor sit amet.</string>
+    <string name="lorem_time">00:00</string>
+    <string name="lorem_lecturer">Чопоров Сергій Вікторович</string>
+    <string name="lorem_subject">Філософія</string>
+    <string name="lorem_audience">Аудиторія 37 (1 корпус)</string>
+
 
 </resources>

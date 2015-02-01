@@ -83,10 +83,20 @@
     <dimen name="login_chooser_margin_bottom">16dp</dimen>
 
     <!-- NavigationDrawer -->
-    <dimen name="key_line_1">16dp</dimen>
+    <dimen name="university_logo_size">64dp</dimen>
     <dimen name="nav_drawer_width">304dp</dimen>
     <dimen name="nav_drawer_chosen_group_height">147dp</dimen>
 
-    <dimen name="university_logo_size">64dp</dimen>
+    <!-- Schedule -->
+    <dimen name="status_indicator_width">3dp</dimen>
+
+    <!-- KeyLines & Spacing-->
+    <dimen name="key_line_1">16dp</dimen>
+    <dimen name="three_line_list_item_height">88dp</dimen>
+
+    <!-- TextSizes -->
+    <dimen name="text_size_primary">16sp</dimen>
+    <dimen name="text_size_secondary">14sp</dimen>
+
     <dimen name="status_bar_height">0dp</dimen>
 </resources>
