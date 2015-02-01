@@ -302,6 +302,8 @@ public class ScheduleContract {
                 Tables.SCHEDULE + "." + ScheduleColumns.AUDIENCE_ID;
         public static final String SCHEDULE_ACADEMIC_HOUR_ID =
                 Tables.SCHEDULE + "." + ScheduleColumns.ACADEMIC_HOUR_ID;
+        public static final String SCHEDULE_LECTURER_ID =
+                Tables.SCHEDULE + "." + ScheduleColumns.LECTURER_ID;
         public static final String SUBGROUP =
                 Tables.SCHEDULE + "." + ScheduleColumns.SUBGROUP;
         public static final String DAY_OF_WEEK =
@@ -341,13 +343,19 @@ public class ScheduleContract {
         public static final String AUDIENCE_NUMBER =
                 Tables.AUDIENCE + "." + AudienceColumns.AUDIENCE_NUMBER;
 
+        public static final String LECTURER_ID =
+                Tables.LECTURER + "." + BaseColumns._ID;
+        public static final String LECTURER_NAME =
+                Tables.LECTURER + "." + LecturerColumns.LECTURER_NAME;
+
         public static interface SUMMARY {
             public static final String TABLES = Tables.SCHEDULE + INNER_JOIN + Tables.SUBJECT +
                     ON + SUBJECT_ID + EQ + SCHEDULE_SUBJECT_ID +
                     INNER_JOIN + Tables.AUDIENCE + ON + AUDIENCE_ID + EQ + SCHEDULE_AUDIENCE_ID +
                     INNER_JOIN + Tables.CAMPUS + ON + CAMPUS_ID + EQ + AUDIENCE_CAMPUS_ID +
                     INNER_JOIN + Tables.ACADEMIC_HOUR +
-                    ON + ACADEMIC_HOUR_ID + EQ + SCHEDULE_ACADEMIC_HOUR_ID;
+                    ON + ACADEMIC_HOUR_ID + EQ + SCHEDULE_ACADEMIC_HOUR_ID +
+                    INNER_JOIN + Tables.LECTURER + ON + LECTURER_ID + EQ + SCHEDULE_LECTURER_ID;
 
             String[] PROJECTION = {
                     SUBGROUP,
@@ -357,6 +365,7 @@ public class ScheduleContract {
                     ACADEMIC_HOUR_END_TIME,
                     CLASS_TYPE,
                     SUBJECT_NAME,
+                    LECTURER_NAME,
                     CAMPUS_NAME,
                     AUDIENCE_NUMBER
             };
@@ -371,8 +380,9 @@ public class ScheduleContract {
                 int ACADEMIC_HOUR_END_TIME = 4;
                 int CLASS_TYPE = 5;
                 int SUBJECT_NAME = 6;
-                int CAMPUS_NAME = 7;
-                int AUDIENCE_NUMBER = 8;
+                int LECTURER_NAME = 7;
+                int CAMPUS_NAME = 8;
+                int AUDIENCE_NUMBER = 9;
             }
         }
 

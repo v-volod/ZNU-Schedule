@@ -57,17 +57,17 @@
                 android:text="@string/lorem_subject" />
 
             <TextView
-                android:id="@+id/audience"
+                android:id="@+id/location"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
-                android:text="@string/lorem_audience" />
+                android:text="@string/lorem_location" />
 
             <TextView
                 android:id="@+id/lecturer_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_above="@id/audience"
+                android:layout_above="@id/location"
                 android:textSize="@dimen/text_size_secondary"
                 android:text="@string/lorem_lecturer" />
         </RelativeLayout>

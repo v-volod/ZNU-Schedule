@@ -25,7 +25,8 @@ import ua.zp.rozklad.app.account.GroupAuthenticator;
 import ua.zp.rozklad.app.provider.ScheduleContract;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity
+        implements ScheduleFragment.OnScheduleItemClickListener{
 
     public static interface EXTRA_KEY {
         String SELECTED_NAV_DRAWER_ITEM_ID = "SELECTED_NAV_DRAWER_ITEM_ID";
@@ -113,6 +114,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         setUpNavDrawer();
+        onNavDrawerItemClicked(selectedNavDrawerItemId);
     }
 
     @Override
@@ -282,6 +284,11 @@ public class MainActivity extends ActionBarActivity {
                 * Start Info Activity
                 * */
                 return;
+            case NAV_DRAWER_ITEM_SCHEDULE:
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.main_content, ScheduleFragment.newInstance(0, 0, 0, 0))
+                        .commit();
+                break;
             /*
             * Change main content fragment
             * */
@@ -299,5 +306,10 @@ public class MainActivity extends ActionBarActivity {
                 }
             }
         }
+    }
+
+    @Override
+    public void onScheduleItemClicked(int scheduleItemId) {
+
     }
 }
