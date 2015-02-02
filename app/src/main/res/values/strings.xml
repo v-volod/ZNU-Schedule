@@ -37,11 +37,14 @@
     <string name="lorem_subject">Філософія</string>
     <string name="lorem_location">Аудиторія 37 (1 корпус)</string>
 
-
-    <string-array name="tabs">
-        <item>test 1</item>
-        <item>test 2</item>
-        <item>test 3</item>
-        <item>test 4</item>
+    <string-array name="days_of_week">
+        <item>Понеділок</item>
+        <item>Вівторок</item>
+        <item>Середа</item>
+        <item>Четвер</item>
+        <item>П\'ятниця</item>
+        <item>Субота</item>
+        <item>Неділя</item>
     </string-array>
+
 </resources>

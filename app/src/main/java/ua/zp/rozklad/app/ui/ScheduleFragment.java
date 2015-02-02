@@ -48,8 +48,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     private OnScheduleItemClickListener mListener;
 
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter adapter = null;
-    private RecyclerView.LayoutManager layoutManager;
+    private CursorRecyclerViewAdapter adapter;
 
     public static ScheduleFragment newInstance(int groupId, int periodicity, int dayOfWeek,
                                                int subgroupId) {
@@ -87,15 +86,21 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        adapter = new ScheduleItemAdapter(getActivity(), null);
+
         recyclerView =
                 (RecyclerView) inflater.inflate(R.layout.fragment_schedule, container, false);
         recyclerView.setHasFixedSize(true);
-
-        recyclerView.setLayoutManager(layoutManager);
-
-        getLoaderManager().initLoader(0, null, this);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         return recyclerView;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        getLoaderManager().initLoader(0, null, this);
     }
 
     public void onScheduleItemClick(int scheduleItemId) {
@@ -107,7 +112,6 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        layoutManager = new LinearLayoutManager(activity);
         try {
             mListener = (OnScheduleItemClickListener) activity;
         } catch (ClassCastException e) {
@@ -120,7 +124,6 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     public void onDetach() {
         super.onDetach();
         mListener = null;
-        layoutManager = null;
     }
 
     @Override
@@ -130,9 +133,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        adapter = new ScheduleItemAdapter(getActivity(), data);
-        recyclerView.setAdapter(adapter);
-        recyclerView.invalidate();
+        adapter.changeCursor(data);
     }
 
     @Override
