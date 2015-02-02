@@ -33,9 +33,8 @@
     <!-- Lorem Ipsum values -->
     <string name="lorem_ipsum_short">Lorem ipsum dolor sit amet.</string>
     <string name="lorem_time">00:00</string>
-    <string name="lorem_lecturer">Чопоров Сергій Вікторович</string>
     <string name="lorem_subject">Філософія</string>
-    <string name="lorem_location">Аудиторія 37 (1 корпус)</string>
+    <string name="lorem_info">Чопоров Сергій Вікторович\n37 (1 корпус)</string>
 
     <string-array name="days_of_week">
         <item>Понеділок</item>

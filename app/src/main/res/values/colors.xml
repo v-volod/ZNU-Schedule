@@ -15,12 +15,13 @@
     <color name="white_opacity">#99FFFFFF</color>
     <color name="status_bar_inset_foreground">#4000</color>
     <color name="body_text_1_inverse">@color/white</color>
+    <color name="list_item_tint_selection">#12000000</color>
 
     <color name="nav_drawer_background">#ffffffff</color>
     <color name="nav_drawer_text_color">#de000000</color>
     <color name="nav_drawer_text_color_selected">@color/colorPrimary</color>
     <color name="nav_drawer_icon_tint">#888</color>
     <color name="nav_drawer_icon_tint_selected">@color/colorPrimary</color>
-    <color name="nav_drawer_item_tint_selection">#12000000</color>
+    <color name="nav_drawer_item_tint_selection">@color/list_item_tint_selection</color>
 
 </resources>

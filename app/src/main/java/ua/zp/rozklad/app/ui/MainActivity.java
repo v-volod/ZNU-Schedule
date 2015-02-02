@@ -329,7 +329,7 @@ public class MainActivity extends ActionBarActivity
     }
 
     @Override
-    public void onScheduleItemClicked(int scheduleItemId) {
-
+    public void onScheduleItemClicked(long scheduleItemId) {
+        // TODO: Start ScheduleItemActivity
     }
 }
