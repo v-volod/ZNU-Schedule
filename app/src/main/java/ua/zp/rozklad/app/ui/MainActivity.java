@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -26,6 +25,10 @@ import java.util.ArrayList;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAuthenticator;
 import ua.zp.rozklad.app.provider.ScheduleContract;
+
+import static java.lang.Math.abs;
+import static ua.zp.rozklad.app.util.CalendarUtils.addWeeks;
+import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekInMillis;
 
 
 public class MainActivity extends ActionBarActivity
@@ -92,6 +95,10 @@ public class MainActivity extends ActionBarActivity
         }
     };
 
+    private int groupId;
+    private int subgroupId;
+    private int periodicity;
+
     private Handler handler;
 
     private Toolbar appBar;
@@ -106,7 +113,11 @@ public class MainActivity extends ActionBarActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_change_week:
-                Toast.makeText(getApplicationContext(), "тиждень змінено", Toast.LENGTH_LONG).show();
+                if (selectedNavDrawerItemId == NAV_DRAWER_ITEM_SCHEDULE) {
+                    togglePeriodicity();
+                    // TODO: Try to change week in fragment by reloading data.
+                    onScheduleSelected();
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -128,13 +139,21 @@ public class MainActivity extends ActionBarActivity
 
         handler = new Handler();
 
+        /*
+        * JUST FOR DEBUG
+        * TODO: Set from preferences.
+        * */
+        groupId = 1;
+        subgroupId = 1;
+        periodicity = 1;
+
         if (savedInstanceState != null) {
             selectedNavDrawerItemId = savedInstanceState
                     .getInt(EXTRA_KEY.SELECTED_NAV_DRAWER_ITEM_ID, NAV_DRAWER_ITEM_SCHEDULE);
         }
 
         setUpNavDrawer();
-        onNavDrawerItemClicked(selectedNavDrawerItemId);
+        onScheduleSelected();
     }
 
     @Override
@@ -305,9 +324,7 @@ public class MainActivity extends ActionBarActivity
                 * */
                 return;
             case NAV_DRAWER_ITEM_SCHEDULE:
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.main_content, ScheduleOfWeekFragment.newInstance())
-                        .commit();
+                onScheduleSelected();
                 break;
             /*
             * Change main content fragment
@@ -328,8 +345,21 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+    private void onScheduleSelected() {
+        long startOfWeek = addWeeks(getCurrentWeekInMillis(), periodicity - 1);
+        getFragmentManager().beginTransaction()
+                .replace(R.id.main_content, ScheduleOfWeekFragment
+                        .newInstance(groupId, subgroupId, startOfWeek, periodicity))
+                .commit();
+        // TODO: Change AppBar title and subtitle.
+    }
+
     @Override
     public void onScheduleItemClicked(long scheduleItemId) {
         // TODO: Start ScheduleItemActivity
+    }
+
+    private void togglePeriodicity() {
+        periodicity = abs(periodicity - 3);
     }
 }

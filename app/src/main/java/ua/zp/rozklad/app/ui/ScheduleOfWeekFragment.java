@@ -14,8 +14,19 @@ import java.util.ArrayList;
 
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.ui.tabs.SlidingTabLayout;
+import ua.zp.rozklad.app.util.CalendarUtils;
 
 public class ScheduleOfWeekFragment extends Fragment {
+
+    private static final String ARG_GROUP_ID = "groupId";
+    private static final String ARG_SUBGROUP_ID = "subgroupId";
+    private static final String ARG_START_OF_WEEK = "startOfWeek";
+    private static final String ARG_PERIODICITY = "periodicity";
+
+    private int groupId;
+    private int subgroupId;
+    private long startOfWeek;
+    private int periodicity;
 
     private FragmentStatePagerAdapter mAdapter;
     private ViewPager mPager;
@@ -25,9 +36,14 @@ public class ScheduleOfWeekFragment extends Fragment {
     private Runnable runPager;
     private boolean mCreated = false;
 
-    public static ScheduleOfWeekFragment newInstance() {
+    public static ScheduleOfWeekFragment newInstance(
+            int groupId, int subgroupId, long startOfWeek, int periodicity) {
         ScheduleOfWeekFragment fragment = new ScheduleOfWeekFragment();
         Bundle args = new Bundle();
+        args.putInt(ARG_GROUP_ID, groupId);
+        args.putInt(ARG_SUBGROUP_ID, subgroupId);
+        args.putLong(ARG_START_OF_WEEK, startOfWeek);
+        args.putInt(ARG_PERIODICITY, periodicity);
         fragment.setArguments(args);
         return fragment;
     }
@@ -39,8 +55,13 @@ public class ScheduleOfWeekFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-
+        startOfWeek = CalendarUtils.getCurrentWeekInMillis();
+        Bundle args = getArguments();
+        if (args != null) {
+            groupId = args.getInt(ARG_GROUP_ID);
+            subgroupId = args.getInt(ARG_SUBGROUP_ID);
+            startOfWeek = args.getLong(ARG_START_OF_WEEK);
+            periodicity = args.getInt(ARG_PERIODICITY);
         }
     }
 
@@ -60,7 +81,8 @@ public class ScheduleOfWeekFragment extends Fragment {
                 return getResources().getColor(R.color.colorAccent);
             }
         });
-        setAdapter(new DayPagerAdapter(getFragmentManager()));
+
+        fetchDays.start();
 
         return view;
     }
@@ -97,20 +119,36 @@ public class ScheduleOfWeekFragment extends Fragment {
         }
     }
 
+    public Thread fetchDays = new Thread() {
+        @Override
+        public void run() {
+            ArrayList<Integer> days = new ArrayList<>();
+            days.add(0);
+            days.add(1);
+            days.add(2);
+            days.add(3);
+            days.add(4);
+            // TODO: Fetch data from DB.
+            setAdapter(new DayPagerAdapter(getFragmentManager(), days));
+        }
+    };
+
     private class DayPagerAdapter extends FragmentStatePagerAdapter {
 
-        ArrayList<String> days;
+        private final String[] DAYS = getResources().getStringArray(R.array.days_of_week);
 
-        public DayPagerAdapter(FragmentManager fm) {
+        private ArrayList<Integer> days;
+
+        public DayPagerAdapter(FragmentManager fm, ArrayList<Integer> days) {
             super(fm);
-            days = new ArrayList<>();
-            for (String s : getResources().getStringArray(R.array.days_of_week))
-                days.add(s);
+            this.days = days;
         }
 
         @Override
         public Fragment getItem(int position) {
-            return ScheduleFragment.newInstance(0, 0, 0, 0);
+            return ScheduleFragment.newInstance(
+                    groupId, subgroupId, startOfWeek, days.get(position), periodicity
+            );
         }
 
         @Override
@@ -120,7 +158,7 @@ public class ScheduleOfWeekFragment extends Fragment {
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return days.get(position);
+            return DAYS[days.get(position)];
         }
     }
 }
