@@ -93,6 +93,8 @@
     <!-- KeyLines & Spacing-->
     <dimen name="key_line_1">16dp</dimen>
     <dimen name="three_line_list_item_height">88dp</dimen>
+    <dimen name="two_line_list_item_height">72dp</dimen>
+    <dimen name="extended_toolbar_height">128dp</dimen>
 
     <!-- TextSizes -->
     <dimen name="text_size_primary">16sp</dimen>

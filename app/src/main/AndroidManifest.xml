@@ -35,6 +35,10 @@
             android:label="@string/title_activity_login"
             android:theme="@style/LoginScreen" />
 
+        <activity
+            android:name=".ui.ScheduleItemActivity"
+            android:label="@string/title_activity_login" />
+
         <provider
             android:name=".provider.ScheduleProvider"
             android:authorities="ua.zp.rozklad.app.provider"

@@ -36,7 +36,13 @@
     <string name="lorem_lecturer">Чопоров Сергій Вікторович</string>
     <string name="lorem_subject">Філософія</string>
     <string name="lorem_location">Аудиторія 37 (1 корпус)</string>
+    <string name="icon_description_lorem">іконка</string>
 
+    <!-- ScheduleItemActivity values -->
+    <string name="location">Розташування</string>
+    <string name="lecturer">Викладач</string>
+    <string name="type">Тип</string>
+    <string name="time">Час</string>
 
     <string-array name="tabs">
         <item>test 1</item>
