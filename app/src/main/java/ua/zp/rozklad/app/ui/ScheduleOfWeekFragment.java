@@ -2,21 +2,32 @@ package ua.zp.rozklad.app.ui;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.LoaderManager;
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
-
 import ua.zp.rozklad.app.R;
+import ua.zp.rozklad.app.adapter.CursorFragmentStatePagerAdapter;
 import ua.zp.rozklad.app.ui.tabs.SlidingTabLayout;
-import ua.zp.rozklad.app.util.CalendarUtils;
 
-public class ScheduleOfWeekFragment extends Fragment {
+import static java.lang.String.valueOf;
+import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
+import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Selection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.SortOrder;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.groupBySelection;
+import static ua.zp.rozklad.app.util.CalendarUtils.addWeeks;
+import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekInMillis;
+
+public class ScheduleOfWeekFragment extends Fragment implements
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String ARG_GROUP_ID = "groupId";
     private static final String ARG_SUBGROUP_ID = "subgroupId";
@@ -28,7 +39,7 @@ public class ScheduleOfWeekFragment extends Fragment {
     private long startOfWeek;
     private int periodicity;
 
-    private FragmentStatePagerAdapter mAdapter;
+    private DayPagerAdapter mAdapter;
     private ViewPager mPager;
     private SlidingTabLayout mTabs;
 
@@ -55,7 +66,7 @@ public class ScheduleOfWeekFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        startOfWeek = CalendarUtils.getCurrentWeekInMillis();
+        startOfWeek = getCurrentWeekInMillis();
         Bundle args = getArguments();
         if (args != null) {
             groupId = args.getInt(ARG_GROUP_ID);
@@ -82,7 +93,7 @@ public class ScheduleOfWeekFragment extends Fragment {
             }
         });
 
-        fetchDays.start();
+        setAdapter(new DayPagerAdapter(getFragmentManager(), null));
 
         return view;
     }
@@ -94,6 +105,19 @@ public class ScheduleOfWeekFragment extends Fragment {
             handler.post(runPager);
         }
         mCreated = true;
+        getLoaderManager().initLoader(0, null, this);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        getLoaderManager().restartLoader(0, null, this);
+    }
+
+    public void changePeriodicity(int periodicity) {
+        this.periodicity = periodicity;
+        startOfWeek = addWeeks(getCurrentWeekInMillis(), periodicity - 1);
+        getLoaderManager().restartLoader(0, null, this);
     }
 
     /**
@@ -105,7 +129,7 @@ public class ScheduleOfWeekFragment extends Fragment {
         handler.removeCallbacks(runPager);
     }
 
-    protected void setAdapter(FragmentStatePagerAdapter adapter) {
+    protected void setAdapter(DayPagerAdapter adapter) {
         mAdapter = adapter;
         runPager = new Runnable() {
             @Override
@@ -119,46 +143,58 @@ public class ScheduleOfWeekFragment extends Fragment {
         }
     }
 
-    public Thread fetchDays = new Thread() {
-        @Override
-        public void run() {
-            ArrayList<Integer> days = new ArrayList<>();
-            days.add(0);
-            days.add(1);
-            days.add(2);
-            days.add(3);
-            days.add(4);
-            // TODO: Fetch data from DB.
-            setAdapter(new DayPagerAdapter(getFragmentManager(), days));
-        }
-    };
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        CursorLoader loader = new CursorLoader(getActivity());
 
-    private class DayPagerAdapter extends FragmentStatePagerAdapter {
+        loader.setUri(FullSchedule.CONTENT_URI);
+        loader.setProjection(new String[]{FullSchedule.DAY_OF_WEEK});
+        loader.setSelection(
+                combineSelection(Selection.GROUP, Selection.SUBGROUP, Selection.PERIODICITY) +
+                        groupBySelection(FullSchedule.DAY_OF_WEEK)
+        );
+        loader.setSelectionArgs(new String[]{
+                valueOf(groupId),
+                valueOf(subgroupId),
+                valueOf(periodicity)
+        });
+        loader.setSortOrder(SortOrder.DAY_OF_WEEK);
+
+        return loader;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (data.getCount() == 0) {
+            // TODO: Show "No schedule".
+        }
+        mAdapter.swapCursor(data);
+        setAdapter(mAdapter);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
+    private class DayPagerAdapter extends CursorFragmentStatePagerAdapter {
 
         private final String[] DAYS = getResources().getStringArray(R.array.days_of_week);
 
-        private ArrayList<Integer> days;
-
-        public DayPagerAdapter(FragmentManager fm, ArrayList<Integer> days) {
-            super(fm);
-            this.days = days;
+        public DayPagerAdapter(FragmentManager fm, Cursor cursor) {
+            super(fm, cursor);
         }
 
         @Override
-        public Fragment getItem(int position) {
+        public Fragment getItem(int position, Cursor cursor) {
             return ScheduleFragment.newInstance(
-                    groupId, subgroupId, startOfWeek, days.get(position), periodicity
+                    groupId, subgroupId, startOfWeek, cursor.getInt(0), periodicity
             );
         }
 
         @Override
-        public int getCount() {
-            return days.size();
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return DAYS[days.get(position)];
+        public CharSequence getPageTitle(int position, Cursor cursor) {
+            return DAYS[cursor.getInt(0)];
         }
     }
 }

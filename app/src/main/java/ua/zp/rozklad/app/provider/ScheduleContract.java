@@ -76,6 +76,7 @@ public class ScheduleContract {
     private static final String EQ = " = ";
     private static final String ASC = " ASC";
     private static final String DESC = " DESC";
+    private static final String GROUP_BY = " GROUP BY ";
 
     public static class Lecturer implements LecturerColumns, BaseColumns, SyncColumns {
         public static final Uri CONTENT_URI =
@@ -86,14 +87,14 @@ public class ScheduleContract {
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".lecturer";
 
-        public static interface SUMMARY {
+        public static interface Summary {
             String[] PROJECTION = {
                     _ID,
                     LECTURER_NAME,
                     UPDATED
             };
 
-            interface COLUMN {
+            interface Column {
                 int _ID = 0;
                 int LECTURER_NAME = 1;
                 int UPDATED = 2;
@@ -117,14 +118,14 @@ public class ScheduleContract {
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".subject";
 
-        public static interface SUMMARY {
+        public static interface Summary {
             String[] PROJECTION = {
                     _ID,
                     SUBJECT_NAME,
                     UPDATED
             };
 
-            interface COLUMN {
+            interface Column {
                 int _ID = 0;
                 int SUBJECT_NAME = 1;
                 int UPDATED = 2;
@@ -150,14 +151,14 @@ public class ScheduleContract {
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY +
                         ".academic_hour";
 
-        public static interface SUMMARY {
+        public static interface Summary {
             String[] PROJECTION = {
                     _ID,
                     START_TIME,
                     END_TIME,
             };
 
-            interface COLUMN {
+            interface Column {
                 int _ID = 0;
                 int START_TIME = 1;
                 int END_TIME = 2;
@@ -181,14 +182,14 @@ public class ScheduleContract {
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".campus";
 
-        public static interface SUMMARY {
+        public static interface Summary {
             String[] PROJECTION = {
                     _ID,
                     CAMPUS_NAME,
                     UPDATED
             };
 
-            interface COLUMN {
+            interface Column {
                 int _ID = 0;
                 int CAMPUS_NAME = 1;
                 int UPDATED = 2;
@@ -212,7 +213,7 @@ public class ScheduleContract {
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".audience";
 
-        public static interface SUMMARY {
+        public static interface Summary {
             String[] PROJECTION = {
                     _ID,
                     CAMPUS_ID,
@@ -220,7 +221,7 @@ public class ScheduleContract {
                     UPDATED
             };
 
-            interface COLUMN {
+            interface Column {
                 int _ID = 0;
                 int CAMPUS_ID = 1;
                 int AUDIENCE_NUMBER = 2;
@@ -245,7 +246,7 @@ public class ScheduleContract {
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".schedule";
 
-        public static interface SUMMARY {
+        public static interface Summary {
             String[] PROJECTION = {
                     _ID,
                     GROUP_ID,
@@ -262,7 +263,7 @@ public class ScheduleContract {
                     UPDATED
             };
 
-            interface COLUMN {
+            interface Column {
                 int _ID = 0;
                 int GROUP_ID = 1;
                 int SUBGROUP = 2;
@@ -352,8 +353,8 @@ public class ScheduleContract {
         public static final String LECTURER_NAME =
                 Tables.LECTURER + "." + LecturerColumns.LECTURER_NAME;
 
-        public static interface SUMMARY {
-            public static final String TABLES = Tables.SCHEDULE + INNER_JOIN + Tables.SUBJECT +
+        public static interface Summary {
+            String TABLES = Tables.SCHEDULE + INNER_JOIN + Tables.SUBJECT +
                     ON + SUBJECT_ID + EQ + SCHEDULE_SUBJECT_ID +
                     INNER_JOIN + Tables.AUDIENCE + ON + AUDIENCE_ID + EQ + SCHEDULE_AUDIENCE_ID +
                     INNER_JOIN + Tables.CAMPUS + ON + CAMPUS_ID + EQ + AUDIENCE_CAMPUS_ID +
@@ -375,9 +376,21 @@ public class ScheduleContract {
                     AUDIENCE_NUMBER
             };
 
-            String SORT_ORDER = DAY_OF_WEEK + ASC + "," + ACADEMIC_HOUR_NUM + ASC;
+            interface Selection {
+                String GROUP = SCHEDULE_GROUP_ID + EQ + "?";
+                String SUBGROUP = "(" + FullSchedule.SUBGROUP + EQ + "0" +
+                        OR + FullSchedule.SUBGROUP + EQ + "?)";
+                String PERIODICITY = "(" + FullSchedule.PERIODICITY + EQ + "0" +
+                        OR + FullSchedule.PERIODICITY + EQ + "?)";
+                String DAY_OF_WEEK = FullSchedule.DAY_OF_WEEK + EQ + "?";
+            }
 
-            interface COLUMN {
+            interface SortOrder {
+                String DAY_OF_WEEK = FullSchedule.DAY_OF_WEEK + ASC;
+                String ACADEMIC_HOUR_NUM = FullSchedule.ACADEMIC_HOUR_NUM + ASC;
+            }
+
+            interface Column {
                 int _ID = 0;
                 int SUBGROUP = 1;
                 int DAY_OF_WEEK = 2;
@@ -391,21 +404,42 @@ public class ScheduleContract {
                 int AUDIENCE_NUMBER = 10;
             }
         }
+    }
 
-        public static String buildSelection(int groupId, int subgroup, int dayOfWeek, int periodicity) {
-            return "(" + SCHEDULE_GROUP_ID + EQ + groupId + ")" + AND +
-                    "(" + SUBGROUP + EQ + "0" +
-                    ((subgroup > 0) ? OR + SUBGROUP + EQ + subgroup + ")" : ")") + AND +
-                    "(" + DAY_OF_WEEK + EQ + dayOfWeek + ")" + AND +
-                    "(" + PERIODICITY + EQ + "0" + ((periodicity > 0) ?
-                    OR + PERIODICITY + EQ + periodicity + ")" : ")");
-        }
+    /**
+     * Generate GROUP BY clause to put in selection to hack {@link ContentResolver#query(android.net.Uri, String[], String, String[], String)}
+     * method which dose not contains group by.
+     */
+    public static String groupBySelection(String... args) {
+        return  ")" + GROUP_BY + "(" + combine(",", args);
+    }
 
-        public static String buildDaySelection(int dayOfWeek, int periodicity) {
-            String dayOfWeekSelection = "(" + DAY_OF_WEEK + EQ + dayOfWeek + ")";
-            String periodicitySelection = "(" + PERIODICITY + EQ + "0" + ((periodicity > 0) ?
-                    OR + PERIODICITY + EQ + periodicity + ")" : ")");
-            return dayOfWeekSelection + AND + periodicitySelection;
+    private static String combine(String combiner, String... args) {
+        if (args.length > 0) {
+            StringBuilder builder = new StringBuilder(args[0]);
+
+            for (int i = 1; i < args.length; i++) {
+                builder.append(combiner)
+                        .append(args[i]);
+            }
+            return builder.toString();
         }
+        return "";
+    }
+
+    public static String[] combineProjection(String... args) {
+        String[] projection = new String[args.length];
+        for (int i = 0; i < args.length; i++) {
+            projection[i] = args[i];
+        }
+        return projection;
+    }
+
+    public static String combineSelection(String... args) {
+        return combine(AND, args);
+    }
+
+    public static String combineSortOrder(String... args) {
+        return combine(",", args);
     }
 }

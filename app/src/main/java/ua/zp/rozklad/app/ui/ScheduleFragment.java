@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 
@@ -24,8 +23,13 @@ import ua.zp.rozklad.app.adapter.SectionCursorRecyclerViewAdapter;
 import ua.zp.rozklad.app.model.ScheduleItem;
 
 import static java.lang.String.format;
+import static java.lang.String.valueOf;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
-import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.buildSelection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary;
+import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Selection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.SortOrder;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineSortOrder;
 
 /**
  * {@link Fragment} that displays the schedule with the specified filter criteria.
@@ -47,8 +51,6 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
     private static final int BY_GROUP = 0;
     private static final int BY_LECTURER = 1;
-
-    private HashMap<Integer, String> sections;
 
     private boolean isToday;
     private long startOfWeek;
@@ -99,24 +101,13 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
             startOfWeek = args.getLong(ARG_START_OF_WEEK, -1);
 
             subgroupId = args.getInt(ARG_SUBGROUP_ID, -1);
-
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(startOfWeek);
-            calendar.add(Calendar.DAY_OF_WEEK, dayOfWeek);
-
-            int day = calendar.get(Calendar.DAY_OF_MONTH);
-            String month = getResources()
-                    .getStringArray(R.array.months)[calendar.get(Calendar.MONTH)];
-
-            sections = new HashMap<>();
-            sections.put(0, format(DATE_FORMAT, day, month));
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        adapter = new ScheduleItemAdapter(getActivity(), null, sections);
+        adapter = new ScheduleItemAdapter(getActivity());
 
         recyclerView =
                 (RecyclerView) inflater.inflate(R.layout.fragment_schedule, container, false);
@@ -158,12 +149,37 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new ScheduleCursorLoader(getActivity(),
-                typeFilterId, subgroupId, dayOfWeek, periodicity);
+        CursorLoader loader = new CursorLoader(getActivity());
+
+        loader.setUri(FullSchedule.CONTENT_URI);
+        loader.setProjection(Summary.PROJECTION);
+        loader.setSelection(combineSelection(
+                Selection.GROUP,
+                Selection.SUBGROUP,
+                Selection.DAY_OF_WEEK,
+                Selection.PERIODICITY
+        ));
+        loader.setSelectionArgs(new String[]{
+                valueOf(typeFilterId), valueOf(subgroupId), valueOf(dayOfWeek), valueOf(periodicity)
+        });
+        loader.setSortOrder(combineSortOrder(SortOrder.DAY_OF_WEEK, SortOrder.ACADEMIC_HOUR_NUM));
+
+        return loader;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(startOfWeek);
+        calendar.add(Calendar.DAY_OF_WEEK, dayOfWeek);
+
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        String month = getResources()
+                .getStringArray(R.array.months)[calendar.get(Calendar.MONTH)];
+
+        HashMap<Integer, String> sections = new HashMap<>();
+        sections.put(0, format(DATE_FORMAT, day, month));
+        adapter.setSections(sections);
         adapter.changeCursor(data);
     }
 
@@ -227,6 +243,10 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     public class ScheduleItemAdapter extends SectionCursorRecyclerViewAdapter<String>
             implements View.OnClickListener {
 
+        public ScheduleItemAdapter(Context context) {
+            super(context, null);
+        }
+
         public ScheduleItemAdapter(Context context, Cursor cursor) {
             super(context, cursor);
         }
@@ -269,34 +289,6 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         @Override
         public void onClick(View v) {
             onScheduleItemClick(getItemId(recyclerView.getChildPosition(v)));
-        }
-    }
-
-    public static class ScheduleCursorLoader extends CursorLoader {
-
-        private int groupId;
-        private int subgroupId;
-        private int dayOfWeek;
-        private int periodicity;
-
-        public ScheduleCursorLoader(Context context,
-                                    int groupId, int subgroupId, int dayOfWeek, int periodicity) {
-            super(context);
-            this.groupId = groupId;
-            this.subgroupId = subgroupId;
-            this.dayOfWeek = dayOfWeek;
-            this.periodicity = periodicity;
-        }
-
-        @Override
-        public Cursor loadInBackground() {
-
-            return getContext().getContentResolver()
-                    .query(FullSchedule.CONTENT_URI,
-                            FullSchedule.SUMMARY.PROJECTION,
-                            buildSelection(groupId, subgroupId, dayOfWeek, periodicity),
-                            null,
-                            FullSchedule.SUMMARY.SORT_ORDER);
         }
     }
 }

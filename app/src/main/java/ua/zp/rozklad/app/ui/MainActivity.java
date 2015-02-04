@@ -2,6 +2,7 @@ package ua.zp.rozklad.app.ui;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.Fragment;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
@@ -115,8 +116,7 @@ public class MainActivity extends ActionBarActivity
             case R.id.action_change_week:
                 if (selectedNavDrawerItemId == NAV_DRAWER_ITEM_SCHEDULE) {
                     togglePeriodicity();
-                    // TODO: Try to change week in fragment by reloading data.
-                    onScheduleSelected();
+//                    onScheduleSelected();
                 }
                 return true;
             default:
@@ -361,5 +361,11 @@ public class MainActivity extends ActionBarActivity
 
     private void togglePeriodicity() {
         periodicity = abs(periodicity - 3);
+        Fragment scheduleOfWeek = getFragmentManager().findFragmentById(R.id.main_content);
+        if (scheduleOfWeek == null || !(scheduleOfWeek instanceof ScheduleOfWeekFragment)) {
+            onScheduleSelected();
+        } else {
+            ((ScheduleOfWeekFragment) scheduleOfWeek).changePeriodicity(periodicity);
+        }
     }
 }

@@ -358,7 +358,7 @@ public class ScheduleProvider extends ContentProvider {
                 queryBuilder.appendWhere(Schedule._ID + " = " + uri.getLastPathSegment());
                 break;
             case URI_CODE.FULL_SCHEDULE: {
-                queryBuilder.setTables(FullSchedule.SUMMARY.TABLES);
+                queryBuilder.setTables(FullSchedule.Summary.TABLES);
                 break;
             }
             default:
