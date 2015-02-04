@@ -2,6 +2,7 @@ package ua.zp.rozklad.app.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
@@ -15,7 +16,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import ua.zp.rozklad.app.R;
-import ua.zp.rozklad.app.rest.resource.Resource;
 
 /**
  * Created by kkxmshu on 03.02.15.
@@ -49,7 +49,7 @@ public class ScheduleItemActivity extends ActionBarActivity {
 
         getSupportActionBar().setTitle("Фiлософiя");
 
-        Resource res = getResources();
+        Resources res = getResources();
 
         View location = findViewById(R.id.location_layout);
         setTexts(location, "Аудитория 123, 6 корпус", res.getString(R.string.location));
