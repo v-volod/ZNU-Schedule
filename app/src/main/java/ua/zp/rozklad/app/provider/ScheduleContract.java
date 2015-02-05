@@ -353,6 +353,8 @@ public class ScheduleContract {
         public static final String LECTURER_NAME =
                 Tables.LECTURER + "." + LecturerColumns.LECTURER_NAME;
 
+        public static final String MAX_END_TIME = "max(" + ACADEMIC_HOUR_END_TIME + ") AS max_end_time";
+
         public static interface Summary {
             String TABLES = Tables.SCHEDULE + INNER_JOIN + Tables.SUBJECT +
                     ON + SUBJECT_ID + EQ + SCHEDULE_SUBJECT_ID +
@@ -388,6 +390,7 @@ public class ScheduleContract {
             interface SortOrder {
                 String DAY_OF_WEEK = FullSchedule.DAY_OF_WEEK + ASC;
                 String ACADEMIC_HOUR_NUM = FullSchedule.ACADEMIC_HOUR_NUM + ASC;
+                String END_TIME_DESC = FullSchedule.ACADEMIC_HOUR_END_TIME + DESC;
             }
 
             interface Column {

@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Selection;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.SortOrder;
 import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineSortOrder;
 import static ua.zp.rozklad.app.provider.ScheduleContract.groupBySelection;
 import static ua.zp.rozklad.app.util.CalendarUtils.addWeeks;
 import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekInMillis;
@@ -159,7 +161,8 @@ public class ScheduleOfWeekFragment extends Fragment implements
 
         loader.setUri(FullSchedule.CONTENT_URI);
         loader.setProjection(new String[]{
-                FullSchedule.DAY_OF_WEEK, FullSchedule.ACADEMIC_HOUR_END_TIME
+                FullSchedule.DAY_OF_WEEK, /*FullSchedule.ACADEMIC_HOUR_END_TIME*/
+                FullSchedule.MAX_END_TIME
         });
         loader.setSelection(
                 combineSelection(Selection.GROUP, Selection.SUBGROUP, Selection.PERIODICITY) +
@@ -170,7 +173,7 @@ public class ScheduleOfWeekFragment extends Fragment implements
                 valueOf(subgroupId),
                 valueOf(periodicity)
         });
-        loader.setSortOrder(SortOrder.DAY_OF_WEEK);
+        loader.setSortOrder(combineSortOrder(SortOrder.DAY_OF_WEEK, SortOrder.END_TIME_DESC));
 
         return loader;
     }
@@ -189,7 +192,9 @@ public class ScheduleOfWeekFragment extends Fragment implements
 
                 if (data.moveToFirst() && currentDay < data.getCount()) {
                     data.move(currentDay);
-                    if (time > data.getLong(1)) {
+                    // TODO: Check settings switch to next day or not.
+                    boolean switchToNext = true;
+                    if (switchToNext && time > data.getLong(1)) {
                         currentDay++;
                     }
                 }
