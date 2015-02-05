@@ -9,7 +9,6 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +16,7 @@ import android.view.ViewGroup;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.adapter.CursorFragmentStatePagerAdapter;
 import ua.zp.rozklad.app.ui.tabs.SlidingTabLayout;
+import ua.zp.rozklad.app.util.CalendarUtils;
 
 import static java.lang.String.valueOf;
 import static java.lang.System.currentTimeMillis;
@@ -26,8 +26,11 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.S
 import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
 import static ua.zp.rozklad.app.provider.ScheduleContract.combineSortOrder;
 import static ua.zp.rozklad.app.provider.ScheduleContract.groupBySelection;
+import static ua.zp.rozklad.app.util.CalendarUtils.addDays;
 import static ua.zp.rozklad.app.util.CalendarUtils.addWeeks;
-import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekInMillis;
+import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentDayStartInMillis;
+import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekStartInMillis;
+import static ua.zp.rozklad.app.util.CalendarUtils.getDayStartInMillis;
 
 public class ScheduleOfWeekFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor>, ViewPager.OnPageChangeListener {
@@ -37,7 +40,6 @@ public class ScheduleOfWeekFragment extends Fragment implements
     private static final String ARG_START_OF_WEEK = "startOfWeek";
     private static final String ARG_PERIODICITY = "periodicity";
 
-    private static final long DAY_TIME_STAMP = 24 * 60 * 60 * 1000;
 
     private int selectedDayItem = -1;
     private int groupId;
@@ -72,7 +74,7 @@ public class ScheduleOfWeekFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        startOfWeek = getCurrentWeekInMillis();
+        startOfWeek = getCurrentWeekStartInMillis();
         Bundle args = getArguments();
         if (args != null) {
             groupId = args.getInt(ARG_GROUP_ID);
@@ -124,7 +126,7 @@ public class ScheduleOfWeekFragment extends Fragment implements
 
     public void changePeriodicity(int periodicity) {
         this.periodicity = periodicity;
-        startOfWeek = addWeeks(getCurrentWeekInMillis(), periodicity - 1);
+        startOfWeek = addWeeks(getCurrentWeekStartInMillis(), periodicity - 1);
         getLoaderManager().restartLoader(0, null, this);
     }
 
@@ -161,7 +163,7 @@ public class ScheduleOfWeekFragment extends Fragment implements
 
         loader.setUri(FullSchedule.CONTENT_URI);
         loader.setProjection(new String[]{
-                FullSchedule.DAY_OF_WEEK, /*FullSchedule.ACADEMIC_HOUR_END_TIME*/
+                FullSchedule.DAY_OF_WEEK,
                 FullSchedule.MAX_END_TIME
         });
         loader.setSelection(
@@ -187,14 +189,13 @@ public class ScheduleOfWeekFragment extends Fragment implements
         invalidate();
         if (data.getCount() > 0) {
             if (selectedDayItem == -1) {
-                int currentDay = (int) ((currentTimeMillis() - startOfWeek) / DAY_TIME_STAMP);
-                long time = (currentTimeMillis() - startOfWeek) % DAY_TIME_STAMP;
+                int currentDay =
+                        (int) ((currentTimeMillis() - startOfWeek) / CalendarUtils.DAY_TIME_STAMP);
+                long time = (currentTimeMillis() - startOfWeek) % CalendarUtils.DAY_TIME_STAMP;
 
                 if (data.moveToFirst() && currentDay < data.getCount()) {
                     data.move(currentDay);
-                    // TODO: Check settings switch to next day or not.
-                    boolean switchToNext = true;
-                    if (switchToNext && time > data.getLong(1)) {
+                    if (time > data.getLong(1)) {
                         currentDay++;
                     }
                 }
@@ -234,7 +235,8 @@ public class ScheduleOfWeekFragment extends Fragment implements
 
         @Override
         public Fragment getItem(int position, Cursor cursor) {
-            return ScheduleFragment.newInstance(
+            return ScheduleFragment.newInstance(getCurrentDayStartInMillis() ==
+                            getDayStartInMillis(addDays(startOfWeek, cursor.getInt(0))),
                     groupId, subgroupId, startOfWeek, cursor.getInt(0), periodicity
             );
         }

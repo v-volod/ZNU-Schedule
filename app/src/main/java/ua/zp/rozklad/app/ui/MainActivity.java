@@ -29,7 +29,7 @@ import ua.zp.rozklad.app.provider.ScheduleContract;
 
 import static java.lang.Math.abs;
 import static ua.zp.rozklad.app.util.CalendarUtils.addWeeks;
-import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekInMillis;
+import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekStartInMillis;
 
 
 public class MainActivity extends ActionBarActivity
@@ -347,7 +347,7 @@ public class MainActivity extends ActionBarActivity
     private void onScheduleSelected() {
         Fragment scheduleOfWeek = getFragmentManager().findFragmentById(R.id.main_content);
         if (scheduleOfWeek == null || !(scheduleOfWeek instanceof ScheduleOfWeekFragment)) {
-            long startOfWeek = addWeeks(getCurrentWeekInMillis(), periodicity - 1);
+            long startOfWeek = addWeeks(getCurrentWeekStartInMillis(), periodicity - 1);
             getFragmentManager().beginTransaction()
                     .replace(R.id.main_content, ScheduleOfWeekFragment
                             .newInstance(groupId, subgroupId, startOfWeek, periodicity))

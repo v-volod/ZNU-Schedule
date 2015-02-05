@@ -40,12 +40,14 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.combineSortOrder;
  * create an instance of this fragment.
  */
 public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+
     private static final String ARG_SCHEDULE_TYPE = "scheduleType";
     private static final String ARG_TYPE_FILTER_ID = "typeFilterId";
     private static final String ARG_SUBGROUP_ID = "subgroupId";
     private static final String ARG_START_OF_WEEK = "startOfWeek";
     private static final String ARG_DAY_OF_WEEK = "dayOfWeek";
     private static final String ARG_PERIODICITY = "periodicity";
+    private static final String ARG_IS_TODAY = "isToday";
 
     private static final String DATE_FORMAT = "%2d %s";
 
@@ -66,8 +68,8 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     private RecyclerView recyclerView;
     private ScheduleItemAdapter adapter;
 
-    public static ScheduleFragment newInstance(int groupId, int subgroupId, long startOfWeek,
-                                               int dayOfWeek, int periodicity) {
+    public static ScheduleFragment newInstance(boolean isToday, int groupId, int subgroupId,
+                                               long startOfWeek, int dayOfWeek, int periodicity) {
         ScheduleFragment fragment = new ScheduleFragment();
         Bundle args = new Bundle();
 
@@ -77,6 +79,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         args.putLong(ARG_START_OF_WEEK, startOfWeek);
         args.putInt(ARG_DAY_OF_WEEK, dayOfWeek);
         args.putInt(ARG_PERIODICITY, periodicity);
+        args.putBoolean(ARG_IS_TODAY, isToday);
 
         fragment.setArguments(args);
         return fragment;
@@ -91,16 +94,13 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         super.onCreate(savedInstanceState);
         Bundle args = getArguments();
         if (args != null) {
-            // for debug
-            isToday = true;
-
             scheduleType = args.getInt(ARG_SCHEDULE_TYPE);
             typeFilterId = args.getInt(ARG_TYPE_FILTER_ID);
             periodicity = args.getInt(ARG_PERIODICITY, -1);
             dayOfWeek = args.getInt(ARG_DAY_OF_WEEK, -1);
             startOfWeek = args.getLong(ARG_START_OF_WEEK, -1);
-
             subgroupId = args.getInt(ARG_SUBGROUP_ID, -1);
+            isToday = args.getBoolean(ARG_IS_TODAY);
         }
     }
 
@@ -206,6 +206,12 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
             super(itemView);
             text = (TextView) itemView.findViewById(R.id.sub_header_text);
         }
+
+        public void update(String section, int color) {
+            text.setTextColor(color);
+            text.setText(section);
+        }
+
     }
 
     public static class ItemViewHolder extends RecyclerView.ViewHolder {
@@ -263,7 +269,12 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
         @Override
         public void onBindSectionViewHolder(RecyclerView.ViewHolder viewHolder, String section) {
-            ((SectionViewHolder) viewHolder).text.setText(section);
+            ((SectionViewHolder) viewHolder).update(
+                    section,
+                    (isToday) ?
+                    getResources().getColor(R.color.colorPrimary) :
+                    getResources().getColor(R.color.sub_header_text_color)
+            );
         }
 
         @Override
