@@ -116,7 +116,6 @@ public class MainActivity extends ActionBarActivity
             case R.id.action_change_week:
                 if (selectedNavDrawerItemId == NAV_DRAWER_ITEM_SCHEDULE) {
                     togglePeriodicity();
-//                    onScheduleSelected();
                 }
                 return true;
             default:
@@ -346,11 +345,14 @@ public class MainActivity extends ActionBarActivity
     }
 
     private void onScheduleSelected() {
-        long startOfWeek = addWeeks(getCurrentWeekInMillis(), periodicity - 1);
-        getFragmentManager().beginTransaction()
-                .replace(R.id.main_content, ScheduleOfWeekFragment
-                        .newInstance(groupId, subgroupId, startOfWeek, periodicity))
-                .commit();
+        Fragment scheduleOfWeek = getFragmentManager().findFragmentById(R.id.main_content);
+        if (scheduleOfWeek == null || !(scheduleOfWeek instanceof ScheduleOfWeekFragment)) {
+            long startOfWeek = addWeeks(getCurrentWeekInMillis(), periodicity - 1);
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.main_content, ScheduleOfWeekFragment
+                            .newInstance(groupId, subgroupId, startOfWeek, periodicity))
+                    .commit();
+        }
         // TODO: Change AppBar title and subtitle.
     }
 
