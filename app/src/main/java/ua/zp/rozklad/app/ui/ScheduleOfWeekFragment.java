@@ -18,6 +18,7 @@ import ua.zp.rozklad.app.adapter.CursorFragmentStatePagerAdapter;
 import ua.zp.rozklad.app.ui.tabs.SlidingTabLayout;
 
 import static java.lang.String.valueOf;
+import static java.lang.System.currentTimeMillis;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Selection;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.SortOrder;
@@ -27,13 +28,16 @@ import static ua.zp.rozklad.app.util.CalendarUtils.addWeeks;
 import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekInMillis;
 
 public class ScheduleOfWeekFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+        LoaderManager.LoaderCallbacks<Cursor>, ViewPager.OnPageChangeListener {
 
     private static final String ARG_GROUP_ID = "groupId";
     private static final String ARG_SUBGROUP_ID = "subgroupId";
     private static final String ARG_START_OF_WEEK = "startOfWeek";
     private static final String ARG_PERIODICITY = "periodicity";
 
+    private static final long DAY_TIME_STAMP = 24 * 60 * 60 * 1000;
+
+    private int selectedDayItem = -1;
     private int groupId;
     private int subgroupId;
     private long startOfWeek;
@@ -82,6 +86,7 @@ public class ScheduleOfWeekFragment extends Fragment implements
         View view = inflater.inflate(R.layout.fragment_schedule_of_week, container, false);
 
         mPager = (ViewPager) view.findViewById(R.id.pager);
+        mPager.setOnPageChangeListener(this);
 
         mTabs = (SlidingTabLayout) view.findViewById(R.id.tabs);
         mTabs.setCustomTabView(R.layout.tab_indicator, android.R.id.text1);
@@ -92,6 +97,7 @@ public class ScheduleOfWeekFragment extends Fragment implements
                 return getResources().getColor(R.color.colorAccent);
             }
         });
+        mTabs.setOnPageChangeListener(this);
 
         setAdapter(new DayPagerAdapter(getFragmentManager(), null));
 
@@ -129,13 +135,12 @@ public class ScheduleOfWeekFragment extends Fragment implements
         handler.removeCallbacks(runPager);
     }
 
-    protected void setAdapter(DayPagerAdapter adapter) {
+    protected void setAdapter(final DayPagerAdapter adapter) {
         mAdapter = adapter;
         runPager = new Runnable() {
             @Override
             public void run() {
-                mPager.setAdapter(mAdapter);
-                mTabs.setViewPager(mPager);
+                invalidate();
             }
         };
         if (mCreated) {
@@ -143,12 +148,19 @@ public class ScheduleOfWeekFragment extends Fragment implements
         }
     }
 
+    protected void invalidate() {
+        mPager.setAdapter(mAdapter);
+        mTabs.setViewPager(mPager);
+    }
+
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         CursorLoader loader = new CursorLoader(getActivity());
 
         loader.setUri(FullSchedule.CONTENT_URI);
-        loader.setProjection(new String[]{FullSchedule.DAY_OF_WEEK});
+        loader.setProjection(new String[]{
+                FullSchedule.DAY_OF_WEEK, FullSchedule.ACADEMIC_HOUR_END_TIME
+        });
         loader.setSelection(
                 combineSelection(Selection.GROUP, Selection.SUBGROUP, Selection.PERIODICITY) +
                         groupBySelection(FullSchedule.DAY_OF_WEEK)
@@ -169,11 +181,41 @@ public class ScheduleOfWeekFragment extends Fragment implements
             // TODO: Show "No schedule".
         }
         mAdapter.swapCursor(data);
-        setAdapter(mAdapter);
+        invalidate();
+        if (data.getCount() > 0) {
+            if (selectedDayItem == -1) {
+                int currentDay = (int) ((currentTimeMillis() - startOfWeek) / DAY_TIME_STAMP);
+                long time = (currentTimeMillis() - startOfWeek) % DAY_TIME_STAMP;
+
+                if (data.moveToFirst() && currentDay < data.getCount()) {
+                    data.move(currentDay);
+                    if (time > data.getLong(1)) {
+                        currentDay++;
+                    }
+                }
+                selectedDayItem = mAdapter.findDayForSelection(currentDay);
+            }
+            mPager.setCurrentItem(selectedDayItem, true);
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        selectedDayItem = position;
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
 
     }
 
@@ -195,6 +237,25 @@ public class ScheduleOfWeekFragment extends Fragment implements
         @Override
         public CharSequence getPageTitle(int position, Cursor cursor) {
             return DAYS[cursor.getInt(0)];
+        }
+
+        public int findDayForSelection(int currentDay) {
+            Cursor cursor = getCursor();
+
+            int dayForSelection = 0;
+            int day;
+
+            if (cursor.moveToFirst()) {
+                do {
+                    day = cursor.getInt(0);
+                    if (day == currentDay || day > dayForSelection) {
+                        return dayForSelection;
+                    }
+                    dayForSelection++;
+                } while (cursor.moveToNext());
+            }
+
+            return 0;
         }
     }
 }
