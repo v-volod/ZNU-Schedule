@@ -20,6 +20,15 @@ public class ScheduleContract {
         String UPDATED = "updated";
     }
 
+    interface DepartmentColumns {
+        String DEPARTMENT_NAME = "department_name";
+    }
+
+    interface GroupColumns {
+        String DEPARTMENT_ID = "department_id";
+        String GROUP_NAME = "group_name";
+    }
+
     interface LecturerColumns {
         String LECTURER_NAME = "lecturer_name";
     }
@@ -44,6 +53,7 @@ public class ScheduleContract {
     }
 
     interface ScheduleColumns {
+        String SCHEDULE_ID = "schedule_id";
         String GROUP_ID = "group_id";
         String SUBGROUP = "subgroup";
         String SUBJECT_ID = "subject_id";
@@ -61,6 +71,8 @@ public class ScheduleContract {
 
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
+    private static final String PATH_DEPARTMENT = "department";
+    private static final String PATH_GROUP = "group";
     private static final String PATH_LECTURER = "lecturer";
     private static final String PATH_SUBJECT = "subject";
     private static final String PATH_ACADEMIC_HOUR = "academic_hour";
@@ -77,6 +89,40 @@ public class ScheduleContract {
     private static final String ASC = " ASC";
     private static final String DESC = " DESC";
     private static final String GROUP_BY = " GROUP BY ";
+
+    public static class Department implements DepartmentColumns, BaseColumns {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_DEPARTMENT).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".department";
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".department";
+
+        /**
+         * Build {@link Uri} for requested department.
+         */
+        public static Uri buildDepartmentUri(String departmentId) {
+            return CONTENT_URI.buildUpon().appendPath(departmentId).build();
+        }
+    }
+
+    public static class Group implements GroupColumns, BaseColumns {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_GROUP).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".group";
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + CONTENT_AUTHORITY + ".group";
+
+        /**
+         * Build {@link Uri} for requested group.
+         */
+        public static Uri buildGroupUri(String groupId) {
+            return CONTENT_URI.buildUpon().appendPath(groupId).build();
+        }
+    }
 
     public static class Lecturer implements LecturerColumns, BaseColumns, SyncColumns {
         public static final Uri CONTENT_URI =
@@ -278,6 +324,11 @@ public class ScheduleContract {
                 int CLASS_TYPE = 11;
                 int UPDATED = 12;
             }
+
+            interface Selection {
+                String SCHEDULE_ID = Schedule.SCHEDULE_ID + "=?";
+                String GROUP_ID = Schedule.GROUP_ID + "=?";
+            }
         }
 
         /**
@@ -299,6 +350,8 @@ public class ScheduleContract {
 
         public static final String _ID =
                 Tables.SCHEDULE + "." + BaseColumns._ID;
+        public static final String SCHEDULE_ID =
+                Tables.SCHEDULE + "." + ScheduleColumns.SCHEDULE_ID;
         public static final String SCHEDULE_GROUP_ID =
                 Tables.SCHEDULE + "." + ScheduleColumns.GROUP_ID;
         public static final String SCHEDULE_SUBJECT_ID =
@@ -431,11 +484,7 @@ public class ScheduleContract {
     }
 
     public static String[] combineProjection(String... args) {
-        String[] projection = new String[args.length];
-        for (int i = 0; i < args.length; i++) {
-            projection[i] = args[i];
-        }
-        return projection;
+        return args;
     }
 
     public static String combineSelection(String... args) {
@@ -444,5 +493,13 @@ public class ScheduleContract {
 
     public static String combineSortOrder(String... args) {
         return combine(",", args);
+    }
+
+    public static String[] combineArgs(Object... args) {
+        String[] combination = new String[args.length];
+        for (int i = 0; i < args.length; i++) {
+            combination[i] = String.valueOf(args[i]);
+        }
+        return combination;
     }
 }

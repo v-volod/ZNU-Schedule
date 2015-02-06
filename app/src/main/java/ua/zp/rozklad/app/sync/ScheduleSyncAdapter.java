@@ -32,6 +32,7 @@ import ua.zp.rozklad.app.rest.RESTMethod;
 import ua.zp.rozklad.app.rest.resource.AcademicHour;
 import ua.zp.rozklad.app.rest.resource.Audience;
 import ua.zp.rozklad.app.rest.resource.Campus;
+import ua.zp.rozklad.app.rest.resource.GlobalScheduleItem;
 import ua.zp.rozklad.app.rest.resource.Group;
 import ua.zp.rozklad.app.rest.resource.Lecturer;
 import ua.zp.rozklad.app.rest.resource.ScheduleItem;
@@ -90,12 +91,18 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         GetScheduleMethod method = new GetScheduleMethod();
         method.prepare(RESTMethod.Filter.BY_GROUP_ID, String.valueOf(group.getId()));
 
-        MethodResponse<ArrayList<ScheduleItem>> scheduleItemsResponse =
+        MethodResponse<ArrayList<GlobalScheduleItem>> scheduleItemsResponse =
                 method.executeBlocking();
 
         if (scheduleItemsResponse.getResponseCode() == RESTMethod.ResponseCode.OK) {
+            ArrayList<ScheduleItem> scheduleItems = new ArrayList<>();
+
+            for (GlobalScheduleItem item: scheduleItemsResponse.getResponse()) {
+                scheduleItems.addAll(item.getScheduleItems());
+            }
+
             ScheduleProcessor processor = new ScheduleProcessor(getContext());
-            ScheduleDependency dependency = processor.process(scheduleItemsResponse.getResponse());
+            ScheduleDependency dependency = processor.process(scheduleItems);
 
             Log.d("ScheduleLOGS", "ScheduleDependency " + dependency.toString());
 

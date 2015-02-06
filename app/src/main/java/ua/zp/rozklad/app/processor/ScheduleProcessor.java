@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import ua.zp.rozklad.app.processor.dependency.ResolveDependency;
 import ua.zp.rozklad.app.processor.dependency.ScheduleDependency;
+import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.provider.ScheduleContract.Schedule;
 import ua.zp.rozklad.app.rest.resource.ScheduleItem;
 
@@ -17,6 +18,9 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.Audience.buildAudience
 import static ua.zp.rozklad.app.provider.ScheduleContract.Lecturer.buildLecturerUri;
 import static ua.zp.rozklad.app.provider.ScheduleContract.Schedule.buildScheduleUri;
 import static ua.zp.rozklad.app.provider.ScheduleContract.Subject.buildSubjectUri;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineArgs;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.Schedule.Summary.Selection;
 
 /**
  * @author Vojko Vladimir
@@ -37,8 +41,10 @@ public class ScheduleProcessor extends Processor<ScheduleItem, ScheduleDependenc
 
         for (ScheduleItem scheduleItem : scheduleItems) {
             cursor = resolver
-                    .query(buildScheduleUri(scheduleItem.getId()), new String[]{Schedule.UPDATED},
-                            null, null, null);
+                    .query(Schedule.CONTENT_URI,
+                            ScheduleContract.combineProjection(Schedule.UPDATED, Schedule._ID),
+                            combineSelection(Selection.SCHEDULE_ID, Selection.GROUP_ID),
+                            combineArgs(scheduleItem.getId(), scheduleItem.getGroupId()), null);
 
             if (cursor.moveToFirst()) {
                 if (cursor.getLong(0) != scheduleItem.getLastUpdate()) {
@@ -59,17 +65,14 @@ public class ScheduleProcessor extends Processor<ScheduleItem, ScheduleDependenc
 
     @Override
     protected ContentValues buildValuesForInsert(ScheduleItem scheduleItem) {
-        ContentValues values = buildValuesForUpdate(scheduleItem);
-
-        values.put(Schedule._ID, scheduleItem.getId());
-
-        return values;
+        return buildValuesForUpdate(scheduleItem);
     }
 
     @Override
     protected ContentValues buildValuesForUpdate(ScheduleItem scheduleItem) {
         ContentValues values = new ContentValues();
 
+        values.put(Schedule.SCHEDULE_ID, scheduleItem.getId());
         values.put(Schedule.GROUP_ID, scheduleItem.getGroupId());
         values.put(Schedule.SUBGROUP, scheduleItem.getSubgroup());
         values.put(Schedule.SUBJECT_ID, scheduleItem.getSubjectId());

@@ -1,5 +1,7 @@
 package ua.zp.rozklad.app.rest;
 
+import android.util.Log;
+
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.RequestFuture;
@@ -9,15 +11,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 import ua.zp.rozklad.app.App;
+import ua.zp.rozklad.app.rest.resource.GlobalScheduleItem;
 import ua.zp.rozklad.app.rest.resource.Lecturer;
 import ua.zp.rozklad.app.rest.resource.ScheduleItem;
 
 /**
  * @author Vojko Vladimir
  */
-public class GetScheduleMethod extends RESTMethod<ArrayList<ScheduleItem>, JSONObject> {
+public class GetScheduleMethod extends RESTMethod<ArrayList<GlobalScheduleItem>, JSONObject> {
 
     @Override
     public void prepare(int filter, String... params) {
@@ -40,7 +44,7 @@ public class GetScheduleMethod extends RESTMethod<ArrayList<ScheduleItem>, JSONO
     }
 
     @Override
-    public MethodResponse<ArrayList<ScheduleItem>> executeBlocking() {
+    public MethodResponse<ArrayList<GlobalScheduleItem>> executeBlocking() {
         RequestFuture<JSONObject> future = RequestFuture.newFuture();
 
         JsonObjectRequest request = new JsonObjectRequest(requestUrl, null, future, future);
@@ -48,13 +52,17 @@ public class GetScheduleMethod extends RESTMethod<ArrayList<ScheduleItem>, JSONO
 
         try {
             JSONArray objects = future.get().getJSONArray(Key.OBJECTS);
-            ArrayList<ScheduleItem> groups = new ArrayList<>();
+            ArrayList<GlobalScheduleItem> scheduleItems = new ArrayList<>();
 
             for (int i = 0; i < objects.length(); i++) {
-                groups.add(new ScheduleItem(objects.getJSONObject(i)));
+                try {
+                    scheduleItems.add(new GlobalScheduleItem(objects.getJSONObject(i)));
+                } catch (JSONException e) {
+                    Log.d("RestLogs", e.toString());
+                }
             }
 
-            return new MethodResponse<>(ResponseCode.OK, groups);
+            return new MethodResponse<>(ResponseCode.OK, scheduleItems);
         } catch (Exception e) {
             return new MethodResponse<>(generateResponseCode(e), null);
         }
@@ -69,13 +77,17 @@ public class GetScheduleMethod extends RESTMethod<ArrayList<ScheduleItem>, JSONO
     public void onResponse(JSONObject response) {
         try {
             JSONArray objects = response.getJSONArray(Key.OBJECTS);
-            ArrayList<ScheduleItem> groups = new ArrayList<>();
+            ArrayList<GlobalScheduleItem> scheduleItems = new ArrayList<>();
 
             for (int i = 0; i < objects.length(); i++) {
-                groups.add(new ScheduleItem(objects.getJSONObject(i)));
+                try {
+                    scheduleItems.add(new GlobalScheduleItem(objects.getJSONObject(i)));
+                } catch (JSONException e) {
+                    Log.d("RestLogs", e.toString());
+                }
             }
 
-            callback.onResponse(groups);
+            callback.onResponse(scheduleItems);
         } catch (JSONException e) {
             callback.onError(generateResponseCode(e));
         }
