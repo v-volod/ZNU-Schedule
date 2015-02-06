@@ -1,5 +1,6 @@
 package ua.zp.rozklad.app.ui;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.LoaderManager;
@@ -9,15 +10,19 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.melnykov.fab.FloatingActionButton;
 
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.adapter.CursorFragmentStatePagerAdapter;
 import ua.zp.rozklad.app.ui.tabs.SlidingTabLayout;
 import ua.zp.rozklad.app.util.CalendarUtils;
 
+import static java.lang.Math.abs;
 import static java.lang.String.valueOf;
 import static java.lang.System.currentTimeMillis;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
@@ -33,7 +38,8 @@ import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekStartInMillis;
 import static ua.zp.rozklad.app.util.CalendarUtils.getDayStartInMillis;
 
 public class ScheduleOfWeekFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor>, ViewPager.OnPageChangeListener {
+        LoaderManager.LoaderCallbacks<Cursor>, ViewPager.OnPageChangeListener,
+        View.OnClickListener {
 
     private static final String ARG_GROUP_ID = "groupId";
     private static final String ARG_SUBGROUP_ID = "subgroupId";
@@ -47,9 +53,12 @@ public class ScheduleOfWeekFragment extends Fragment implements
     private long startOfWeek;
     private int periodicity;
 
+    private OnPeriodicityChangeListener mListener;
+
     private DayPagerAdapter mAdapter;
     private ViewPager mPager;
     private SlidingTabLayout mTabs;
+    private FloatingActionButton mFab;
 
     private final Handler handler = new Handler();
     private Runnable runPager;
@@ -69,6 +78,12 @@ public class ScheduleOfWeekFragment extends Fragment implements
 
     public ScheduleOfWeekFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mListener = (OnPeriodicityChangeListener) activity;
     }
 
     @Override
@@ -103,6 +118,9 @@ public class ScheduleOfWeekFragment extends Fragment implements
         });
         mTabs.setOnPageChangeListener(this);
 
+        mFab = (FloatingActionButton) view.findViewById(R.id.fab);
+        mFab.setOnClickListener(this);
+
         setAdapter(new DayPagerAdapter(getFragmentManager(), null));
 
         return view;
@@ -124,10 +142,11 @@ public class ScheduleOfWeekFragment extends Fragment implements
         getLoaderManager().restartLoader(0, null, this);
     }
 
-    public void changePeriodicity(int periodicity) {
-        this.periodicity = periodicity;
+    public void swapPeriodicity() {
+        periodicity = abs(periodicity - 3);
         startOfWeek = addWeeks(getCurrentWeekStartInMillis(), periodicity - 1);
         getLoaderManager().restartLoader(0, null, this);
+        mListener.onPeriodicityChanged(periodicity);
     }
 
     /**
@@ -218,6 +237,7 @@ public class ScheduleOfWeekFragment extends Fragment implements
     @Override
     public void onPageSelected(int position) {
         selectedDayItem = position;
+        mAdapter.updateFab();
     }
 
     @Override
@@ -225,20 +245,50 @@ public class ScheduleOfWeekFragment extends Fragment implements
 
     }
 
+    @Override
+    public void onClick(View v) {
+        swapPeriodicity();
+    }
+
+    /**
+     * Interface definition for a callback to be invoked when a periodicity changed.
+     */
+    public interface OnPeriodicityChangeListener {
+        /**
+         * @param periodicity id of the row of the schedule table in the database.
+         */
+        public void onPeriodicityChanged(int periodicity);
+    }
+
     private class DayPagerAdapter extends CursorFragmentStatePagerAdapter {
 
         private final String[] DAYS = getResources().getStringArray(R.array.days_of_week);
 
+        private SparseArray<ScheduleFragment> registeredFragments = new SparseArray<>();
+
         public DayPagerAdapter(FragmentManager fm, Cursor cursor) {
             super(fm, cursor);
+
         }
 
         @Override
-        public Fragment getItem(int position, Cursor cursor) {
-            return ScheduleFragment.newInstance(getCurrentDayStartInMillis() ==
-                            getDayStartInMillis(addDays(startOfWeek, cursor.getInt(0))),
-                    groupId, subgroupId, startOfWeek, cursor.getInt(0), periodicity
-            );
+        public ScheduleFragment getItem(int position, Cursor cursor) {
+            ScheduleFragment fragment =
+                    ScheduleFragment.newInstance(getCurrentDayStartInMillis() ==
+                                    getDayStartInMillis(addDays(startOfWeek, cursor.getInt(0))),
+                            groupId, subgroupId, startOfWeek, cursor.getInt(0), periodicity
+                    );
+            if (selectedDayItem == position) {
+                fragment.attachFAB(mFab);
+            }
+            registeredFragments.put(position, fragment);
+            return fragment;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            registeredFragments.remove(position);
+            super.destroyItem(container, position, object);
         }
 
         @Override
@@ -263,6 +313,13 @@ public class ScheduleOfWeekFragment extends Fragment implements
             }
 
             return 0;
+        }
+
+        public void updateFab() {
+            ScheduleFragment fragment = registeredFragments.get(selectedDayItem);
+            if (fragment != null) {
+                fragment.attachFAB(mFab);
+            }
         }
     }
 }

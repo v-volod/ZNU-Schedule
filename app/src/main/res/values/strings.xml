@@ -13,6 +13,8 @@
     <string name="login_button">УВІЙТИ</string>
     <string name="no_schedule">Поки що розклад відсутній</string>
     <string name="title_activity_login">Авторизація</string>
+    <string name="numerator">чисельник</string>
+    <string name="denominator">знаменник</string>
 
     <!-- NavigationDrawer List Items -->
     <string name="nav_drawer_group_qualifier">Група</string>
@@ -62,8 +64,4 @@
         <item>грудня</item>
     </string-array>
 
-    <string-array name="periodicity">
-        <item>чисельник</item>
-        <item>знаменник</item>
-    </string-array>
 </resources>

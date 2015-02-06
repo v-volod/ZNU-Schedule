@@ -8,12 +8,15 @@ import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.melnykov.fab.FloatingActionButton;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -68,6 +71,10 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     private RecyclerView recyclerView;
     private ScheduleItemAdapter adapter;
 
+    private boolean isViewCreated = false;
+    private Runnable runFab;
+    private Handler handler = new Handler();
+
     public static ScheduleFragment newInstance(boolean isToday, int groupId, int subgroupId,
                                                long startOfWeek, int dayOfWeek, int periodicity) {
         ScheduleFragment fragment = new ScheduleFragment();
@@ -114,6 +121,11 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        if (runFab != null) {
+            handler.post(runFab);
+        }
+        isViewCreated = true;
 
         return recyclerView;
     }
@@ -186,6 +198,18 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    public void attachFAB(final FloatingActionButton fab) {
+        runFab = new Runnable() {
+            @Override
+            public void run() {
+                fab.attachToRecyclerView(recyclerView);
+            }
+        };
+        if (isViewCreated) {
+            handler.post(runFab);
+        }
     }
 
     /**
