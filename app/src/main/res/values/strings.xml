@@ -33,21 +33,45 @@
     <!-- Lorem Ipsum values -->
     <string name="lorem_ipsum_short">Lorem ipsum dolor sit amet.</string>
     <string name="lorem_time">00:00</string>
-    <string name="lorem_lecturer">Чопоров Сергій Вікторович</string>
     <string name="lorem_subject">Філософія</string>
     <string name="lorem_location">Аудиторія 37 (1 корпус)</string>
     <string name="icon_description_lorem">іконка</string>
+    <string name="lorem_info">Чопоров Сергій Вікторович\n37 (1 корпус)</string>
+    <string name="lorem_sub_header">Subheader</string>
+
+    <string-array name="days_of_week">
+        <item>Понеділок</item>
+        <item>Вівторок</item>
+        <item>Середа</item>
+        <item>Четвер</item>
+        <item>П\'ятниця</item>
+        <item>Субота</item>
+        <item>Неділя</item>
+    </string-array>
+
+    <string-array name="months">
+        <item>січня</item>
+        <item>лютого</item>
+        <item>березня</item>
+        <item>квітня</item>
+        <item>травня</item>
+        <item>червня</item>
+        <item>липня</item>
+        <item>серпня</item>
+        <item>вересня</item>
+        <item>жовтня</item>
+        <item>листопада</item>
+        <item>грудня</item>
+    </string-array>
+
+    <string-array name="periodicity">
+        <item>чисельник</item>
+        <item>знаменник</item>
+    </string-array>
 
     <!-- ScheduleItemActivity values -->
     <string name="location">Розташування</string>
     <string name="lecturer">Викладач</string>
     <string name="type">Тип</string>
     <string name="time">Час</string>
-
-    <string-array name="tabs">
-        <item>test 1</item>
-        <item>test 2</item>
-        <item>test 3</item>
-        <item>test 4</item>
-    </string-array>
 </resources>

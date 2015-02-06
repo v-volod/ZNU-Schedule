@@ -28,7 +28,7 @@ public class ScheduleItemActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.home:
-                NavUtils.navigateUpFromSameTask(this);
+                this.finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -40,14 +40,20 @@ public class ScheduleItemActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule_item);
 
-        appBar = (Toolbar) findViewById(R.id.app_bar);
+        appBar = (Toolbar) findViewById(R.id.extended_app_bar);
         setSupportActionBar(appBar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
 
         DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerLayout.setStatusBarBackground(R.color.schedule_item_activity_statusbar);
+        Intent intent = getIntent();
 
-        getSupportActionBar().setTitle("Фiлософiя");
+        TextView title = (TextView) appBar.findViewById(R.id.title);
+
+        Long id = intent.getLongExtra("id", 0);
+        title.setText(id.toString());
 
         Resources res = getResources();
 

@@ -6,24 +6,17 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -32,11 +25,14 @@ import java.util.ArrayList;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAuthenticator;
 import ua.zp.rozklad.app.provider.ScheduleContract;
-import ua.zp.rozklad.app.ui.tabs.SlidingTabLayout;
+
+import static java.lang.Math.abs;
+import static ua.zp.rozklad.app.util.CalendarUtils.addWeeks;
+import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekInMillis;
 
 
 public class MainActivity extends ActionBarActivity
-        implements ScheduleFragment.OnScheduleItemClickListener{
+        implements ScheduleFragment.OnScheduleItemClickListener {
 
     public static interface EXTRA_KEY {
         String SELECTED_NAV_DRAWER_ITEM_ID = "SELECTED_NAV_DRAWER_ITEM_ID";
@@ -99,11 +95,13 @@ public class MainActivity extends ActionBarActivity
         }
     };
 
+    private int groupId;
+    private int subgroupId;
+    private int periodicity;
+
     private Handler handler;
 
     private Toolbar appBar;
-    private ViewPager pager;
-    private SlidingTabLayout tabs;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -115,7 +113,11 @@ public class MainActivity extends ActionBarActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_change_week:
-                Toast.makeText(getApplicationContext(), "тиждень змінено", Toast.LENGTH_LONG).show();
+                if (selectedNavDrawerItemId == NAV_DRAWER_ITEM_SCHEDULE) {
+                    togglePeriodicity();
+                    // TODO: Try to change week in fragment by reloading data.
+                    onScheduleSelected();
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -135,24 +137,15 @@ public class MainActivity extends ActionBarActivity
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerLayout.setStatusBarBackground(R.color.colorPrimaryDark);
 
-        pager = (ViewPager) findViewById(R.id.pager);
-        pager.setAdapter(new PagerAdapter(getSupportFragmentManager()));
-        tabs = (SlidingTabLayout) findViewById(R.id.tabs);
-        tabs.setCustomTabView(R.layout.tab_indicator, android.R.id.text1);
-
-//        setSlidingTabLayoutContentDescriptions();
-
-        tabs.setSelectedIndicatorColors(getResources().getColor(R.color.colorPrimaryDark));
-
-        tabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
-            @Override
-            public int getIndicatorColor(int position) {
-                return getResources().getColor(R.color.colorAccent);
-            }
-        });
-        tabs.setViewPager(pager);
-
         handler = new Handler();
+
+        /*
+        * JUST FOR DEBUG
+        * TODO: Set from preferences.
+        * */
+        groupId = 1;
+        subgroupId = 1;
+        periodicity = 1;
 
         if (savedInstanceState != null) {
             selectedNavDrawerItemId = savedInstanceState
@@ -160,7 +153,7 @@ public class MainActivity extends ActionBarActivity
         }
 
         setUpNavDrawer();
-        onNavDrawerItemClicked(selectedNavDrawerItemId);
+        onScheduleSelected();
     }
 
     @Override
@@ -331,9 +324,7 @@ public class MainActivity extends ActionBarActivity
                 * */
                 return;
             case NAV_DRAWER_ITEM_SCHEDULE:
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.main_content, ScheduleFragment.newInstance(0, 0, 0, 0))
-                        .commit();
+                onScheduleSelected();
                 break;
             /*
             * Change main content fragment
@@ -354,56 +345,23 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+    private void onScheduleSelected() {
+        long startOfWeek = addWeeks(getCurrentWeekInMillis(), periodicity - 1);
+        getFragmentManager().beginTransaction()
+                .replace(R.id.main_content, ScheduleOfWeekFragment
+                        .newInstance(groupId, subgroupId, startOfWeek, periodicity))
+                .commit();
+        // TODO: Change AppBar title and subtitle.
+    }
+
     @Override
-    public void onScheduleItemClicked(int scheduleItemId) {
-
+    public void onScheduleItemClicked(long scheduleItemId) {
+        Intent intent = new Intent(this, ScheduleItemActivity.class);
+        intent.putExtra("id", scheduleItemId);
+        startActivity(intent);
     }
 
-    private class PagerAdapter extends FragmentPagerAdapter {
-
-        String[] tabs;
-        public PagerAdapter(FragmentManager fm) {
-            super(fm);
-            tabs = getResources().getStringArray(R.array.tabs);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            TestFragment fragment = TestFragment.getInstance(position);
-            return fragment;
-        }
-
-        @Override
-        public int getCount() {
-            return tabs.length;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return tabs[position];
-        }
+    private void togglePeriodicity() {
+        periodicity = abs(periodicity - 3);
     }
-
-    private static class TestFragment extends Fragment {
-        private TextView position;
-        public static TestFragment getInstance(int position) {
-            TestFragment frag = new TestFragment();
-            Bundle args = new Bundle();
-            args.putInt("position", position);
-            frag.setArguments(args);
-            return frag;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            View layout = inflater.inflate(R.layout.fragment_test, container, false);
-            position = (TextView) layout.findViewById(R.id.position);
-            Bundle bundle = getArguments();
-            if (bundle != null) {
-                position.setText("Page position is " + bundle.getInt("position"));
-            }
-            return layout;
-        }
-    }
-
 }

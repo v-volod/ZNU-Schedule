@@ -15,10 +15,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import ua.zp.rozklad.app.R;
-import ua.zp.rozklad.app.adapter.CursorRecyclerViewAdapter;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
 
+import ua.zp.rozklad.app.R;
+import ua.zp.rozklad.app.adapter.SectionCursorRecyclerViewAdapter;
+import ua.zp.rozklad.app.model.ScheduleItem;
+
+import static java.lang.String.format;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
+import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.buildSelection;
 
 /**
  * {@link Fragment} that displays the schedule with the specified filter criteria.
@@ -32,12 +39,19 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     private static final String ARG_SCHEDULE_TYPE = "scheduleType";
     private static final String ARG_TYPE_FILTER_ID = "typeFilterId";
     private static final String ARG_SUBGROUP_ID = "subgroupId";
-    private static final String ARG_PERIODICITY = "periodicity";
+    private static final String ARG_START_OF_WEEK = "startOfWeek";
     private static final String ARG_DAY_OF_WEEK = "dayOfWeek";
+    private static final String ARG_PERIODICITY = "periodicity";
+
+    private static final String DATE_FORMAT = "%2d %s";
 
     private static final int BY_GROUP = 0;
     private static final int BY_LECTURER = 1;
 
+    private HashMap<Integer, String> sections;
+
+    private boolean isToday;
+    private long startOfWeek;
     private int scheduleType;
     private int typeFilterId;
     private int periodicity;
@@ -48,19 +62,19 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     private OnScheduleItemClickListener mListener;
 
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter adapter = null;
-    private RecyclerView.LayoutManager layoutManager;
+    private ScheduleItemAdapter adapter;
 
-    public static ScheduleFragment newInstance(int groupId, int periodicity, int dayOfWeek,
-                                               int subgroupId) {
+    public static ScheduleFragment newInstance(int groupId, int subgroupId, long startOfWeek,
+                                               int dayOfWeek, int periodicity) {
         ScheduleFragment fragment = new ScheduleFragment();
         Bundle args = new Bundle();
 
         args.putInt(ARG_SCHEDULE_TYPE, BY_GROUP);
         args.putInt(ARG_TYPE_FILTER_ID, groupId);
-        args.putInt(ARG_PERIODICITY, periodicity);
-        args.putInt(ARG_DAY_OF_WEEK, dayOfWeek);
         args.putInt(ARG_SUBGROUP_ID, subgroupId);
+        args.putLong(ARG_START_OF_WEEK, startOfWeek);
+        args.putInt(ARG_DAY_OF_WEEK, dayOfWeek);
+        args.putInt(ARG_PERIODICITY, periodicity);
 
         fragment.setArguments(args);
         return fragment;
@@ -75,30 +89,51 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         super.onCreate(savedInstanceState);
         Bundle args = getArguments();
         if (args != null) {
+            // for debug
+            isToday = true;
+
             scheduleType = args.getInt(ARG_SCHEDULE_TYPE);
             typeFilterId = args.getInt(ARG_TYPE_FILTER_ID);
             periodicity = args.getInt(ARG_PERIODICITY, -1);
             dayOfWeek = args.getInt(ARG_DAY_OF_WEEK, -1);
+            startOfWeek = args.getLong(ARG_START_OF_WEEK, -1);
 
             subgroupId = args.getInt(ARG_SUBGROUP_ID, -1);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(startOfWeek);
+            calendar.add(Calendar.DAY_OF_WEEK, dayOfWeek);
+
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
+            String month = getResources()
+                    .getStringArray(R.array.months)[calendar.get(Calendar.MONTH)];
+
+            sections = new HashMap<>();
+            sections.put(0, format(DATE_FORMAT, day, month));
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        adapter = new ScheduleItemAdapter(getActivity(), null, sections);
+
         recyclerView =
                 (RecyclerView) inflater.inflate(R.layout.fragment_schedule, container, false);
         recyclerView.setHasFixedSize(true);
-
-        recyclerView.setLayoutManager(layoutManager);
-
-        getLoaderManager().initLoader(0, null, this);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         return recyclerView;
     }
 
-    public void onScheduleItemClick(int scheduleItemId) {
+    @Override
+    public void onStart() {
+        super.onStart();
+        getLoaderManager().initLoader(0, null, this);
+    }
+
+    public void onScheduleItemClick(long scheduleItemId) {
         if (mListener != null) {
             mListener.onScheduleItemClicked(scheduleItemId);
         }
@@ -107,7 +142,6 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        layoutManager = new LinearLayoutManager(activity);
         try {
             mListener = (OnScheduleItemClickListener) activity;
         } catch (ClassCastException e) {
@@ -120,19 +154,17 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     public void onDetach() {
         super.onDetach();
         mListener = null;
-        layoutManager = null;
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new ScheduleCursorLoader(getActivity());
+        return new ScheduleCursorLoader(getActivity(),
+                typeFilterId, subgroupId, dayOfWeek, periodicity);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        adapter = new ScheduleItemAdapter(getActivity(), data);
-        recyclerView.setAdapter(adapter);
-        recyclerView.invalidate();
+        adapter.changeCursor(data);
     }
 
     @Override
@@ -144,67 +176,125 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
      * Interface definition for a callback to be invoked when a schedule item is clicked.
      */
     public interface OnScheduleItemClickListener {
-        public void onScheduleItemClicked(int scheduleItemId);
+        /**
+         * @param scheduleItemId id of the row of the schedule table in the database.
+         */
+        public void onScheduleItemClicked(long scheduleItemId);
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class SectionViewHolder extends RecyclerView.ViewHolder {
+
+        TextView text;
+
+        public SectionViewHolder(View itemView) {
+            super(itemView);
+            text = (TextView) itemView.findViewById(R.id.sub_header_text);
+        }
+    }
+
+    public static class ItemViewHolder extends RecyclerView.ViewHolder {
+
         public View status;
         public TextView subject;
-        public TextView lecturerName;
-        public TextView location;
+        public TextView info;
         public TextView startTime;
         public TextView endTime;
 
-        public ViewHolder(View view) {
+        public ItemViewHolder(View view) {
             super(view);
             status = view.findViewById(R.id.status);
             subject = (TextView) view.findViewById(R.id.subject);
-            lecturerName = (TextView) view.findViewById(R.id.lecturer_name);
-            location = (TextView) view.findViewById(R.id.location);
+            info = (TextView) view.findViewById(R.id.info);
+            startTime = (TextView) view.findViewById(R.id.start_time);
+            endTime = (TextView) view.findViewById(R.id.end_time);
         }
 
-        public void updateFromCursor(Cursor cursor) {
-            subject.setText(cursor.getString(FullSchedule.SUMMARY.COLUMN.SUBJECT_NAME));
-            lecturerName.setText(cursor.getString(FullSchedule.SUMMARY.COLUMN.LECTURER_NAME));
-            location.setText(
-                    String.format("Аудиторія %d (%d корпус)",
-                            cursor.getInt(FullSchedule.SUMMARY.COLUMN.AUDIENCE_NUMBER),
-                            cursor.getInt(FullSchedule.SUMMARY.COLUMN.CAMPUS_NAME))
-            );
+        public void update(boolean isToday, ScheduleItem item) {
+            if (isToday) {
+                if (item.isNow()) {
+                    status.setVisibility(View.VISIBLE);
+                } else {
+                    status.setVisibility(View.GONE);
+                }
+            }
+            subject.setText(item.getSubject());
+            info.setText(item.getInfo());
+            startTime.setText(item.getStartTime());
+            endTime.setText(item.getEndTime());
         }
     }
 
-    public class ScheduleItemAdapter extends CursorRecyclerViewAdapter<ViewHolder> {
+    public class ScheduleItemAdapter extends SectionCursorRecyclerViewAdapter<String>
+            implements View.OnClickListener {
 
         public ScheduleItemAdapter(Context context, Cursor cursor) {
             super(context, cursor);
         }
 
-        @Override
-        public void onBindViewHolder(ViewHolder viewHolder, Cursor cursor) {
-            viewHolder.updateFromCursor(cursor);
+        public ScheduleItemAdapter(Context context, Cursor cursor,
+                                   HashMap<Integer, String> sections) {
+            super(context, cursor, sections);
         }
 
         @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.schedule_list_item, parent, false);
-            return new ViewHolder(view);
+        public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final Cursor cursor) {
+            ((ItemViewHolder) viewHolder).update(isToday, new ScheduleItem(cursor));
+        }
+
+        @Override
+        public void onBindSectionViewHolder(RecyclerView.ViewHolder viewHolder, String section) {
+            ((SectionViewHolder) viewHolder).text.setText(section);
+        }
+
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            switch (viewType) {
+                case TYPE_SECTION: {
+                    View view = LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.list_sub_header, parent, false);
+                    return new SectionViewHolder(view);
+                }
+                case TYPE_ITEM: {
+                    View view = LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.schedule_list_item, parent, false);
+                    view.setOnClickListener(this);
+                    return new ItemViewHolder(view);
+                }
+                default:
+                    throw new IllegalArgumentException("There is no type that matches the type: " +
+                            viewType);
+            }
+        }
+
+        @Override
+        public void onClick(View v) {
+            onScheduleItemClick(getItemId(recyclerView.getChildPosition(v)));
         }
     }
 
     public static class ScheduleCursorLoader extends CursorLoader {
 
-        public ScheduleCursorLoader(Context context) {
+        private int groupId;
+        private int subgroupId;
+        private int dayOfWeek;
+        private int periodicity;
+
+        public ScheduleCursorLoader(Context context,
+                                    int groupId, int subgroupId, int dayOfWeek, int periodicity) {
             super(context);
+            this.groupId = groupId;
+            this.subgroupId = subgroupId;
+            this.dayOfWeek = dayOfWeek;
+            this.periodicity = periodicity;
         }
 
         @Override
         public Cursor loadInBackground() {
+
             return getContext().getContentResolver()
                     .query(FullSchedule.CONTENT_URI,
                             FullSchedule.SUMMARY.PROJECTION,
-                            null,
+                            buildSelection(groupId, subgroupId, dayOfWeek, periodicity),
                             null,
                             FullSchedule.SUMMARY.SORT_ORDER);
         }

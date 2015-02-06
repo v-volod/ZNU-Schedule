@@ -296,6 +296,10 @@ public class ScheduleContract {
         public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE +
                 "/vnd." + CONTENT_AUTHORITY + ".full_schedule";
 
+        public static final String _ID =
+                Tables.SCHEDULE + "." + BaseColumns._ID;
+        public static final String SCHEDULE_GROUP_ID =
+                Tables.SCHEDULE + "." + ScheduleColumns.GROUP_ID;
         public static final String SCHEDULE_SUBJECT_ID =
                 Tables.SCHEDULE + "." + ScheduleColumns.SUBJECT_ID;
         public static final String SCHEDULE_AUDIENCE_ID =
@@ -358,6 +362,7 @@ public class ScheduleContract {
                     INNER_JOIN + Tables.LECTURER + ON + LECTURER_ID + EQ + SCHEDULE_LECTURER_ID;
 
             String[] PROJECTION = {
+                    _ID,
                     SUBGROUP,
                     DAY_OF_WEEK,
                     ACADEMIC_HOUR_NUM,
@@ -373,27 +378,34 @@ public class ScheduleContract {
             String SORT_ORDER = DAY_OF_WEEK + ASC + "," + ACADEMIC_HOUR_NUM + ASC;
 
             interface COLUMN {
-                int SUBGROUP = 0;
-                int DAY_OF_WEEK = 1;
-                int ACADEMIC_HOUR_NUM = 2;
-                int ACADEMIC_HOUR_STAT_TIME = 3;
-                int ACADEMIC_HOUR_END_TIME = 4;
-                int CLASS_TYPE = 5;
-                int SUBJECT_NAME = 6;
-                int LECTURER_NAME = 7;
-                int CAMPUS_NAME = 8;
-                int AUDIENCE_NUMBER = 9;
+                int _ID = 0;
+                int SUBGROUP = 1;
+                int DAY_OF_WEEK = 2;
+                int ACADEMIC_HOUR_NUM = 3;
+                int ACADEMIC_HOUR_STAT_TIME = 4;
+                int ACADEMIC_HOUR_END_TIME = 5;
+                int CLASS_TYPE = 6;
+                int SUBJECT_NAME = 7;
+                int LECTURER_NAME = 8;
+                int CAMPUS_NAME = 9;
+                int AUDIENCE_NUMBER = 10;
             }
         }
 
-        public static String buildSelection(long date, int subgroup, int periodicity) {
-            String dateSelection =
-                    "(" + START_DATE + "<= " + date + AND + END_DATE + " >= " + date + ")";
-            String subgroupSelection = "(" + SUBGROUP + EQ + "0" + ((subgroup > 0) ?
-                    OR + SUBGROUP + EQ + subgroup + ")" : ")");
+        public static String buildSelection(int groupId, int subgroup, int dayOfWeek, int periodicity) {
+            return "(" + SCHEDULE_GROUP_ID + EQ + groupId + ")" + AND +
+                    "(" + SUBGROUP + EQ + "0" +
+                    ((subgroup > 0) ? OR + SUBGROUP + EQ + subgroup + ")" : ")") + AND +
+                    "(" + DAY_OF_WEEK + EQ + dayOfWeek + ")" + AND +
+                    "(" + PERIODICITY + EQ + "0" + ((periodicity > 0) ?
+                    OR + PERIODICITY + EQ + periodicity + ")" : ")");
+        }
+
+        public static String buildDaySelection(int dayOfWeek, int periodicity) {
+            String dayOfWeekSelection = "(" + DAY_OF_WEEK + EQ + dayOfWeek + ")";
             String periodicitySelection = "(" + PERIODICITY + EQ + "0" + ((periodicity > 0) ?
                     OR + PERIODICITY + EQ + periodicity + ")" : ")");
-            return dateSelection + AND + subgroupSelection + AND + periodicitySelection;
+            return dayOfWeekSelection + AND + periodicitySelection;
         }
     }
 }
