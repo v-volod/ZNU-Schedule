@@ -48,4 +48,8 @@ public class CalendarUtils {
         calendar.clear(Calendar.MILLISECOND);
         return calendar.getTimeInMillis();
     }
+
+    public static int getCurrentWeekOfYear() {
+        return Calendar.getInstance().get(Calendar.WEEK_OF_YEAR);
+    }
 }

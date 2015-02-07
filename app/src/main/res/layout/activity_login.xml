@@ -1,4 +1,5 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:wheel="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -23,7 +24,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:layout_centerInParent="true"
             android:text="@string/znu_schedule"
             style="@style/AppTextLogo" />
 
@@ -39,101 +39,145 @@
             android:text="@string/tag_line_text"
             style="@style/TagLine" />
 
-        <LinearLayout
-            android:visibility="gone"
-            android:id="@+id/department_chooser"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:clickable="true"
-            android:layout_alignStart="@+id/app_logo"
-            android:layout_alignLeft="@+id/app_logo"
-            android:layout_alignEnd="@+id/app_logo"
-            android:layout_alignRight="@+id/app_logo"
             android:layout_below="@id/tag_line"
-            style="@style/LoginChooser">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:visibility="visible">
-
-                <TextView
-                    android:id="@+id/department_name"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/choose_department_hint"
-                    style="@style/TagLineChooser" />
-
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:alpha="0.99"
-                    android:src="@drawable/ic_expand_more_white_18dp" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/white_opacity" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:visibility="gone"
-            android:id="@+id/group_chooser"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:clickable="true"
             android:layout_alignStart="@+id/app_logo"
             android:layout_alignLeft="@+id/app_logo"
             android:layout_alignEnd="@+id/app_logo"
-            android:layout_alignRight="@+id/app_logo"
-            android:layout_below="@id/department_chooser"
-            style="@style/LoginChooser">
+            android:layout_alignRight="@+id/app_logo">
 
             <LinearLayout
+                android:visibility="gone"
+                android:id="@+id/department_chooser"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:visibility="visible">
+                android:orientation="vertical"
+                android:clickable="true"
+                style="@style/LoginChooser">
 
-                <TextView
-                    android:id="@+id/group_name"
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/choose_group_hint"
-                    style="@style/TagLineChooser" />
+                    android:orientation="horizontal"
+                    android:visibility="visible">
 
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:alpha="0.99"
-                    android:src="@drawable/ic_expand_more_white_18dp" />
+                    <TextView
+                        android:id="@+id/department_name"
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/choose_department_hint"
+                        style="@style/TagLineChooser" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:alpha="0.99"
+                        android:src="@drawable/ic_expand_more_white_18dp" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/white_opacity" />
             </LinearLayout>
 
-            <View
+            <LinearLayout
+                android:visibility="gone"
+                android:id="@+id/group_chooser"
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/white_opacity" />
-        </LinearLayout>
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:layout_below="@id/department_chooser"
+                style="@style/LoginChooser">
 
-        <Button
-            android:visibility="gone"
-            android:id="@+id/login_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/app_logo"
-            android:layout_alignLeft="@+id/app_logo"
-            android:layout_alignEnd="@+id/app_logo"
-            android:layout_alignRight="@+id/app_logo"
-            android:layout_below="@+id/group_chooser"
-            android:text="@string/login_button"
-            android:background="@drawable/button_login"
-            android:textColor="@color/white" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/group_name"
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/choose_group_hint"
+                        style="@style/TagLineChooser" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:alpha="0.99"
+                        android:src="@drawable/ic_expand_more_white_18dp" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/white_opacity" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:visibility="gone"
+                android:id="@+id/subgroup_chooser"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:layout_below="@id/group_chooser"
+                style="@style/LoginChooser">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/subgroup_name"
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/choose_subgroup_hint"
+                        style="@style/TagLineChooser" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:alpha="0.99"
+                        android:src="@drawable/ic_expand_more_white_18dp" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/white_opacity" />
+            </LinearLayout>
+
+            <Button
+                android:visibility="gone"
+                android:id="@+id/login_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/subgroup_chooser"
+                android:text="@string/login_button"
+                android:background="@drawable/button_login"
+                android:textColor="@color/white" />
+
+            <com.pnikosis.materialishprogress.ProgressWheel
+                android:visibility="gone"
+                android:id="@+id/progress_wheel"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/login_button"
+                wheel:matProg_barColor="@android:color/white"
+                wheel:matProg_progressIndeterminate="true" />
+        </RelativeLayout>
     </RelativeLayout>
 
 </FrameLayout>

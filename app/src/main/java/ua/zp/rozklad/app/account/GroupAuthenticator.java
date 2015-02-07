@@ -22,6 +22,12 @@ import ua.zp.rozklad.app.ui.LoginActivity;
 public class GroupAuthenticator extends AbstractAccountAuthenticator {
     public static final String ACCOUNT_TYPE = "rozklad.zp.ua.group";
 
+    public static final String KEY_AUTH_TOKEN_TYPE = "AUTH_TOKEN_TYPE";
+    public static final String KEY_GROUP_ID = "KEY_GROUP_ID";
+    public static final String KEY_SUBGROUP = "KEY_SUBGROUP";
+    public static final String KEY_SUBGROUP_COUNT = "KEY_SUBGROUP_COUNT";
+    public static final String KEY_DEPARTMENT_NAME = "KEY_DEPARTMENT_NAME";
+
     public static final int ERROR_CODE_ONE_ACCOUNT_ALLOWED = 101;
 
     private Context context;
@@ -63,7 +69,7 @@ public class GroupAuthenticator extends AbstractAccountAuthenticator {
 
         } else {
             final Intent intent = new Intent(context, LoginActivity.class);
-            intent.putExtra(LoginActivity.KEY_AUTH_TOKEN_TYPE, authTokenType);
+            intent.putExtra(KEY_AUTH_TOKEN_TYPE, authTokenType);
             intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
 
             result.putParcelable(AccountManager.KEY_INTENT, intent);

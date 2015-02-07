@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import java.util.ArrayList;
 
@@ -32,10 +34,6 @@ public class LoginActivity extends AccountAuthenticatorActivity
         implements View.OnClickListener {
     private static final int NO_SCHEDULE = 0;
 
-    public static final String KEY_AUTH_TOKEN_TYPE = "AUTH_TOKEN_TYPE";
-    public static final String KEY_GROUP_ID = "KEY_GROUP_ID";
-    public static final String KEY_LAST_UPDATE = "KEY_LAST_UPDATE";
-
     private DepartmentAdapter departmentAdapter;
     private GroupAdapter groupAdapter;
 
@@ -43,6 +41,7 @@ public class LoginActivity extends AccountAuthenticatorActivity
 
     private AccountManager accountManager;
     private LayoutInflater inflater;
+    private ProgressWheel progressWheel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +60,8 @@ public class LoginActivity extends AccountAuthenticatorActivity
         if (null != savedInstanceState) {
             departmentAdapter.onRestoreInstanceState(savedInstanceState);
         }
+
+        progressWheel = (ProgressWheel) findViewById(R.id.progress_wheel);
     }
 
     @Override
@@ -80,7 +81,11 @@ public class LoginActivity extends AccountAuthenticatorActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.login_button:
-                finishLogin(groupAdapter.getSelectedGroup());
+                finishLogin(
+                        departmentAdapter.getSelectedDepartment(),
+                        groupAdapter.getSelectedGroup(),
+                        groupAdapter.getSelectedSubgroup()
+                );
                 break;
         }
     }
@@ -91,16 +96,18 @@ public class LoginActivity extends AccountAuthenticatorActivity
         finish();
     }
 
-    private void finishLogin(Group group) {
-        String accountType = this.getIntent().getStringExtra(KEY_AUTH_TOKEN_TYPE);
+    private void finishLogin(Department department, Group group, int subgroup) {
+        String accountType = getIntent().getStringExtra(GroupAuthenticator.KEY_AUTH_TOKEN_TYPE);
 
         if (accountType == null) {
             accountType = GroupAuthenticator.ACCOUNT_TYPE;
         }
 
         final Bundle userData = new Bundle();
-        userData.putString(KEY_GROUP_ID, String.valueOf(group.getId()));
-        userData.putString(KEY_LAST_UPDATE, String.valueOf(0));
+        userData.putString(GroupAuthenticator.KEY_GROUP_ID, "" + group.getId());
+        userData.putString(GroupAuthenticator.KEY_SUBGROUP_COUNT, "" + group.getSubgroupCount());
+        userData.putString(GroupAuthenticator.KEY_SUBGROUP, "" + subgroup);
+        userData.putString(GroupAuthenticator.KEY_DEPARTMENT_NAME, department.getName());
 
         final Account account = new Account(group.getName(), accountType);
         accountManager.addAccountExplicitly(account, null, userData);
@@ -211,7 +218,7 @@ public class LoginActivity extends AccountAuthenticatorActivity
 
         public void invalidate() {
             if (!loaded) {
-                // TODO: Show progress animation
+                showProgressWheel();
                 hide();
                 method.execute(this);
             }
@@ -232,11 +239,13 @@ public class LoginActivity extends AccountAuthenticatorActivity
 
         @Override
         public void onResponse(ArrayList<Department> departments) {
+            hideProgressWheel();
             setDepartments(departments);
         }
 
         @Override
         public void onError(int responseCode) {
+            hideProgressWheel();
             showErrorMessage(responseCode);
         }
 
@@ -250,8 +259,12 @@ public class LoginActivity extends AccountAuthenticatorActivity
             if (position != -1) {
                 Department department = getItem(position);
                 departmentName.setText(department.getName());
-                groupAdapter.load(department.getId(), clearGroupSelection);
+                groupAdapter.load(department, clearGroupSelection);
             }
+        }
+
+        public Department getSelectedDepartment() {
+            return getItem(selectedDepartment);
         }
 
         public void onSaveInstanceState(Bundle outState) {
@@ -271,43 +284,67 @@ public class LoginActivity extends AccountAuthenticatorActivity
     }
 
     public class GroupAdapter extends BaseAdapter
-            implements ResponseCallback<ArrayList<Group>>, AdapterView.OnItemClickListener,
-            View.OnClickListener {
+            implements ResponseCallback<ArrayList<Group>>, View.OnClickListener {
         public static final String KEY_DEPARTMENT_ID = "DEPARTMENT_ID";
         public static final String KEY_SELECTED_GROUP = "SELECTED_GROUP";
+        public static final String KEY_SELECTED_SUBGROUP = "SELECTED_SUBGROUP";
         public static final String KEY_GROUPS_LOADED = "GROUPS_LOADED";
         public static final String KEY_GROUPS = "GROUPS";
 
         private int departmentId = -1;
         private int selectedGroup = -1;
+        private int selectedSubgroup = -1;
         private boolean loaded = false;
         private ArrayList<Group> groups;
         private GetGroupsMethod method;
 
-        private MaterialDialog dialog;
+        private MaterialDialog chooseGroupDialog;
+        private MaterialDialog chooseSubgroupDialog;
+        private TextView subgroupName;
         private TextView groupName;
-        private View chooserView;
+        private View groupChooserView;
+        private View subgroupChooserView;
+
+        private AdapterView.OnItemClickListener selectGroup = new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectGroup(position);
+                chooseGroupDialog.dismiss();
+            }
+        };
+
+        private AdapterView.OnItemClickListener selectSubgroup = new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectSubgroup(position);
+                chooseSubgroupDialog.dismiss();
+            }
+        };
 
         public GroupAdapter() {
             groups = new ArrayList<>();
             method = new GetGroupsMethod();
 
-            dialog = new MaterialDialog.Builder(LoginActivity.this)
+            chooseGroupDialog = new MaterialDialog.Builder(LoginActivity.this)
                     .title(R.string.choose_group_hint)
                     .adapter(this)
                     .negativeText(R.string.cancel)
                     .build();
 
-            ListView list = dialog.getListView();
+            ListView list = chooseGroupDialog.getListView();
 
             if (null != list) {
-                list.setOnItemClickListener(this);
+                list.setOnItemClickListener(selectGroup);
             }
 
-            chooserView = findViewById(R.id.group_chooser);
-            chooserView.setOnClickListener(this);
+            groupChooserView = findViewById(R.id.group_chooser);
+            groupChooserView.setOnClickListener(this);
+
+            subgroupChooserView = findViewById(R.id.subgroup_chooser);
+            subgroupChooserView.setOnClickListener(this);
 
             groupName = (TextView) findViewById(R.id.group_name);
+            subgroupName = (TextView) findViewById(R.id.subgroup_name);
         }
 
         @Override
@@ -342,7 +379,7 @@ public class LoginActivity extends AccountAuthenticatorActivity
         public void setGroups(ArrayList<Group> groups) {
             this.groups = groups;
             if (getCount() > 0) {
-                chooserView.setVisibility(View.VISIBLE);
+                groupChooserView.setVisibility(View.VISIBLE);
                 groupName.setText("");
                 loaded = true;
             } else {
@@ -353,67 +390,125 @@ public class LoginActivity extends AccountAuthenticatorActivity
             notifyDataSetChanged();
         }
 
-        public void load(int departmentId, boolean clearSelection) {
-            if (this.departmentId == departmentId) {
+        public void load(Department department, boolean clearSelection) {
+            if (departmentId == department.getId()) {
                 if (clearSelection) {
-                    clearSelection();
+                    clearGroupSelection();
                 }
             } else {
-                this.departmentId = departmentId;
+                departmentId = department.getId();
                 hide();
-                // TODO: Show progress animation
-                method.prepare(RESTMethod.Filter.BY_DEPARTMENT_ID, String.valueOf(departmentId));
+                showProgressWheel();
+                method.prepare(RESTMethod.Filter.BY_DEPARTMENT_ID,
+                        String.valueOf(department.getId()));
                 method.execute(this);
             }
         }
 
         @Override
         public void onResponse(ArrayList<Group> groups) {
+            hideProgressWheel();
             setGroups(groups);
         }
 
         @Override
         public void onError(int responseCode) {
+            hideProgressWheel();
             showErrorMessage(responseCode);
         }
 
         @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectGroup(position);
-            dialog.dismiss();
-        }
-
-        @Override
         public void onClick(View v) {
-            if (loaded) {
-                dialog.show();
+            switch (v.getId()) {
+                case R.id.group_chooser:
+                    if (loaded) {
+                        chooseGroupDialog.show();
+                    }
+                    break;
+                case R.id.subgroup_chooser:
+                    Group group = getItem(selectedGroup);
+                    String[] subgroups = new String[group.getSubgroupCount()];
+                    for (int i = 0; i < group.getSubgroupCount(); i++) {
+                        subgroups[i] = String.format(getString(R.string.subgroup_format), i + 1);
+                    }
+
+                    chooseSubgroupDialog = new MaterialDialog.Builder(LoginActivity.this)
+                            .title(R.string.choose_subgroup_hint)
+                            .adapter(
+                                    new ArrayAdapter<>(
+                                            LoginActivity.this,
+                                            android.R.layout.simple_spinner_dropdown_item,
+                                            subgroups
+                                    )
+                            )
+                            .negativeText(R.string.cancel)
+                            .build();
+
+                    ListView list = chooseSubgroupDialog.getListView();
+
+                    if (null != list) {
+                        list.setOnItemClickListener(selectSubgroup);
+                    }
+
+                    chooseSubgroupDialog.show();
+                    break;
             }
         }
 
         public void hide() {
-            chooserView.setVisibility(View.GONE);
+            groupChooserView.setVisibility(View.GONE);
+            subgroupChooserView.setVisibility(View.GONE);
             loginButton.setVisibility(View.GONE);
         }
 
         public void selectGroup(int position) {
             selectedGroup = position;
             if (selectedGroup == -1) {
-                clearSelection();
+                clearGroupSelection();
             } else {
                 Group group = getItem(selectedGroup);
                 groupName.setText(group.getName());
+                if (group.getSubgroupCount() == 0) {
+                    subgroupChooserView.setVisibility(View.GONE);
+                    loginButton.setVisibility(View.VISIBLE);
+                } else {
+                    subgroupChooserView.setVisibility(View.VISIBLE);
+                    clearSubgroupSelection();
+                }
+            }
+        }
+
+        public void selectSubgroup(int subgroup) {
+            selectedSubgroup = subgroup;
+            if (selectedSubgroup == -1) {
+                clearSubgroupSelection();
+            } else {
+                subgroupName.setText(
+                        String.format(getString(R.string.subgroup_format), getSelectedSubgroup())
+                );
                 loginButton.setVisibility(View.VISIBLE);
             }
         }
 
-        private void clearSelection() {
+        private void clearGroupSelection() {
             selectedGroup = -1;
             groupName.setText("");
+            clearSubgroupSelection();
+            subgroupChooserView.setVisibility(View.GONE);
+        }
+
+        public void clearSubgroupSelection() {
+            selectedSubgroup = -1;
+            subgroupName.setText("");
             loginButton.setVisibility(View.GONE);
         }
 
         public Group getSelectedGroup() {
             return getItem(selectedGroup);
+        }
+
+        public int getSelectedSubgroup() {
+            return selectedSubgroup + 1;
         }
 
         public void onSaveInstanceState(Bundle outState) {
@@ -422,18 +517,28 @@ public class LoginActivity extends AccountAuthenticatorActivity
             if (loaded) {
                 outState.putSerializable(KEY_GROUPS, groups);
                 outState.putInt(KEY_SELECTED_GROUP, selectedGroup);
+                outState.putInt(KEY_SELECTED_SUBGROUP, selectedSubgroup);
             }
         }
 
         public void onRestoreInstanceState(Bundle savedInstanceState) {
             departmentId = savedInstanceState.getInt(KEY_DEPARTMENT_ID, -1);
             loaded = savedInstanceState.getBoolean(KEY_GROUPS_LOADED, false);
-            if (departmentId != -1 & loaded) {
+            if (departmentId != -1 && loaded) {
                 //noinspection unchecked
                 setGroups((ArrayList<Group>) savedInstanceState.getSerializable(KEY_GROUPS));
                 selectGroup(savedInstanceState.getInt(KEY_SELECTED_GROUP, -1));
+                selectSubgroup(savedInstanceState.getInt(KEY_SELECTED_SUBGROUP, -1));
             }
         }
+    }
+
+    public void showProgressWheel() {
+        progressWheel.setVisibility(View.VISIBLE);
+    }
+
+    public void hideProgressWheel() {
+        progressWheel.setVisibility(View.GONE);
     }
 }
 

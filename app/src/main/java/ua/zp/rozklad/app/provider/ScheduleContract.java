@@ -26,6 +26,8 @@ public class ScheduleContract {
 
     interface GroupColumns {
         String DEPARTMENT_ID = "department_id";
+        String COURSE = "course";
+        String SUBGROUP_COUNT = "subgroup_count";
         String GROUP_NAME = "group_name";
     }
 
@@ -107,7 +109,7 @@ public class ScheduleContract {
         }
     }
 
-    public static class Group implements GroupColumns, BaseColumns {
+    public static class Group implements GroupColumns, BaseColumns, SyncColumns {
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_GROUP).build();
 
@@ -119,8 +121,8 @@ public class ScheduleContract {
         /**
          * Build {@link Uri} for requested group.
          */
-        public static Uri buildGroupUri(String groupId) {
-            return CONTENT_URI.buildUpon().appendPath(groupId).build();
+        public static Uri buildGroupUri(Object groupId) {
+            return buildItemUri(CONTENT_URI, groupId);
         }
     }
 
@@ -501,5 +503,9 @@ public class ScheduleContract {
             combination[i] = String.valueOf(args[i]);
         }
         return combination;
+    }
+
+    private static Uri buildItemUri(Uri contentUri, Object item) {
+        return contentUri.buildUpon().appendPath(String.valueOf(item)).build();
     }
 }

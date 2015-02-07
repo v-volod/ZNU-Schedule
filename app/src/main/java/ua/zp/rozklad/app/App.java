@@ -7,6 +7,8 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
+import ua.zp.rozklad.app.util.PreferencesUtils;
+
 /**
  * @author Vojko Vladimir
  */
@@ -17,6 +19,7 @@ public class App extends Application {
     private static App mInstance;
 
     private RequestQueue mRequestQueue;
+    private PreferencesUtils mPreferencesUtils;
 
     @Override
     public void onCreate() {
@@ -51,4 +54,11 @@ public class App extends Application {
         }
     }
 
+    public PreferencesUtils getPreferencesUtils() {
+        if (mPreferencesUtils == null) {
+            mPreferencesUtils = new PreferencesUtils(this);
+        }
+
+        return mPreferencesUtils;
+    }
 }
