@@ -46,6 +46,7 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
         String CAMPUS = "campus";
         String AUDIENCE = "audience";
         String TIMETABLE = "timetable";
+        String CURRENT_WEEK = "current_week";
     }
 
     public static interface Key {
@@ -74,6 +75,7 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
         String COURSE = "course";
         String GROUP = "group";
         String FREE_TRAJECTORY = "free_trajectory";
+        String WEEK = "week";
     }
 
     public interface Filter {
@@ -132,10 +134,11 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
     }
 
     protected static int generateResponseCode(Throwable throwable) {
-        Log.d("RestLogs", throwable.toString());
+        Log.e("RestLogs", throwable.toString());
         if (throwable instanceof ExecutionException) {
             return generateResponseCode(throwable.getCause());
         } else if (throwable instanceof VolleyError) {
+
             return ResponseCode.VOLLEY_ERROR;
         } else if (throwable instanceof JSONException) {
             return ResponseCode.PARSE_RESPONSE_ERROR;

@@ -48,6 +48,8 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + Tables.GROUP + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + GroupColumns.DEPARTMENT_ID + " INTEGER NOT NULL, "
+                + GroupColumns.COURSE + " INTEGER NOT NULL, "
+                + GroupColumns.SUBGROUP_COUNT + " INTEGER NOT NULL, "
                 + GroupColumns.GROUP_NAME + " TEXT NOT NULL, "
                 + SyncColumns.UPDATED + " INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE " + Tables.LECTURER + " ("

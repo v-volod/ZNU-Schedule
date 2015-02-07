@@ -1,5 +1,7 @@
 package ua.zp.rozklad.app.rest;
 
+import android.util.Log;
+
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.RequestFuture;
@@ -11,7 +13,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import ua.zp.rozklad.app.App;
-import ua.zp.rozklad.app.rest.resource.Group;
 import ua.zp.rozklad.app.rest.resource.Lecturer;
 
 /**
@@ -47,7 +48,11 @@ public class GetLecturersMethod extends RESTMethod<ArrayList<Lecturer>, JSONObje
             ArrayList<Lecturer> lecturers = new ArrayList<>();
 
             for (int i = 0; i < objects.length(); i++) {
-                lecturers.add(new Lecturer(objects.getJSONObject(i)));
+                try {
+                    lecturers.add(new Lecturer(objects.getJSONObject(i)));
+                } catch (JSONException e) {
+                    Log.e("RestLogs", e.toString());
+                }
             }
 
             return new MethodResponse<>(ResponseCode.OK, lecturers);
@@ -68,7 +73,11 @@ public class GetLecturersMethod extends RESTMethod<ArrayList<Lecturer>, JSONObje
             ArrayList<Lecturer> lecturers = new ArrayList<>();
 
             for (int i = 0; i < objects.length(); i++) {
-                lecturers.add(new Lecturer(objects.getJSONObject(i)));
+                try {
+                    lecturers.add(new Lecturer(objects.getJSONObject(i)));
+                } catch (JSONException e) {
+                    Log.e("RestLogs", e.toString());
+                }
             }
 
             callback.onResponse(lecturers);

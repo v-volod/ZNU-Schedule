@@ -12,8 +12,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -26,9 +24,6 @@ import java.util.ArrayList;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAuthenticator;
 import ua.zp.rozklad.app.provider.ScheduleContract;
-
-import static ua.zp.rozklad.app.util.CalendarUtils.addWeeks;
-import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekStartInMillis;
 
 
 public class MainActivity extends ActionBarActivity
@@ -130,7 +125,6 @@ public class MainActivity extends ActionBarActivity
         * */
         groupId = 1;
         subgroupId = 1;
-        setPeriodicity(1);
 
         if (savedInstanceState != null) {
             selectedNavDrawerItemId = savedInstanceState
@@ -311,9 +305,16 @@ public class MainActivity extends ActionBarActivity
             case NAV_DRAWER_ITEM_SCHEDULE:
                 onScheduleSelected();
                 break;
-            /*
-            * Change main content fragment
-            * */
+            case NAV_DRAWER_ITEM_SUBJECTS:
+                onSubjectsSelected();
+                // for DEBUG
+                clearMainContentContainer();
+                break;
+            case NAV_DRAWER_ITEM_LECTURERS:
+                onLecturersSelected();
+                // for DEBUG
+                clearMainContentContainer();
+                break;
         }
         setSelectedNavDrawerItem(itemId);
         drawerLayout.closeDrawer(Gravity.START);
@@ -333,14 +334,12 @@ public class MainActivity extends ActionBarActivity
     private void onScheduleSelected() {
         Fragment scheduleOfWeek = getFragmentManager().findFragmentById(R.id.main_content);
         if (scheduleOfWeek == null || !(scheduleOfWeek instanceof ScheduleOfWeekFragment)) {
-            long startOfWeek = addWeeks(getCurrentWeekStartInMillis(), periodicity - 1);
             getFragmentManager().beginTransaction()
                     .replace(R.id.main_content, ScheduleOfWeekFragment
-                            .newInstance(groupId, subgroupId, startOfWeek, periodicity))
+                            .newInstance(groupId, subgroupId))
                     .commit();
         }
         getSupportActionBar().setTitle(R.string.schedule);
-        setPeriodicitySubtitle();
     }
 
     @Override
@@ -352,17 +351,30 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     public void onPeriodicityChanged(int periodicity) {
-        setPeriodicity(periodicity);
+        getSupportActionBar().setSubtitle(PERIODICITY_SUBTITLE_RES_ID[periodicity - 1]);
     }
 
-    private void setPeriodicity(int periodicity) {
-        if (this.periodicity != periodicity) {
-            this.periodicity = periodicity;
-            setPeriodicitySubtitle();
+    private void onSubjectsSelected() {
+        getSupportActionBar().setTitle(R.string.nav_drawer_item_subjects);
+        getSupportActionBar().setSubtitle(0);
+    }
+
+    private void onLecturersSelected() {
+        getSupportActionBar().setTitle(R.string.nav_drawer_item_lecturers);
+        getSupportActionBar().setSubtitle(0);
+    }
+
+    private void clearMainContentContainer() {
+        /*
+        * Just for DEBUG
+        * */
+        Fragment fragment = getFragmentManager()
+                .findFragmentById(R.id.main_content);
+        if (fragment != null) {
+            getFragmentManager().beginTransaction()
+                    .remove(fragment)
+                    .commit();
         }
     }
 
-    private void setPeriodicitySubtitle() {
-        getSupportActionBar().setSubtitle(PERIODICITY_SUBTITLE_RES_ID[periodicity - 1]);
-    }
 }

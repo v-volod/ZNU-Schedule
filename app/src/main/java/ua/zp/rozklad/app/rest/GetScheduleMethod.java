@@ -58,7 +58,7 @@ public class GetScheduleMethod extends RESTMethod<ArrayList<GlobalScheduleItem>,
                 try {
                     scheduleItems.add(new GlobalScheduleItem(objects.getJSONObject(i)));
                 } catch (JSONException e) {
-                    Log.d("RestLogs", e.toString());
+                    Log.e("RestLogs", e.toString());
                 }
             }
 

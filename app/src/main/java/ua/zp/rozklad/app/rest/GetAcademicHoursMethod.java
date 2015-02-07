@@ -1,5 +1,7 @@
 package ua.zp.rozklad.app.rest;
 
+import android.util.Log;
+
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.RequestFuture;
@@ -46,7 +48,11 @@ public class GetAcademicHoursMethod extends RESTMethod<ArrayList<AcademicHour>, 
             ArrayList<AcademicHour> academicHours = new ArrayList<>();
 
             for (int i = 0; i < objects.length(); i++) {
-                academicHours.add(new AcademicHour(objects.getJSONObject(i)));
+                try {
+                    academicHours.add(new AcademicHour(objects.getJSONObject(i)));
+                } catch (JSONException e) {
+                    Log.e("RestLogs", e.toString());
+                }
             }
 
             return new MethodResponse<>(ResponseCode.OK, academicHours);
@@ -67,7 +73,11 @@ public class GetAcademicHoursMethod extends RESTMethod<ArrayList<AcademicHour>, 
             ArrayList<AcademicHour> academicHours = new ArrayList<>();
 
             for (int i = 0; i < objects.length(); i++) {
-                academicHours.add(new AcademicHour(objects.getJSONObject(i)));
+                try {
+                    academicHours.add(new AcademicHour(objects.getJSONObject(i)));
+                } catch (JSONException e) {
+                    Log.e("RestLogs", e.toString());
+                }
             }
 
             callback.onResponse(academicHours);

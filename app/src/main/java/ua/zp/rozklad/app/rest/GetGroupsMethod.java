@@ -1,5 +1,7 @@
 package ua.zp.rozklad.app.rest;
 
+import android.util.Log;
+
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.RequestFuture;
@@ -53,7 +55,11 @@ public class GetGroupsMethod extends RESTMethod<ArrayList<Group>, JSONObject> {
             ArrayList<Group> groups = new ArrayList<>();
 
             for (int i = 0; i < objects.length(); i++) {
-                groups.add(new Group(objects.getJSONObject(i)));
+                try {
+                    groups.add(new Group(objects.getJSONObject(i)));
+                } catch (JSONException e) {
+                    Log.e("RestLogs", e.toString());
+                }
             }
 
             return new MethodResponse<>(ResponseCode.OK, groups);
@@ -74,7 +80,11 @@ public class GetGroupsMethod extends RESTMethod<ArrayList<Group>, JSONObject> {
             ArrayList<Group> groups = new ArrayList<>();
 
             for (int i = 0; i < objects.length(); i++) {
-                groups.add(new Group(objects.getJSONObject(i)));
+                try {
+                    groups.add(new Group(objects.getJSONObject(i)));
+                } catch (JSONException e) {
+                    Log.e("RestLogs", e.toString());
+                }
             }
 
             callback.onResponse(groups);

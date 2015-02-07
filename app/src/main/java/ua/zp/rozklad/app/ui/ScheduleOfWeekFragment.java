@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 
 import com.melnykov.fab.FloatingActionButton;
 
+import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.adapter.CursorFragmentStatePagerAdapter;
 import ua.zp.rozklad.app.ui.tabs.SlidingTabLayout;
@@ -43,8 +44,6 @@ public class ScheduleOfWeekFragment extends Fragment implements
 
     private static final String ARG_GROUP_ID = "groupId";
     private static final String ARG_SUBGROUP_ID = "subgroupId";
-    private static final String ARG_START_OF_WEEK = "startOfWeek";
-    private static final String ARG_PERIODICITY = "periodicity";
 
 
     private int selectedDayItem = -1;
@@ -64,14 +63,11 @@ public class ScheduleOfWeekFragment extends Fragment implements
     private Runnable runPager;
     private boolean mCreated = false;
 
-    public static ScheduleOfWeekFragment newInstance(
-            int groupId, int subgroupId, long startOfWeek, int periodicity) {
+    public static ScheduleOfWeekFragment newInstance(int groupId, int subgroupId) {
         ScheduleOfWeekFragment fragment = new ScheduleOfWeekFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_GROUP_ID, groupId);
         args.putInt(ARG_SUBGROUP_ID, subgroupId);
-        args.putLong(ARG_START_OF_WEEK, startOfWeek);
-        args.putInt(ARG_PERIODICITY, periodicity);
         fragment.setArguments(args);
         return fragment;
     }
@@ -94,8 +90,9 @@ public class ScheduleOfWeekFragment extends Fragment implements
         if (args != null) {
             groupId = args.getInt(ARG_GROUP_ID);
             subgroupId = args.getInt(ARG_SUBGROUP_ID);
-            startOfWeek = args.getLong(ARG_START_OF_WEEK);
-            periodicity = args.getInt(ARG_PERIODICITY);
+            periodicity = App.getInstance().getPreferencesUtils().getPeriodicity()
+                    .getPeriodicityForWeek(CalendarUtils.getCurrentWeekOfYear());
+            startOfWeek = addWeeks(getCurrentWeekStartInMillis(), periodicity - 1);
         }
     }
 
@@ -174,6 +171,7 @@ public class ScheduleOfWeekFragment extends Fragment implements
     protected void invalidate() {
         mPager.setAdapter(mAdapter);
         mTabs.setViewPager(mPager);
+        mListener.onPeriodicityChanged(periodicity);
     }
 
     @Override
@@ -210,15 +208,15 @@ public class ScheduleOfWeekFragment extends Fragment implements
             if (selectedDayItem == -1) {
                 int currentDay =
                         (int) ((currentTimeMillis() - startOfWeek) / CalendarUtils.DAY_TIME_STAMP);
-                long time = (currentTimeMillis() - startOfWeek) % CalendarUtils.DAY_TIME_STAMP;
 
-                if (data.moveToFirst() && currentDay < data.getCount()) {
-                    data.move(currentDay);
-                    if (time > data.getLong(1)) {
-                        currentDay++;
-                    }
+                if (currentDay < 0) {
+                    selectedDayItem = data.getCount() - 1;
+                } else {
+                    /*
+                    * If data loads for the first time, decide which of the day should be selected.
+                    * */
+                    selectedDayItem = mAdapter.findDayForSelection(currentDay);
                 }
-                selectedDayItem = mAdapter.findDayForSelection(currentDay);
             }
             mPager.setCurrentItem(selectedDayItem, true);
         }
@@ -296,6 +294,12 @@ public class ScheduleOfWeekFragment extends Fragment implements
             return DAYS[cursor.getInt(0)];
         }
 
+        /**
+         * Find day int the schedule to select depending on current day.
+         *
+         * @param currentDay the current day of the week.
+         * @return day to be selected.
+         */
         public int findDayForSelection(int currentDay) {
             Cursor cursor = getCursor();
 
@@ -303,15 +307,44 @@ public class ScheduleOfWeekFragment extends Fragment implements
             int day;
 
             if (cursor.moveToFirst()) {
+                /*
+                * For all days from schedule.
+                * */
                 do {
+                    // get the number of the day
                     day = cursor.getInt(0);
-                    if (day == currentDay || day > dayForSelection) {
+                    // if this day is current day
+                    if (day == currentDay) {
+                        /*
+                        * Switch to the next day if current day is not the last day in the schedule
+                        * and if current time  is greater the end time of the last item of the
+                        * schedule.
+                        * */
+                        if (dayForSelection < cursor.getCount() - 1) {
+                            long time = (currentTimeMillis() - startOfWeek) % CalendarUtils.DAY_TIME_STAMP;
+
+                            if (time > cursor.getLong(1)) {
+                                dayForSelection++;
+                            }
+                        }
+
                         return dayForSelection;
-                    }
+                    } /*else if (day > dayForSelection) {
+                        return dayForSelection;
+                    }*/
                     dayForSelection++;
                 } while (cursor.moveToNext());
+
+                /*
+                * Select the last day in the schedule if the current day is greater than last day
+                * in the schedule.
+                * */
+                if (day < currentDay) {
+                    return day;
+                }
             }
 
+            // Return first day in other cases.
             return 0;
         }
 

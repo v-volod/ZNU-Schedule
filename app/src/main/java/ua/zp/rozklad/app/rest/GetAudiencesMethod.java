@@ -1,5 +1,7 @@
 package ua.zp.rozklad.app.rest;
 
+import android.util.Log;
+
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.RequestFuture;
@@ -46,7 +48,11 @@ public class GetAudiencesMethod extends RESTMethod<ArrayList<Audience>, JSONObje
             ArrayList<Audience> audiences = new ArrayList<>();
 
             for (int i = 0; i < objects.length(); i++) {
-                audiences.add(new Audience(objects.getJSONObject(i)));
+                try {
+                    audiences.add(new Audience(objects.getJSONObject(i)));
+                } catch (JSONException e) {
+                    Log.e("RestLogs", e.toString());
+                }
             }
 
             return new MethodResponse<>(ResponseCode.OK, audiences);
@@ -67,7 +73,11 @@ public class GetAudiencesMethod extends RESTMethod<ArrayList<Audience>, JSONObje
             ArrayList<Audience> audiences = new ArrayList<>();
 
             for (int i = 0; i < objects.length(); i++) {
-                audiences.add(new Audience(objects.getJSONObject(i)));
+                try {
+                    audiences.add(new Audience(objects.getJSONObject(i)));
+                } catch (JSONException e) {
+                    Log.e("RestLogs", e.toString());
+                }
             }
 
             callback.onResponse(audiences);

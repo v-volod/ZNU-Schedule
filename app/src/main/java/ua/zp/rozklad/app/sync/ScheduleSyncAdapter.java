@@ -12,9 +12,13 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
+import ua.zp.rozklad.app.App;
+import ua.zp.rozklad.app.account.GroupAuthenticator;
+import ua.zp.rozklad.app.model.Periodicity;
 import ua.zp.rozklad.app.processor.AcademicHoursProcessor;
 import ua.zp.rozklad.app.processor.AudiencesProcessor;
 import ua.zp.rozklad.app.processor.CampusesProcessor;
+import ua.zp.rozklad.app.processor.GroupsProcessor;
 import ua.zp.rozklad.app.processor.LecturersProcessor;
 import ua.zp.rozklad.app.processor.ScheduleProcessor;
 import ua.zp.rozklad.app.processor.SubjectsProcessor;
@@ -23,6 +27,7 @@ import ua.zp.rozklad.app.processor.dependency.ScheduleDependency;
 import ua.zp.rozklad.app.rest.GetAcademicHoursMethod;
 import ua.zp.rozklad.app.rest.GetAudiencesMethod;
 import ua.zp.rozklad.app.rest.GetCampusesMethod;
+import ua.zp.rozklad.app.rest.GetCurrentWeekMethod;
 import ua.zp.rozklad.app.rest.GetGroupsMethod;
 import ua.zp.rozklad.app.rest.GetLecturersMethod;
 import ua.zp.rozklad.app.rest.GetScheduleMethod;
@@ -32,12 +37,13 @@ import ua.zp.rozklad.app.rest.RESTMethod;
 import ua.zp.rozklad.app.rest.resource.AcademicHour;
 import ua.zp.rozklad.app.rest.resource.Audience;
 import ua.zp.rozklad.app.rest.resource.Campus;
+import ua.zp.rozklad.app.rest.resource.CurrentWeek;
 import ua.zp.rozklad.app.rest.resource.GlobalScheduleItem;
 import ua.zp.rozklad.app.rest.resource.Group;
 import ua.zp.rozklad.app.rest.resource.Lecturer;
 import ua.zp.rozklad.app.rest.resource.ScheduleItem;
 import ua.zp.rozklad.app.rest.resource.Subject;
-import ua.zp.rozklad.app.ui.LoginActivity;
+import ua.zp.rozklad.app.util.CalendarUtils;
 
 /**
  * @author Vojko Vladimir
@@ -62,10 +68,23 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
     public void onPerformSync(Account account, Bundle extras, String authority,
                               ContentProviderClient provider, SyncResult syncResult) {
         AccountManager manager = AccountManager.get(getContext());
-        String groupId = manager.getUserData(account, LoginActivity.KEY_GROUP_ID);
-        String lastUpdate = manager.getUserData(account, LoginActivity.KEY_LAST_UPDATE);
+        String groupId = manager.getUserData(account, GroupAuthenticator.KEY_GROUP_ID);
 
-        Log.d("ScheduleLOGS", "PerformSync: " + groupId + ", " + lastUpdate);
+        Log.d("ScheduleLOGS", "PerformSync for account: " + account + ", group_id: " + groupId);
+
+        GetCurrentWeekMethod currentWeekMethod = new GetCurrentWeekMethod();
+        currentWeekMethod.prepare(RESTMethod.Filter.NONE);
+
+        MethodResponse<CurrentWeek> currentWeekMethodResponse = currentWeekMethod.executeBlocking();
+        if (currentWeekMethodResponse.getResponseCode() != RESTMethod.ResponseCode.OK) {
+            onErrorOccurred();
+            return;
+        }
+
+        CurrentWeek currentWeek = currentWeekMethodResponse.getResponse();
+        App.getInstance().getPreferencesUtils().savePeriodicity(
+                new Periodicity(currentWeek, CalendarUtils.getCurrentWeekOfYear())
+        );
 
         GetGroupsMethod method = new GetGroupsMethod();
         method.prepare(RESTMethod.Filter.BY_ID, groupId);
@@ -73,20 +92,21 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         MethodResponse<ArrayList<Group>> response = method.executeBlocking();
 
         if (response.getResponseCode() == RESTMethod.ResponseCode.OK) {
-            Group group = response.getResponse().get(0);
+            ArrayList<Group> groups = response.getResponse();
 
-            if (group.getLastUpdate() > Long.parseLong(lastUpdate)) {
-                performScheduleSync(group);
-//                manager.setUserData(account, LoginActivity.KEY_LAST_UPDATE,
-//                        String.valueOf(group.getLastUpdate()));
+            GroupsProcessor processor = new GroupsProcessor(getContext());
+            groups = processor.process(groups);
+
+            for (Group group : groups) {
+                performGroupSync(group);
             }
         }
 
         Log.d("ScheduleLOGS", "onPerformSync finished");
     }
 
-    private void performScheduleSync(Group group) {
-        Log.d("ScheduleLOGS", "performScheduleSync for group " + group.getName());
+    private void performGroupSync(Group group) {
+        Log.d("ScheduleLOGS", "performGroupSync " + group.getName());
 
         GetScheduleMethod method = new GetScheduleMethod();
         method.prepare(RESTMethod.Filter.BY_GROUP_ID, String.valueOf(group.getId()));
@@ -97,7 +117,7 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         if (scheduleItemsResponse.getResponseCode() == RESTMethod.ResponseCode.OK) {
             ArrayList<ScheduleItem> scheduleItems = new ArrayList<>();
 
-            for (GlobalScheduleItem item: scheduleItemsResponse.getResponse()) {
+            for (GlobalScheduleItem item : scheduleItemsResponse.getResponse()) {
                 scheduleItems.addAll(item.getScheduleItems());
             }
 
@@ -172,7 +192,7 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         if (response.getResponseCode() == RESTMethod.ResponseCode.OK) {
             AudiencesProcessor processor = new AudiencesProcessor(getContext());
 
-            AudienceDependency dependency =  processor.process(response.getResponse());
+            AudienceDependency dependency = processor.process(response.getResponse());
 
             if (dependency.hasCampuses()) {
                 performCampusesSync(dependency.getCampuses());
@@ -191,5 +211,10 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
 
             processor.process(response.getResponse());
         }
+    }
+
+    private void onErrorOccurred() {
+        Log.d("ScheduleLOGS", "onPerformSync finished with error");
+        // TODO: Notify about errors.
     }
 }

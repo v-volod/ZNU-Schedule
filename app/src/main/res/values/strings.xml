@@ -9,6 +9,8 @@
     <string name="tag_line_text">Завжди актуальний розклад в твоїй кишені</string>
     <string name="choose_department_hint">Оберіть факультет&#8230;</string>
     <string name="choose_group_hint">Оберіть групу&#8230;</string>
+    <string name="choose_subgroup_hint">Оберіть підгрупу&#8230;</string>
+    <string name="subgroup_format">%d підгрупа</string>
     <string name="cancel">відмінити</string>
     <string name="login_button">УВІЙТИ</string>
     <string name="no_schedule">Поки що розклад відсутній</string>
