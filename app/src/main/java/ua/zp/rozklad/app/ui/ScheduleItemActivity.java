@@ -28,7 +28,7 @@ public class ScheduleItemActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.home:
-                this.finish();
+                onBackPressed();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

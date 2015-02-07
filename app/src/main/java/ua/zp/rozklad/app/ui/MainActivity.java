@@ -2,6 +2,7 @@ package ua.zp.rozklad.app.ui;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.Fragment;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,13 +27,13 @@ import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAuthenticator;
 import ua.zp.rozklad.app.provider.ScheduleContract;
 
-import static java.lang.Math.abs;
 import static ua.zp.rozklad.app.util.CalendarUtils.addWeeks;
-import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekInMillis;
+import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekStartInMillis;
 
 
 public class MainActivity extends ActionBarActivity
-        implements ScheduleFragment.OnScheduleItemClickListener {
+        implements ScheduleFragment.OnScheduleItemClickListener,
+        ScheduleOfWeekFragment.OnPeriodicityChangeListener {
 
     public static interface EXTRA_KEY {
         String SELECTED_NAV_DRAWER_ITEM_ID = "SELECTED_NAV_DRAWER_ITEM_ID";
@@ -61,6 +62,11 @@ public class MainActivity extends ActionBarActivity
             R.drawable.ic_people_white_24dp,
             R.drawable.ic_settings_white_24dp,
             R.drawable.ic_help_white_24dp
+    };
+
+    private static final int[] PERIODICITY_SUBTITLE_RES_ID = {
+            R.string.numerator,
+            R.string.denominator
     };
 
     private int selectedNavDrawerItemId = 0;
@@ -104,27 +110,6 @@ public class MainActivity extends ActionBarActivity
     private Toolbar appBar;
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_change_week:
-                if (selectedNavDrawerItemId == NAV_DRAWER_ITEM_SCHEDULE) {
-                    togglePeriodicity();
-                    // TODO: Try to change week in fragment by reloading data.
-                    onScheduleSelected();
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -145,7 +130,7 @@ public class MainActivity extends ActionBarActivity
         * */
         groupId = 1;
         subgroupId = 1;
-        periodicity = 1;
+        setPeriodicity(1);
 
         if (savedInstanceState != null) {
             selectedNavDrawerItemId = savedInstanceState
@@ -346,12 +331,16 @@ public class MainActivity extends ActionBarActivity
     }
 
     private void onScheduleSelected() {
-        long startOfWeek = addWeeks(getCurrentWeekInMillis(), periodicity - 1);
-        getFragmentManager().beginTransaction()
-                .replace(R.id.main_content, ScheduleOfWeekFragment
-                        .newInstance(groupId, subgroupId, startOfWeek, periodicity))
-                .commit();
-        // TODO: Change AppBar title and subtitle.
+        Fragment scheduleOfWeek = getFragmentManager().findFragmentById(R.id.main_content);
+        if (scheduleOfWeek == null || !(scheduleOfWeek instanceof ScheduleOfWeekFragment)) {
+            long startOfWeek = addWeeks(getCurrentWeekStartInMillis(), periodicity - 1);
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.main_content, ScheduleOfWeekFragment
+                            .newInstance(groupId, subgroupId, startOfWeek, periodicity))
+                    .commit();
+        }
+        getSupportActionBar().setTitle(R.string.schedule);
+        setPeriodicitySubtitle();
     }
 
     @Override
@@ -361,7 +350,19 @@ public class MainActivity extends ActionBarActivity
         startActivity(intent);
     }
 
-    private void togglePeriodicity() {
-        periodicity = abs(periodicity - 3);
+    @Override
+    public void onPeriodicityChanged(int periodicity) {
+        setPeriodicity(periodicity);
+    }
+
+    private void setPeriodicity(int periodicity) {
+        if (this.periodicity != periodicity) {
+            this.periodicity = periodicity;
+            setPeriodicitySubtitle();
+        }
+    }
+
+    private void setPeriodicitySubtitle() {
+        getSupportActionBar().setSubtitle(PERIODICITY_SUBTITLE_RES_ID[periodicity - 1]);
     }
 }

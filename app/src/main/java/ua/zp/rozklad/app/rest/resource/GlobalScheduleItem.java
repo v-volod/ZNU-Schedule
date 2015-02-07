@@ -1,8 +1,10 @@
 package ua.zp.rozklad.app.rest.resource;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -13,10 +15,10 @@ import static java.lang.Integer.parseInt;
 /**
  * @author Vojko Vladimir
  */
-public class ScheduleItem extends Resource {
+public class GlobalScheduleItem extends Resource {
 
     private int id;
-    private int groupId;
+    private int[] group;
     private int subgroup;
     private int subjectId;
     private int dayOfWeek;
@@ -29,25 +31,13 @@ public class ScheduleItem extends Resource {
     private int classType;
     private long lastUpdate;
 
-    public ScheduleItem(GlobalScheduleItem item, int groupId) {
-        id = item.getId();
-        this.groupId = groupId;
-        subgroup = item.getSubgroup();
-        subjectId = item.getSubjectId();
-        dayOfWeek = item.getDayOfWeek();
-        academicHourId = item.getAcademicHourId();
-        lecturerId = item.getLecturerId();
-        audienceId = item.getAudienceId();
-        periodicity = item.getPeriodicity();
-        startDate = item.getStartDate();
-        endDate = item.getEndDate();
-        classType = item.getClassType();
-        lastUpdate = item.getLastUpdate();
-    }
-
-    public ScheduleItem(JSONObject json) throws JSONException {
+    public GlobalScheduleItem(JSONObject json) throws JSONException {
         id = json.getInt(RESTMethod.Key.ID);
-        groupId = json.getInt(RESTMethod.Key.GROUP_ID);
+        JSONArray groupArray = json.getJSONArray(RESTMethod.Key.GROUP);
+        group = new int[groupArray.length()];
+        for (int i = 0; i < groupArray.length(); i++) {
+            group[i] = groupArray.getInt(i);
+        }
         subgroup = json.getInt(RESTMethod.Key.SUBGROUP);
         subjectId = json.getInt(RESTMethod.Key.LESSON_ID);
         dayOfWeek = json.getInt(RESTMethod.Key.DAY);
@@ -61,16 +51,12 @@ public class ScheduleItem extends Resource {
         lastUpdate = json.getLong(RESTMethod.Key.LAST_UPDATE);
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public int getId() {
         return id;
     }
 
-    public int getGroupId() {
-        return groupId;
+    public int[] getGroup() {
+        return group;
     }
 
     public int getSubgroup() {
@@ -124,5 +110,13 @@ public class ScheduleItem extends Resource {
         calendar.set(parseInt(date[0]), parseInt(date[1]), parseInt(date[2]), 0, 0);
 
         return calendar.getTimeInMillis();
+    }
+
+    public ArrayList<ScheduleItem> getScheduleItems() {
+        ArrayList<ScheduleItem> items = new ArrayList<>();
+        for (int id : group) {
+            items.add(new ScheduleItem(this, id));
+        }
+        return items;
     }
 }

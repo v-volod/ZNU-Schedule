@@ -5,7 +5,7 @@ import android.database.Cursor;
 import java.util.Calendar;
 
 import static java.lang.String.format;
-import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.SUMMARY.COLUMN;
+import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Column;
 
 /**
  * @author Vojko Vladimir
@@ -25,15 +25,15 @@ public class ScheduleItem {
     private String info;
 
     public ScheduleItem(Cursor cursor) {
-        int audienceNumber = cursor.getInt(COLUMN.AUDIENCE_NUMBER);
-        startTime = cursor.getLong(COLUMN.ACADEMIC_HOUR_STAT_TIME);
-        endTime = cursor.getInt(COLUMN.ACADEMIC_HOUR_END_TIME);
-        subject = cursor.getString(COLUMN.SUBJECT_NAME);
+        int audienceNumber = cursor.getInt(Column.AUDIENCE_NUMBER);
+        startTime = cursor.getLong(Column.ACADEMIC_HOUR_STAT_TIME);
+        endTime = cursor.getInt(Column.ACADEMIC_HOUR_END_TIME);
+        subject = cursor.getString(Column.SUBJECT_NAME);
         info = (audienceNumber > 0) ?
-                format(INFO_FORMAT_FULL, cursor.getString(COLUMN.LECTURER_NAME), audienceNumber,
-                        cursor.getString(COLUMN.CAMPUS_NAME)) :
-                format(INFO_FORMAT_SHORT, cursor.getString(COLUMN.LECTURER_NAME),
-                        cursor.getInt(COLUMN.CAMPUS_NAME));
+                format(INFO_FORMAT_FULL, cursor.getString(Column.LECTURER_NAME), audienceNumber,
+                        cursor.getString(Column.CAMPUS_NAME)) :
+                format(INFO_FORMAT_SHORT, cursor.getString(Column.LECTURER_NAME),
+                        cursor.getInt(Column.CAMPUS_NAME));
     }
 
     private String makeTime(long timeToMake) {

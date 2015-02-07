@@ -72,6 +72,8 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
         String SUBGROUP = "subgroup";
         String SUBGROUP_COUNT = "subgroup_count";
         String COURSE = "course";
+        String GROUP = "group";
+        String FREE_TRAJECTORY = "free_trajectory";
     }
 
     public interface Filter {
@@ -130,7 +132,7 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
     }
 
     protected static int generateResponseCode(Throwable throwable) {
-        Log.d("ScheduleLOGS", throwable.toString());
+        Log.d("RestLogs", throwable.toString());
         if (throwable instanceof ExecutionException) {
             return generateResponseCode(throwable.getCause());
         } else if (throwable instanceof VolleyError) {

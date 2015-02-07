@@ -8,6 +8,7 @@ import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,7 +16,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
+import com.melnykov.fab.FloatingActionButton;
+
 import java.util.Calendar;
 import java.util.HashMap;
 
@@ -24,8 +26,13 @@ import ua.zp.rozklad.app.adapter.SectionCursorRecyclerViewAdapter;
 import ua.zp.rozklad.app.model.ScheduleItem;
 
 import static java.lang.String.format;
+import static java.lang.String.valueOf;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
-import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.buildSelection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary;
+import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Selection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.SortOrder;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineSortOrder;
 
 /**
  * {@link Fragment} that displays the schedule with the specified filter criteria.
@@ -36,19 +43,19 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.buildSele
  * create an instance of this fragment.
  */
 public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+
     private static final String ARG_SCHEDULE_TYPE = "scheduleType";
     private static final String ARG_TYPE_FILTER_ID = "typeFilterId";
     private static final String ARG_SUBGROUP_ID = "subgroupId";
     private static final String ARG_START_OF_WEEK = "startOfWeek";
     private static final String ARG_DAY_OF_WEEK = "dayOfWeek";
     private static final String ARG_PERIODICITY = "periodicity";
+    private static final String ARG_IS_TODAY = "isToday";
 
     private static final String DATE_FORMAT = "%2d %s";
 
     private static final int BY_GROUP = 0;
     private static final int BY_LECTURER = 1;
-
-    private HashMap<Integer, String> sections;
 
     private boolean isToday;
     private long startOfWeek;
@@ -64,8 +71,12 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     private RecyclerView recyclerView;
     private ScheduleItemAdapter adapter;
 
-    public static ScheduleFragment newInstance(int groupId, int subgroupId, long startOfWeek,
-                                               int dayOfWeek, int periodicity) {
+    private boolean isViewCreated = false;
+    private Runnable runFab;
+    private Handler handler = new Handler();
+
+    public static ScheduleFragment newInstance(boolean isToday, int groupId, int subgroupId,
+                                               long startOfWeek, int dayOfWeek, int periodicity) {
         ScheduleFragment fragment = new ScheduleFragment();
         Bundle args = new Bundle();
 
@@ -75,6 +86,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         args.putLong(ARG_START_OF_WEEK, startOfWeek);
         args.putInt(ARG_DAY_OF_WEEK, dayOfWeek);
         args.putInt(ARG_PERIODICITY, periodicity);
+        args.putBoolean(ARG_IS_TODAY, isToday);
 
         fragment.setArguments(args);
         return fragment;
@@ -89,40 +101,31 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         super.onCreate(savedInstanceState);
         Bundle args = getArguments();
         if (args != null) {
-            // for debug
-            isToday = true;
-
             scheduleType = args.getInt(ARG_SCHEDULE_TYPE);
             typeFilterId = args.getInt(ARG_TYPE_FILTER_ID);
             periodicity = args.getInt(ARG_PERIODICITY, -1);
             dayOfWeek = args.getInt(ARG_DAY_OF_WEEK, -1);
             startOfWeek = args.getLong(ARG_START_OF_WEEK, -1);
-
             subgroupId = args.getInt(ARG_SUBGROUP_ID, -1);
-
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(startOfWeek);
-            calendar.add(Calendar.DAY_OF_WEEK, dayOfWeek);
-
-            int day = calendar.get(Calendar.DAY_OF_MONTH);
-            String month = getResources()
-                    .getStringArray(R.array.months)[calendar.get(Calendar.MONTH)];
-
-            sections = new HashMap<>();
-            sections.put(0, format(DATE_FORMAT, day, month));
+            isToday = args.getBoolean(ARG_IS_TODAY);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        adapter = new ScheduleItemAdapter(getActivity(), null, sections);
+        adapter = new ScheduleItemAdapter(getActivity());
 
         recyclerView =
                 (RecyclerView) inflater.inflate(R.layout.fragment_schedule, container, false);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        if (runFab != null) {
+            handler.post(runFab);
+        }
+        isViewCreated = true;
 
         return recyclerView;
     }
@@ -158,18 +161,55 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new ScheduleCursorLoader(getActivity(),
-                typeFilterId, subgroupId, dayOfWeek, periodicity);
+        CursorLoader loader = new CursorLoader(getActivity());
+
+        loader.setUri(FullSchedule.CONTENT_URI);
+        loader.setProjection(Summary.PROJECTION);
+        loader.setSelection(combineSelection(
+                Selection.GROUP,
+                Selection.SUBGROUP,
+                Selection.DAY_OF_WEEK,
+                Selection.PERIODICITY
+        ));
+        loader.setSelectionArgs(new String[]{
+                valueOf(typeFilterId), valueOf(subgroupId), valueOf(dayOfWeek), valueOf(periodicity)
+        });
+        loader.setSortOrder(combineSortOrder(SortOrder.DAY_OF_WEEK, SortOrder.ACADEMIC_HOUR_NUM));
+
+        return loader;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(startOfWeek);
+        calendar.add(Calendar.DAY_OF_WEEK, dayOfWeek);
+
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        String month = getResources()
+                .getStringArray(R.array.months)[calendar.get(Calendar.MONTH)];
+
+        HashMap<Integer, String> sections = new HashMap<>();
+        sections.put(0, format(DATE_FORMAT, day, month));
+        adapter.setSections(sections);
         adapter.changeCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    public void attachFAB(final FloatingActionButton fab) {
+        runFab = new Runnable() {
+            @Override
+            public void run() {
+                fab.attachToRecyclerView(recyclerView);
+            }
+        };
+        if (isViewCreated) {
+            handler.post(runFab);
+        }
     }
 
     /**
@@ -190,6 +230,12 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
             super(itemView);
             text = (TextView) itemView.findViewById(R.id.sub_header_text);
         }
+
+        public void update(String section, int color) {
+            text.setTextColor(color);
+            text.setText(section);
+        }
+
     }
 
     public static class ItemViewHolder extends RecyclerView.ViewHolder {
@@ -227,6 +273,10 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     public class ScheduleItemAdapter extends SectionCursorRecyclerViewAdapter<String>
             implements View.OnClickListener {
 
+        public ScheduleItemAdapter(Context context) {
+            super(context, null);
+        }
+
         public ScheduleItemAdapter(Context context, Cursor cursor) {
             super(context, cursor);
         }
@@ -243,7 +293,12 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
         @Override
         public void onBindSectionViewHolder(RecyclerView.ViewHolder viewHolder, String section) {
-            ((SectionViewHolder) viewHolder).text.setText(section);
+            ((SectionViewHolder) viewHolder).update(
+                    section,
+                    (isToday) ?
+                    getResources().getColor(R.color.colorPrimary) :
+                    getResources().getColor(R.color.sub_header_text_color)
+            );
         }
 
         @Override
@@ -269,34 +324,6 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         @Override
         public void onClick(View v) {
             onScheduleItemClick(getItemId(recyclerView.getChildPosition(v)));
-        }
-    }
-
-    public static class ScheduleCursorLoader extends CursorLoader {
-
-        private int groupId;
-        private int subgroupId;
-        private int dayOfWeek;
-        private int periodicity;
-
-        public ScheduleCursorLoader(Context context,
-                                    int groupId, int subgroupId, int dayOfWeek, int periodicity) {
-            super(context);
-            this.groupId = groupId;
-            this.subgroupId = subgroupId;
-            this.dayOfWeek = dayOfWeek;
-            this.periodicity = periodicity;
-        }
-
-        @Override
-        public Cursor loadInBackground() {
-
-            return getContext().getContentResolver()
-                    .query(FullSchedule.CONTENT_URI,
-                            FullSchedule.SUMMARY.PROJECTION,
-                            buildSelection(groupId, subgroupId, dayOfWeek, periodicity),
-                            null,
-                            FullSchedule.SUMMARY.SORT_ORDER);
         }
     }
 }

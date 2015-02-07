@@ -8,6 +8,8 @@ import android.provider.BaseColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.AcademicHourColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.AudienceColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.CampusColumns;
+import ua.zp.rozklad.app.provider.ScheduleContract.DepartmentColumns;
+import ua.zp.rozklad.app.provider.ScheduleContract.GroupColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.LecturerColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.ScheduleColumns;
 import ua.zp.rozklad.app.provider.ScheduleContract.SubjectColumns;
@@ -23,6 +25,8 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
     private static final int CUR_DATABASE_VERSION = DEBUG_VERSION;
 
     interface Tables {
+        String DEPARTMENT = "department";
+        String GROUP = "`group`";
         String LECTURER = "lecturer";
         String SUBJECT = "subject";
         String ACADEMIC_HOUR = "academic_hour";
@@ -37,6 +41,15 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE " + Tables.DEPARTMENT + " ("
+                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + DepartmentColumns.DEPARTMENT_NAME + " TEXT NOT NULL, "
+                + SyncColumns.UPDATED + " INTEGER NOT NULL)");
+        db.execSQL("CREATE TABLE " + Tables.GROUP + " ("
+                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + GroupColumns.DEPARTMENT_ID + " INTEGER NOT NULL, "
+                + GroupColumns.GROUP_NAME + " TEXT NOT NULL, "
+                + SyncColumns.UPDATED + " INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE " + Tables.LECTURER + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + LecturerColumns.LECTURER_NAME + " TEXT NOT NULL, "
@@ -61,6 +74,7 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
                 + SyncColumns.UPDATED + " INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE " + Tables.SCHEDULE + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + ScheduleColumns.SCHEDULE_ID + " INTEGER NOT NULL, "
                 + ScheduleColumns.SUBGROUP + " INTEGER NOT NULL, "
                 + ScheduleColumns.GROUP_ID + " INTEGER NOT NULL, "
                 + ScheduleColumns.SUBJECT_ID + " INTEGER NOT NULL, "

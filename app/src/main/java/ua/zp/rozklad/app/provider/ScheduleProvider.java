@@ -13,6 +13,8 @@ import android.text.TextUtils;
 import ua.zp.rozklad.app.provider.ScheduleContract.AcademicHour;
 import ua.zp.rozklad.app.provider.ScheduleContract.Audience;
 import ua.zp.rozklad.app.provider.ScheduleContract.Campus;
+import ua.zp.rozklad.app.provider.ScheduleContract.Department;
+import ua.zp.rozklad.app.provider.ScheduleContract.Group;
 import ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
 import ua.zp.rozklad.app.provider.ScheduleContract.Lecturer;
 import ua.zp.rozklad.app.provider.ScheduleContract.Schedule;
@@ -48,6 +50,7 @@ public class ScheduleProvider extends ContentProvider {
         int SCHEDULE = 900;
         int SCHEDULE_ID = 901;
         int FULL_SCHEDULE = 902;
+        int FULL_SCHEDULE_ID = 903;
     }
 
     /**
@@ -83,6 +86,7 @@ public class ScheduleProvider extends ContentProvider {
         matcher.addURI(authority, "schedule/#", URI_CODE.SCHEDULE_ID);
 
         matcher.addURI(authority, "full_schedule/", URI_CODE.FULL_SCHEDULE);
+        matcher.addURI(authority, "full_schedule/#", URI_CODE.FULL_SCHEDULE_ID);
 
         return matcher;
     }
@@ -100,6 +104,14 @@ public class ScheduleProvider extends ContentProvider {
     public String getType(Uri uri) {
         final int match = sUriMatcher.match(uri);
         switch (match) {
+            case URI_CODE.DEPARTMENT:
+                return Department.CONTENT_TYPE;
+            case URI_CODE.DEPARTMENT_ID:
+                return Department.CONTENT_ITEM_TYPE;
+            case URI_CODE.GROUP:
+                return Group.CONTENT_TYPE;
+            case URI_CODE.GROUP_ID:
+                return Group.CONTENT_ITEM_TYPE;
             case URI_CODE.LECTURER:
                 return Lecturer.CONTENT_TYPE;
             case URI_CODE.LECTURER_ID:
@@ -126,6 +138,8 @@ public class ScheduleProvider extends ContentProvider {
                 return Schedule.CONTENT_ITEM_TYPE;
             case URI_CODE.FULL_SCHEDULE:
                 return FullSchedule.CONTENT_TYPE;
+            case URI_CODE.FULL_SCHEDULE_ID:
+                return FullSchedule.CONTENT_ITEM_TYPE;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
@@ -142,6 +156,14 @@ public class ScheduleProvider extends ContentProvider {
         long id;
 
         switch (match) {
+            case URI_CODE.DEPARTMENT:
+                id = db.insertOrThrow(Tables.DEPARTMENT, null, values);
+                notifyChange(uri);
+                return ContentUris.withAppendedId(uri, id);
+            case URI_CODE.GROUP:
+                id = db.insertOrThrow(Tables.GROUP, null, values);
+                notifyChange(uri);
+                return ContentUris.withAppendedId(uri, id);
             case URI_CODE.LECTURER:
                 table = Tables.LECTURER;
                 break;
@@ -184,6 +206,20 @@ public class ScheduleProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
+            case URI_CODE.DEPARTMENT:
+                table = Tables.DEPARTMENT;
+                break;
+            case URI_CODE.DEPARTMENT_ID:
+                table = Tables.DEPARTMENT;
+                where = Department._ID + " = " + uri.getLastPathSegment();
+                break;
+            case URI_CODE.GROUP:
+                table = Tables.GROUP;
+                break;
+            case URI_CODE.GROUP_ID:
+                table = Tables.GROUP;
+                where = Group._ID + " = " + uri.getLastPathSegment();
+                break;
             case URI_CODE.LECTURER:
                 table = Tables.LECTURER;
                 break;
@@ -250,6 +286,20 @@ public class ScheduleProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
+            case URI_CODE.DEPARTMENT:
+                table = Tables.DEPARTMENT;
+                break;
+            case URI_CODE.DEPARTMENT_ID:
+                table = Tables.DEPARTMENT;
+                where = Department._ID + " = " + uri.getLastPathSegment();
+                break;
+            case URI_CODE.GROUP:
+                table = Tables.GROUP;
+                break;
+            case URI_CODE.GROUP_ID:
+                table = Tables.GROUP;
+                where = Group._ID + " = " + uri.getLastPathSegment();
+                break;
             case URI_CODE.LECTURER:
                 table = Tables.LECTURER;
                 break;
@@ -315,6 +365,20 @@ public class ScheduleProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
 
         switch (match) {
+            case URI_CODE.DEPARTMENT:
+                queryBuilder.setTables(Tables.DEPARTMENT);
+                break;
+            case URI_CODE.DEPARTMENT_ID:
+                queryBuilder.setTables(Tables.DEPARTMENT);
+                queryBuilder.appendWhere(Department._ID + " = " + uri.getLastPathSegment());
+                break;
+            case URI_CODE.GROUP:
+                queryBuilder.setTables(Tables.GROUP);
+                break;
+            case URI_CODE.GROUP_ID:
+                queryBuilder.setTables(Tables.GROUP);
+                queryBuilder.appendWhere(Group._ID + " = " + uri.getLastPathSegment());
+                break;
             case URI_CODE.LECTURER:
                 queryBuilder.setTables(Tables.LECTURER);
                 break;
@@ -357,10 +421,13 @@ public class ScheduleProvider extends ContentProvider {
                 queryBuilder.setTables(Tables.SCHEDULE);
                 queryBuilder.appendWhere(Schedule._ID + " = " + uri.getLastPathSegment());
                 break;
-            case URI_CODE.FULL_SCHEDULE: {
-                queryBuilder.setTables(FullSchedule.SUMMARY.TABLES);
+            case URI_CODE.FULL_SCHEDULE:
+                queryBuilder.setTables(FullSchedule.Summary.TABLES);
                 break;
-            }
+            case URI_CODE.FULL_SCHEDULE_ID:
+                queryBuilder.setTables(FullSchedule.Summary.TABLES);
+                queryBuilder.appendWhere(FullSchedule._ID + " = " + uri.getLastPathSegment());
+                break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
