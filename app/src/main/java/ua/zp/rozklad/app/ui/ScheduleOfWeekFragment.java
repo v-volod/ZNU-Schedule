@@ -51,6 +51,7 @@ public class ScheduleOfWeekFragment extends Fragment implements
     private int subgroupId;
     private long startOfWeek;
     private int periodicity;
+    private boolean currentWeek = true;
 
     private OnPeriodicityChangeListener mListener;
 
@@ -201,24 +202,47 @@ public class ScheduleOfWeekFragment extends Fragment implements
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data.getCount() == 0) {
             // TODO: Show "No schedule".
-        }
-        mAdapter.swapCursor(data);
-        invalidate();
-        if (data.getCount() > 0) {
-            if (selectedDayItem == -1) {
-                int currentDay =
-                        (int) ((currentTimeMillis() - startOfWeek) / CalendarUtils.DAY_TIME_STAMP);
-
-                if (currentDay < 0) {
-                    selectedDayItem = data.getCount() - 1;
-                } else {
-                    /*
-                    * If data loads for the first time, decide which of the day should be selected.
-                    * */
-                    selectedDayItem = mAdapter.findDayForSelection(currentDay);
-                }
+            if (mPager.getVisibility() != View.GONE) {
+                mPager.setVisibility(View.GONE);
             }
+        }
+        if (data.getCount() > 0) {
+            if (mPager.getVisibility() != View.VISIBLE) {
+                mPager.setVisibility(View.VISIBLE);
+            }
+
+            int dayForSelection =
+                    (int) ((currentTimeMillis() - startOfWeek) / CalendarUtils.DAY_TIME_STAMP);
+
+            boolean switchToNextWeek = false;
+
+            // Switch week to the next if the loaded data is for current week and the last day
+            // in the schedule is lower than the current day.
+            if (currentWeek && data.move(data.getCount() - 1)) {
+                switchToNextWeek = dayForSelection > data.getInt(0);
+            }
+
+            if (switchToNextWeek) {
+                swapPeriodicity();
+                selectedDayItem = 0;
+                currentWeek = false;
+            } else {
+                mAdapter.swapCursor(data);
+                invalidate();
+            }
+
+            if (selectedDayItem == -1) {
+                /*
+                * If data loads for the first time, decide which of the day should be selected.
+                * */
+                selectedDayItem = mAdapter.findDayForSelection(dayForSelection, data);
+            }
+
             mPager.setCurrentItem(selectedDayItem, true);
+        } else {
+            mAdapter.swapCursor(data);
+            selectedDayItem = -1;
+            currentWeek = true;
         }
     }
 
@@ -300,8 +324,13 @@ public class ScheduleOfWeekFragment extends Fragment implements
          * @param currentDay the current day of the week.
          * @return day to be selected.
          */
-        public int findDayForSelection(int currentDay) {
-            Cursor cursor = getCursor();
+        public int findDayForSelection(int currentDay, Cursor cursor) {
+            /*
+            * If the day is from previous week.
+            * */
+            if (currentDay < 0) {
+                return cursor.getCount() - 1;
+            }
 
             int dayForSelection = 0;
             int day;
@@ -329,9 +358,8 @@ public class ScheduleOfWeekFragment extends Fragment implements
                         }
 
                         return dayForSelection;
-                    } /*else if (day > dayForSelection) {
-                        return dayForSelection;
-                    }*/
+                    }
+
                     dayForSelection++;
                 } while (cursor.moveToNext());
 
