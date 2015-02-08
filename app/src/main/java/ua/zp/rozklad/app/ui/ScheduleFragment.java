@@ -24,8 +24,8 @@ import java.util.HashMap;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.adapter.SectionCursorRecyclerViewAdapter;
 import ua.zp.rozklad.app.model.ScheduleItem;
+import ua.zp.rozklad.app.util.CalendarUtils;
 
-import static java.lang.String.format;
 import static java.lang.String.valueOf;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary;
@@ -181,17 +181,6 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(startOfWeek);
-        calendar.add(Calendar.DAY_OF_WEEK, dayOfWeek);
-
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        String month = getResources()
-                .getStringArray(R.array.months)[calendar.get(Calendar.MONTH)];
-
-        HashMap<Integer, String> sections = new HashMap<>();
-        sections.put(0, format(DATE_FORMAT, day, month));
-        adapter.setSections(sections);
         adapter.changeCursor(data);
     }
 
@@ -273,17 +262,14 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     public class ScheduleItemAdapter extends SectionCursorRecyclerViewAdapter<String>
             implements View.OnClickListener {
 
+        private final String[] MONTHS = getResources().getStringArray(R.array.months);
+
         public ScheduleItemAdapter(Context context) {
-            super(context, null);
+            this(context, null);
         }
 
         public ScheduleItemAdapter(Context context, Cursor cursor) {
             super(context, cursor);
-        }
-
-        public ScheduleItemAdapter(Context context, Cursor cursor,
-                                   HashMap<Integer, String> sections) {
-            super(context, cursor, sections);
         }
 
         @Override
@@ -296,9 +282,25 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
             ((SectionViewHolder) viewHolder).update(
                     section,
                     (isToday) ?
-                    getResources().getColor(R.color.colorPrimary) :
-                    getResources().getColor(R.color.sub_header_text_color)
+                            getResources().getColor(R.color.colorPrimary) :
+                            getResources().getColor(R.color.sub_header_text_color)
             );
+        }
+
+        @Override
+        protected HashMap<Integer, String> createSections(Cursor cursor) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(CalendarUtils.addDays(startOfWeek, dayOfWeek));
+
+            String section = String.format(DATE_FORMAT,
+                    calendar.get(Calendar.DAY_OF_MONTH),
+                    MONTHS[calendar.get(Calendar.MONTH)]
+            );
+
+            HashMap<Integer, String> sections = new HashMap<>();
+            sections.put(0, section);
+
+            return sections;
         }
 
         @Override
