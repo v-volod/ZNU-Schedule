@@ -360,6 +360,12 @@ public class ScheduleOfWeekFragment extends Fragment implements
                         return dayForSelection;
                     }
 
+                    // Select the next day after the day off, if day off is in the middle of the
+                    // schedule.
+                    if (day > currentDay) {
+                        return dayForSelection;
+                    }
+
                     dayForSelection++;
                 } while (cursor.moveToNext());
 
