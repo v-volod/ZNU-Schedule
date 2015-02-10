@@ -35,7 +35,6 @@ public class ScheduleItemActivity extends ActionBarActivity {
     private View type;
     private View time;
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
