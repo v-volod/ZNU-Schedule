@@ -49,4 +49,12 @@
         <item name="android:layout_marginBottom">@dimen/login_chooser_margin_bottom</item>
     </style>
 
+    <!-- Extended toolbar styles -->
+    <style name="TwoLineTitle">
+        <item name="android:singleLine">false</item>
+        <item name="android:textAlignment">textEnd</item>
+        <item name="android:state_multiline">true</item>
+        <item name="android:minLines">2</item>
+    </style>
+
 </resources>

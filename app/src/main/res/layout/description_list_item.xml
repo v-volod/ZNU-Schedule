@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/two_line_list_item_height">
+    android:layout_height="@dimen/two_line_list_item_height"
+    android:clickable="true">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">

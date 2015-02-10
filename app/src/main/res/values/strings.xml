@@ -79,4 +79,13 @@
     <string name="type">Тип</string>
     <string name="time">Час</string>
 
+    <string-array name="lesson_type">
+        <item>не задано</item>
+        <item>лекція</item>
+        <item>семінар</item>
+        <item>лабораторна робота</item>
+        <item>консультація</item>
+        <item>екзамен</item>
+    </string-array>
+
 </resources>

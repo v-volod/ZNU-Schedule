@@ -7,16 +7,19 @@
     android:background="@color/schedule_item_activity_toolbar"
     app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
     app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-    android:gravity="bottom"
-    android:layout_marginBottom="@dimen/key_line_1">
+    android:gravity="bottom">
 
     <TextView
         android:id="@+id/title"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:textSize="38sp"
-        android:text="title"
+        android:layout_width="match_parent"
+        android:textSize="@dimen/abc_text_size_title_material"
+        android:text="title "
         android:textColor="@color/white"
-        android:paddingBottom="@dimen/key_line_1"/>
+        android:gravity="right|bottom"
+        android:textAlignment="viewEnd"
+        android:layout_marginRight="@dimen/key_line_1"
+        android:maxLines="4"
+        android:minLines="4"/>
 
 </android.support.v7.widget.Toolbar>
