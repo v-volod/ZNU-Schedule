@@ -44,6 +44,8 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.combineSortOrder;
  */
 public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private static final int LOADER_SCHEDULE_OF_THE_DAY_1 = 0;
+
     private static final String ARG_SCHEDULE_TYPE = "scheduleType";
     private static final String ARG_TYPE_FILTER_ID = "typeFilterId";
     private static final String ARG_SUBGROUP_ID = "subgroupId";
@@ -68,8 +70,8 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
     private OnScheduleItemClickListener mListener;
 
-    private RecyclerView recyclerView;
-    private ScheduleItemAdapter adapter;
+    private RecyclerView mRecyclerView;
+    private ScheduleItemAdapter mAdapter;
 
     private boolean isViewCreated = false;
     private Runnable runFab;
@@ -112,37 +114,6 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        adapter = new ScheduleItemAdapter(getActivity());
-
-        recyclerView =
-                (RecyclerView) inflater.inflate(R.layout.fragment_schedule, container, false);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-        if (runFab != null) {
-            handler.post(runFab);
-        }
-        isViewCreated = true;
-
-        return recyclerView;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        getLoaderManager().initLoader(0, null, this);
-    }
-
-    public void onScheduleItemClick(long scheduleItemId) {
-        if (mListener != null) {
-            mListener.onScheduleItemClicked(scheduleItemId);
-        }
-    }
-
-    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
@@ -151,6 +122,30 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
             throw new ClassCastException(activity.toString()
                     + " must implement OnScheduleItemClickListener");
         }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        mRecyclerView =
+                (RecyclerView) inflater.inflate(R.layout.fragment_schedule, container, false);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        if (runFab != null) {
+            handler.post(runFab);
+        }
+        isViewCreated = true;
+
+        return mRecyclerView;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mAdapter = new ScheduleItemAdapter(getActivity());
+        mRecyclerView.setAdapter(mAdapter);
+        getLoaderManager().initLoader(LOADER_SCHEDULE_OF_THE_DAY_1, null, this);
     }
 
     @Override
@@ -181,23 +176,29 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        adapter.changeCursor(data);
+        mAdapter.swapCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
+        mAdapter.swapCursor(null);
     }
 
     public void attachFAB(final FloatingActionButton fab) {
         runFab = new Runnable() {
             @Override
             public void run() {
-                fab.attachToRecyclerView(recyclerView);
+                fab.attachToRecyclerView(mRecyclerView);
             }
         };
         if (isViewCreated) {
             handler.post(runFab);
+        }
+    }
+
+    public void onScheduleItemClick(long scheduleItemId) {
+        if (mListener != null) {
+            mListener.onScheduleItemClicked(scheduleItemId);
         }
     }
 
@@ -325,7 +326,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
         @Override
         public void onClick(View v) {
-            onScheduleItemClick(getItemId(recyclerView.getChildPosition(v)));
+            onScheduleItemClick(getItemId(mRecyclerView.getChildPosition(v)));
         }
     }
 }

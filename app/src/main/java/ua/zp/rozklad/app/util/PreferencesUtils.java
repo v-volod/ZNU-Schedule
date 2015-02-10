@@ -32,7 +32,7 @@ public class PreferencesUtils {
     public void savePeriodicity(Periodicity periodicity) {
         context.getSharedPreferences(SCHEDULE_SETTINGS, Context.MODE_PRIVATE)
                 .edit()
-                .putInt(PERIODICITY, periodicity.getWeek())
+                .putInt(PERIODICITY, periodicity.getPeriodicity())
                 .putInt(WEEK_OF_YEAR, periodicity.getWeekOfYear())
                 .apply();
     }
