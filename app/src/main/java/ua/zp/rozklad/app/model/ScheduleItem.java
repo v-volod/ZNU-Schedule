@@ -4,6 +4,8 @@ import android.database.Cursor;
 
 import java.util.Calendar;
 
+import ua.zp.rozklad.app.util.CalendarUtils;
+
 import static java.lang.String.format;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Column;
 
@@ -13,11 +15,6 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.C
 public class ScheduleItem {
     private static final String INFO_FORMAT_FULL = "%s\n%d (%s)";
     private static final String INFO_FORMAT_SHORT = "%s\n%s";
-
-    private static final int SECOND = 1000;
-    private static final int MINUTE = 60 * SECOND;
-    private static final int HOUR = 60 * MINUTE;
-    private static final int HALF_OF_DAY = 12 * HOUR;
 
     private long startTime;
     private long endTime;
@@ -36,21 +33,11 @@ public class ScheduleItem {
                         cursor.getInt(Column.CAMPUS_NAME));
     }
 
-    private String makeTime(long timeToMake) {
-        return makeTime(timeToMake, ":");
-    }
-
-    private String makeTime(long timeToMake, String divider) {
-        int hours = (int) (timeToMake / HOUR);
-        int minutes = (int) (timeToMake % HOUR / MINUTE);
-        return format("%02d%s%02d", hours, divider, minutes);
-    }
-
     private boolean inRange(long startAt, long endAt) {
         Calendar calendarNow = Calendar.getInstance();
-        long timeNow = calendarNow.get(Calendar.AM_PM) * HALF_OF_DAY
-                + calendarNow.get(Calendar.HOUR) * HOUR +
-                calendarNow.get(Calendar.MINUTE) * MINUTE;
+        long timeNow = calendarNow.get(Calendar.AM_PM) * CalendarUtils.HALF_DAY_TIME_STAMP
+                + calendarNow.get(Calendar.HOUR) * CalendarUtils.HOUR_TIME_STAMP +
+                calendarNow.get(Calendar.MINUTE) * CalendarUtils.MINUTE_TIME_STAMP;
         return timeNow >= startAt && timeNow <= endAt;
     }
 
@@ -67,10 +54,10 @@ public class ScheduleItem {
     }
 
     public String getStartTime() {
-        return makeTime(startTime);
+        return CalendarUtils.makeTime(startTime);
     }
 
     public String getEndTime() {
-        return makeTime(endTime);
+        return CalendarUtils.makeTime(endTime);
     }
 }
