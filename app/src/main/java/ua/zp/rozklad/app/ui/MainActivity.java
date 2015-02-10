@@ -60,11 +60,12 @@ public class MainActivity extends ActionBarActivity
     };
 
     private static final int[] PERIODICITY_SUBTITLE_RES_ID = {
+            0,
             R.string.numerator,
             R.string.denominator
     };
 
-    private int selectedNavDrawerItemId = 0;
+    private int selectedNavDrawerItemId;
     private ActionBarDrawerToggle drawerToggle;
     private ArrayList<Integer> navDrawerItems = new ArrayList<>();
     private DrawerLayout drawerLayout;
@@ -126,13 +127,14 @@ public class MainActivity extends ActionBarActivity
         groupId = 1;
         subgroupId = 1;
 
+        selectedNavDrawerItemId = NAV_DRAWER_ITEM_SCHEDULE;
         if (savedInstanceState != null) {
             selectedNavDrawerItemId = savedInstanceState
                     .getInt(EXTRA_KEY.SELECTED_NAV_DRAWER_ITEM_ID, NAV_DRAWER_ITEM_SCHEDULE);
         }
 
         setUpNavDrawer();
-        onScheduleSelected();
+        onNavDrawerItemClicked(selectedNavDrawerItemId);
     }
 
     @Override
@@ -316,6 +318,7 @@ public class MainActivity extends ActionBarActivity
                 clearMainContentContainer();
                 break;
         }
+        selectedNavDrawerItemId = itemId;
         setSelectedNavDrawerItem(itemId);
         drawerLayout.closeDrawer(Gravity.START);
     }
@@ -351,7 +354,7 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     public void onPeriodicityChanged(int periodicity) {
-        getSupportActionBar().setSubtitle(PERIODICITY_SUBTITLE_RES_ID[periodicity - 1]);
+        getSupportActionBar().setSubtitle(PERIODICITY_SUBTITLE_RES_ID[periodicity]);
     }
 
     private void onSubjectsSelected() {

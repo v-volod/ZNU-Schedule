@@ -24,8 +24,8 @@ import java.util.HashMap;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.adapter.SectionCursorRecyclerViewAdapter;
 import ua.zp.rozklad.app.model.ScheduleItem;
+import ua.zp.rozklad.app.util.CalendarUtils;
 
-import static java.lang.String.format;
 import static java.lang.String.valueOf;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary;
@@ -43,6 +43,8 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.combineSortOrder;
  * create an instance of this fragment.
  */
 public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final int LOADER_SCHEDULE_OF_THE_DAY_1 = 0;
 
     private static final String ARG_SCHEDULE_TYPE = "scheduleType";
     private static final String ARG_TYPE_FILTER_ID = "typeFilterId";
@@ -68,8 +70,8 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
     private OnScheduleItemClickListener mListener;
 
-    private RecyclerView recyclerView;
-    private ScheduleItemAdapter adapter;
+    private RecyclerView mRecyclerView;
+    private ScheduleItemAdapter mAdapter;
 
     private boolean isViewCreated = false;
     private Runnable runFab;
@@ -112,37 +114,6 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        adapter = new ScheduleItemAdapter(getActivity());
-
-        recyclerView =
-                (RecyclerView) inflater.inflate(R.layout.fragment_schedule, container, false);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-        if (runFab != null) {
-            handler.post(runFab);
-        }
-        isViewCreated = true;
-
-        return recyclerView;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        getLoaderManager().initLoader(0, null, this);
-    }
-
-    public void onScheduleItemClick(long scheduleItemId) {
-        if (mListener != null) {
-            mListener.onScheduleItemClicked(scheduleItemId);
-        }
-    }
-
-    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
@@ -151,6 +122,30 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
             throw new ClassCastException(activity.toString()
                     + " must implement OnScheduleItemClickListener");
         }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        mRecyclerView =
+                (RecyclerView) inflater.inflate(R.layout.fragment_schedule, container, false);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        if (runFab != null) {
+            handler.post(runFab);
+        }
+        isViewCreated = true;
+
+        return mRecyclerView;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mAdapter = new ScheduleItemAdapter(getActivity());
+        mRecyclerView.setAdapter(mAdapter);
+        getLoaderManager().initLoader(LOADER_SCHEDULE_OF_THE_DAY_1, null, this);
     }
 
     @Override
@@ -181,34 +176,29 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(startOfWeek);
-        calendar.add(Calendar.DAY_OF_WEEK, dayOfWeek);
-
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        String month = getResources()
-                .getStringArray(R.array.months)[calendar.get(Calendar.MONTH)];
-
-        HashMap<Integer, String> sections = new HashMap<>();
-        sections.put(0, format(DATE_FORMAT, day, month));
-        adapter.setSections(sections);
-        adapter.changeCursor(data);
+        mAdapter.swapCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
+        mAdapter.swapCursor(null);
     }
 
     public void attachFAB(final FloatingActionButton fab) {
         runFab = new Runnable() {
             @Override
             public void run() {
-                fab.attachToRecyclerView(recyclerView);
+                fab.attachToRecyclerView(mRecyclerView);
             }
         };
         if (isViewCreated) {
             handler.post(runFab);
+        }
+    }
+
+    public void onScheduleItemClick(long scheduleItemId) {
+        if (mListener != null) {
+            mListener.onScheduleItemClicked(scheduleItemId);
         }
     }
 
@@ -273,17 +263,14 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     public class ScheduleItemAdapter extends SectionCursorRecyclerViewAdapter<String>
             implements View.OnClickListener {
 
+        private final String[] MONTHS = getResources().getStringArray(R.array.months);
+
         public ScheduleItemAdapter(Context context) {
-            super(context, null);
+            this(context, null);
         }
 
         public ScheduleItemAdapter(Context context, Cursor cursor) {
             super(context, cursor);
-        }
-
-        public ScheduleItemAdapter(Context context, Cursor cursor,
-                                   HashMap<Integer, String> sections) {
-            super(context, cursor, sections);
         }
 
         @Override
@@ -296,9 +283,25 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
             ((SectionViewHolder) viewHolder).update(
                     section,
                     (isToday) ?
-                    getResources().getColor(R.color.colorPrimary) :
-                    getResources().getColor(R.color.sub_header_text_color)
+                            getResources().getColor(R.color.colorPrimary) :
+                            getResources().getColor(R.color.sub_header_text_color)
             );
+        }
+
+        @Override
+        protected HashMap<Integer, String> createSections(Cursor cursor) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(CalendarUtils.addDays(startOfWeek, dayOfWeek));
+
+            String section = String.format(DATE_FORMAT,
+                    calendar.get(Calendar.DAY_OF_MONTH),
+                    MONTHS[calendar.get(Calendar.MONTH)]
+            );
+
+            HashMap<Integer, String> sections = new HashMap<>();
+            sections.put(0, section);
+
+            return sections;
         }
 
         @Override
@@ -323,7 +326,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
         @Override
         public void onClick(View v) {
-            onScheduleItemClick(getItemId(recyclerView.getChildPosition(v)));
+            onScheduleItemClick(getItemId(mRecyclerView.getChildPosition(v)));
         }
     }
 }

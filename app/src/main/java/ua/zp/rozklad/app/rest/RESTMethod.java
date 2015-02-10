@@ -3,8 +3,10 @@ package ua.zp.rozklad.app.rest;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.RequestFuture;
 
@@ -36,6 +38,9 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
             API_URL + "%s/?" + FORMAT_JSON + ID_IN_SUFFIX;
     protected static final String MODEL_SEARCH_BY_NAME =
             API_URL + "%s/search/?" + FORMAT_JSON + "&" + S_SUFFIX;
+
+    public static final RetryPolicy LOW_INTERNET_RETRY =
+            new DefaultRetryPolicy(10000, 5, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
 
     protected static interface Model {
         String DEPARTMENT = "department";
@@ -104,11 +109,17 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
     public abstract void prepare(int filter, String... params);
 
     public void execute(ResponseCallback<R> callback) {
+        execute(callback, new DefaultRetryPolicy());
+    }
+
+    public void execute(ResponseCallback<R> callback, RetryPolicy retryPolicy) {
         this.callback = callback;
         if (TextUtils.isEmpty(requestUrl)) {
             callback.onError(ResponseCode.INVALID_REQUEST);
         } else {
-            App.getInstance().addToRequestQueue(buildRequest());
+            Request request = buildRequest();
+            request.setRetryPolicy(retryPolicy);
+            App.getInstance().addToRequestQueue(request);
         }
     }
 

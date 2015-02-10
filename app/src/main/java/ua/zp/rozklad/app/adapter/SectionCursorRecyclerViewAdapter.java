@@ -17,13 +17,7 @@ public abstract class SectionCursorRecyclerViewAdapter<S>
     private HashMap<Integer, S> sections;
 
     public SectionCursorRecyclerViewAdapter(Context context, Cursor cursor) {
-        this(context, cursor, null);
-    }
-
-    public SectionCursorRecyclerViewAdapter(Context context, Cursor cursor,
-                                            HashMap<Integer, S> sections) {
         super(context, cursor);
-        this.sections = sections;
     }
 
     @Override
@@ -36,6 +30,14 @@ public abstract class SectionCursorRecyclerViewAdapter<S>
     }
 
     public abstract void onBindSectionViewHolder(RecyclerView.ViewHolder viewHolder, S section);
+
+    @Override
+    public long getItemId(int position) {
+        if (isSection(position)) {
+            return 0;
+        }
+        return super.getItemId(getPosition(position));
+    }
 
     private int getPosition(int position) {
 
@@ -58,11 +60,6 @@ public abstract class SectionCursorRecyclerViewAdapter<S>
         return super.getItemCount() + getSectionItemCount();
     }
 
-    public void setSections(HashMap<Integer, S> sections) {
-        this.sections = sections;
-        notifyDataSetChanged();
-    }
-
     protected S getSectionItem(int position) {
         return sections.get(position);
     }
@@ -79,10 +76,18 @@ public abstract class SectionCursorRecyclerViewAdapter<S>
     }
 
     /**
-     * Swap the cursor and set new section items. Called if sections is dependent on the data.
+     * Swap the cursor and create section items.
      */
-    public Cursor swapCursor(Cursor newCursor, HashMap<Integer, S> newSections) {
-        sections = newSections;
+
+    @Override
+    public Cursor swapCursor(Cursor newCursor) {
+        if (newCursor == null) {
+            sections = null;
+        } else {
+            sections = createSections(newCursor);
+        }
         return super.swapCursor(newCursor);
     }
+
+    protected abstract HashMap<Integer, S> createSections(Cursor cursor);
 }
