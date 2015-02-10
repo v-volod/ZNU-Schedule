@@ -220,7 +220,7 @@ public class LoginActivity extends AccountAuthenticatorActivity
             if (!loaded) {
                 showProgressWheel();
                 hide();
-                method.execute(this);
+                method.execute(this, RESTMethod.LOW_INTERNET_RETRY);
             }
         }
 
@@ -401,7 +401,7 @@ public class LoginActivity extends AccountAuthenticatorActivity
                 showProgressWheel();
                 method.prepare(RESTMethod.Filter.BY_DEPARTMENT_ID,
                         String.valueOf(department.getId()));
-                method.execute(this);
+                method.execute(this, RESTMethod.LOW_INTERNET_RETRY);
             }
         }
 
