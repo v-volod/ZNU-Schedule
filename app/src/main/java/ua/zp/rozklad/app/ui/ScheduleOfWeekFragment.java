@@ -13,7 +13,6 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.melnykov.fab.FloatingActionButton;
 
@@ -104,7 +103,7 @@ public class ScheduleOfWeekFragment extends Fragment
         currentDayPosition = -1;
 
         if (savedInstanceState != null) {
-            selectedWeekPosition = savedInstanceState.getInt(ARG_SELECTED_WEEK_POSITION, -1);
+            selectedWeekPosition = savedInstanceState.getInt(ARG_SELECTED_WEEK_POSITION, 0);
             selectedDayPosition = savedInstanceState.getInt(ARG_SELECTED_DAY_POSITION, -1);
         }
     }
@@ -202,11 +201,8 @@ public class ScheduleOfWeekFragment extends Fragment
         } else {
             onPeriodicityChanged(0);
         }
+
         mAdapter.swapCursor(data);
-        /*
-        * Reset the adapter (Change it find solution to update ViewPager on data changed).
-        * */
-        mPager.setAdapter(mAdapter);
         mTabs.setViewPager(mPager);
         mPager.setCurrentItem(selectedDayPosition, true);
     }
@@ -311,6 +307,7 @@ public class ScheduleOfWeekFragment extends Fragment
             int day = cursor.getInt(0);
 
             ScheduleFragment fragment = ScheduleFragment.newInstance(
+                    position,
                     week == getCurrentWeekOfYear() && day == getCurrentDayOfWeek(),
                     groupId,
                     subgroupId,
@@ -321,6 +318,32 @@ public class ScheduleOfWeekFragment extends Fragment
 
             registeredFragments.put(position, fragment);
             return fragment;
+        }
+
+        @Override
+        public int getItemPosition(Object object) {
+            Cursor cursor = getCursor();
+            ScheduleFragment fragment = (ScheduleFragment) object;
+
+            int oldPosition = fragment.getPosition();
+
+            if (cursor.moveToPosition(oldPosition)) {
+                int week = weeks[selectedWeekPosition];
+                int day = fragment.getDayOfWeek();
+
+                if (day == cursor.getInt(0)) {
+                    int curPeriodicity = periodicity.getPeriodicity(week);
+                    boolean isToday = week == getCurrentWeekOfYear() && day == getCurrentDayOfWeek();
+
+                    if (curPeriodicity != fragment.getPeriodicity()) {
+                        fragment.reload(isToday, getStartOfWeekMillis(week), curPeriodicity);
+                    }
+
+                    return POSITION_UNCHANGED;
+                }
+            }
+
+            return POSITION_NONE;
         }
 
         @Override
