@@ -4,8 +4,7 @@
     <string name="app_name">@string/znu_schedule</string>
     <string name="znu_schedule">Розклад ЗНУ</string>
     <string name="schedule">Розклад</string>
-    <string name="action_settings">Налаштування</string>
-    <string name="action_change_week">Змінити тиждень</string>
+    <string name="action_today">Сьогодні</string>
     <string name="tag_line_text">Завжди актуальний розклад в твоїй кишені</string>
     <string name="choose_department_hint">Оберіть факультет&#8230;</string>
     <string name="choose_group_hint">Оберіть групу&#8230;</string>
@@ -17,6 +16,7 @@
     <string name="title_activity_login">Авторизація</string>
     <string name="numerator">чисельник</string>
     <string name="denominator">знаменник</string>
+    <string name="day_off">Сьогодні вихідний</string>
 
     <!-- NavigationDrawer List Items -->
     <string name="nav_drawer_group_qualifier">Група</string>

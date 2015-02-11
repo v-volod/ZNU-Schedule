@@ -12,6 +12,7 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.melnykov.fab.FloatingActionButton;
 
@@ -37,6 +38,9 @@ import static ua.zp.rozklad.app.util.CalendarUtils.getStartOfWeekMillis;
 public class ScheduleOfWeekFragment extends Fragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private static final int CURRENT_APPROXIMATE_DAY = -1;
+    private static final int CURRENT_CONVENIENT_DAY = -2;
+
     private static final int LOADER_SCHEDULE_OF_WEEK_1 = 0;
 
     private static final String ARG_GROUP_ID = "groupId";
@@ -47,7 +51,6 @@ public class ScheduleOfWeekFragment extends Fragment
 
     private Periodicity periodicity;
 
-    private int currentDayPosition;
     private int selectedDayPosition;
     private int selectedWeekPosition;
 
@@ -98,8 +101,7 @@ public class ScheduleOfWeekFragment extends Fragment
         periodicity = App.getInstance().getPreferencesUtils().getPeriodicity();
 
         selectedWeekPosition = 0;
-        selectedDayPosition = -1;
-        currentDayPosition = -1;
+        selectedDayPosition = CURRENT_CONVENIENT_DAY;
 
         if (savedInstanceState != null) {
             selectedWeekPosition = savedInstanceState.getInt(ARG_SELECTED_WEEK_POSITION, 0);
@@ -178,16 +180,19 @@ public class ScheduleOfWeekFragment extends Fragment
             * Check if day is not selected before.
             * */
 
-            if (selectedDayPosition == -1) {
+            if (selectedDayPosition == CURRENT_APPROXIMATE_DAY) {
+                selectedDayPosition = mAdapter.findCurrentDayPosition(data, false, false);
+
+
+            } else if (selectedDayPosition == CURRENT_CONVENIENT_DAY) {
                 /*
                 * Find position of the current day.
                 * */
-                currentDayPosition = findCurrentDayPosition(data);
+                int currentDayPosition = mAdapter.findCurrentDayPosition(data, true, true);
 
-                if (currentDayPosition == -1) {
-                    selectedWeekPosition = abs(selectedWeekPosition - 1);
+                if (currentDayPosition == DayPagerAdapter.DAY_POSITION_NON_THIS_WEEK) {
                     selectedDayPosition = 0;
-                    getLoaderManager().restartLoader(LOADER_SCHEDULE_OF_WEEK_1, null, this);
+                    toggleWeek();
                     return;
                 }
 
@@ -214,53 +219,45 @@ public class ScheduleOfWeekFragment extends Fragment
         }
     }
 
+    public void toggleWeek() {
+        selectedWeekPosition = abs(selectedWeekPosition - 1);
+        getLoaderManager().restartLoader(LOADER_SCHEDULE_OF_WEEK_1, null, this);
+    }
+
     private void onPeriodicityChanged(int periodicity) {
         if (mListener != null) {
             mListener.onPeriodicityChanged(periodicity);
         }
     }
 
-    private int findCurrentDayPosition(Cursor cursor) {
-        int currentDay = getCurrentDayOfWeek();
-        int position = 0;
-        int day;
 
-        if (cursor.moveToFirst()) {
-            do {
-                // Get day of the schedule item.
-                day = cursor.getInt(0);
+    public void setCurrentDayPage() {
+        int currentDayPosition = mAdapter.findCurrentDayPosition();
 
-                // Found current day.
-                if (currentDay == day) {
-                    /*
-                    * Time of the current day higher than the time of the time of the last schedule
-                    * item of the day
-                    * */
-                    if (getCurrentTimeOfDayMillis() > cursor.getLong(1)) {
-                        /*
-                        * If the day is the last day in the schedule, return undefined day position.
-                        * */
-                        if (position == cursor.getCount() - 1) {
-                            return -1;
-                        }
-                        // Return next day position.
-                        return position + 1;
-                    }
-                    // Return current day position.
-                    return position;
+        if (currentDayPosition == DayPagerAdapter.DAY_POSITION_UNDEFINED) {
+            if (getCurrentWeekOfYear() == weeks[selectedWeekPosition]) {
+                currentDayPosition = mAdapter.findCurrentDayPosition(true, true);
+
+                if (selectedDayPosition != currentDayPosition) {
+                    mPager.setCurrentItem(currentDayPosition);
+                }
+            } else {
+                selectedDayPosition = CURRENT_CONVENIENT_DAY;
+                toggleWeek();
+            }
+
+            Toast.makeText(getActivity(), R.string.day_off, Toast.LENGTH_SHORT).show();
+        } else {
+            if (getCurrentWeekOfYear() == weeks[selectedWeekPosition]) {
+                if (selectedDayPosition != currentDayPosition) {
+                    mPager.setCurrentItem(currentDayPosition);
                 }
 
-                // If the day is higher than the current day.
-                if (currentDay < day) {
-                    // Return higher day position.
-                    return position;
-                }
-                position++;
-            } while (cursor.moveToNext());
+            } else {
+                selectedDayPosition = CURRENT_APPROXIMATE_DAY;
+                toggleWeek();
+            }
         }
-
-        // Return undefined day position.
-        return -1;
     }
 
     private ViewPager.SimpleOnPageChangeListener
@@ -292,6 +289,9 @@ public class ScheduleOfWeekFragment extends Fragment
     }
 
     private class DayPagerAdapter extends CursorFragmentStatePagerAdapter {
+
+        private static final int DAY_POSITION_NON_THIS_WEEK = -1;
+        private static final int DAY_POSITION_UNDEFINED = -2;
 
         private final String[] DAYS = getResources().getStringArray(R.array.days_of_week);
 
@@ -345,6 +345,61 @@ public class ScheduleOfWeekFragment extends Fragment
         @Override
         public CharSequence getPageTitle(int position, Cursor cursor) {
             return DAYS[cursor.getInt(0)];
+        }
+
+        public int findCurrentDayPosition() {
+            return findCurrentDayPosition(false, false);
+        }
+
+        public int findCurrentDayPosition(boolean switchDay, boolean switchWeek) {
+            if (getCursor() != null) {
+                return findCurrentDayPosition(getCursor(), switchDay, switchWeek);
+            }
+
+            return DAY_POSITION_UNDEFINED;
+        }
+
+        public int findCurrentDayPosition(Cursor cursor, boolean switchDay, boolean switchWeek) {
+            int currentDay = getCurrentDayOfWeek();
+            int position = 0;
+            int day;
+
+            if (cursor.moveToFirst()) {
+                do {
+                    // Get day of the schedule item.
+                    day = cursor.getInt(0);
+
+                    // Found current day.
+                    if (currentDay == day) {
+                    /*
+                    * If the time of the current day higher than the time of the last schedule
+                    * item of the day
+                    * */
+                        if (switchDay && getCurrentTimeOfDayMillis() > cursor.getLong(1)) {
+                        /*
+                        * If the day is the last day in the schedule, return undefined day position.
+                        * */
+                            if (switchWeek && position == cursor.getCount() - 1) {
+                                return DAY_POSITION_NON_THIS_WEEK;
+                            }
+                            // Return next day position.
+                            return position + 1;
+                        }
+                        // Return current day position.
+                        return position;
+                    }
+
+                    // If the day is higher than the current day.
+                    if (currentDay < day) {
+                        // Return higher day position.
+                        return position;
+                    }
+                    position++;
+                } while (cursor.moveToNext());
+            }
+
+            // Return undefined day position.
+            return DAY_POSITION_UNDEFINED;
         }
     }
 }

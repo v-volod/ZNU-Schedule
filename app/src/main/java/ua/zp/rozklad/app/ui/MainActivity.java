@@ -12,6 +12,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -179,6 +181,32 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        switch (selectedNavDrawerItemId) {
+            case NAV_DRAWER_ITEM_SCHEDULE:
+                getMenuInflater().inflate(R.menu.schedule_menu, menu);
+                return true;
+            default:
+                return super.onCreateOptionsMenu(menu);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_today:
+                Fragment scheduleOfWeek = getFragmentManager().findFragmentById(R.id.main_content);
+                if (scheduleOfWeek != null && scheduleOfWeek instanceof ScheduleOfWeekFragment) {
+                    ((ScheduleOfWeekFragment) scheduleOfWeek).setCurrentDayPage();
+                    return true;
+                }
+                return false;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     private void setUpNavDrawer() {
         drawerLayout.findViewById(R.id.change_group_box_indicator)
                 .setOnClickListener(changeGroupClickListener);
@@ -321,6 +349,7 @@ public class MainActivity extends ActionBarActivity
         selectedNavDrawerItemId = itemId;
         setSelectedNavDrawerItem(itemId);
         drawerLayout.closeDrawer(Gravity.START);
+        invalidateOptionsMenu();
     }
 
     private void setSelectedNavDrawerItem(int itemId) {
