@@ -195,11 +195,12 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         mAdapter.swapCursor(null);
     }
 
-    public void attachFAB(final FloatingActionButton fab) {
+    public void attachFAB(final FloatingActionButton mFab) {
         runFab = new Runnable() {
             @Override
             public void run() {
-                fab.attachToRecyclerView(mRecyclerView);
+                mFab.attachToRecyclerView(mRecyclerView);
+                mFab.show();
             }
         };
         if (isViewCreated) {

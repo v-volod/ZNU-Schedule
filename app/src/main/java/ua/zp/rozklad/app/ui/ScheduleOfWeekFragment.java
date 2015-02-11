@@ -9,7 +9,6 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -269,7 +268,7 @@ public class ScheduleOfWeekFragment extends Fragment
         @Override
         public void onPageSelected(int position) {
             selectedDayPosition = position;
-            mAdapter.updateFab();
+            ((ScheduleFragment) mAdapter.instantiateItem(mPager, position)).attachFAB(mFab);
         }
     };
 
@@ -296,8 +295,6 @@ public class ScheduleOfWeekFragment extends Fragment
 
         private final String[] DAYS = getResources().getStringArray(R.array.days_of_week);
 
-        private SparseArray<ScheduleFragment> registeredFragments = new SparseArray<>();
-
         public DayPagerAdapter(FragmentManager fm, Cursor cursor) {
             super(fm, cursor);
 
@@ -308,7 +305,7 @@ public class ScheduleOfWeekFragment extends Fragment
             int week = weeks[selectedWeekPosition];
             int day = cursor.getInt(0);
 
-            ScheduleFragment fragment = ScheduleFragment.newInstance(
+            return ScheduleFragment.newInstance(
                     position,
                     week == getCurrentWeekOfYear() && day == getCurrentDayOfWeek(),
                     groupId,
@@ -317,9 +314,6 @@ public class ScheduleOfWeekFragment extends Fragment
                     day,
                     periodicity.getPeriodicity(week)
             );
-
-            registeredFragments.put(position, fragment);
-            return fragment;
         }
 
         @Override
@@ -349,21 +343,8 @@ public class ScheduleOfWeekFragment extends Fragment
         }
 
         @Override
-        public void destroyItem(ViewGroup container, int position, Object object) {
-            registeredFragments.remove(position);
-            super.destroyItem(container, position, object);
-        }
-
-        @Override
         public CharSequence getPageTitle(int position, Cursor cursor) {
             return DAYS[cursor.getInt(0)];
-        }
-
-        public void updateFab() {
-            ScheduleFragment fragment = registeredFragments.get(selectedDayPosition);
-            if (fragment != null) {
-                fragment.attachFAB(mFab);
-            }
         }
     }
 }
