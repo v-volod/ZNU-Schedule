@@ -322,12 +322,12 @@ public class ScheduleOfWeekFragment extends Fragment
 
         @Override
         public int getItemPosition(Object object) {
-            Cursor cursor = getCursor();
             ScheduleFragment fragment = (ScheduleFragment) object;
 
             int oldPosition = fragment.getPosition();
 
-            if (cursor.moveToPosition(oldPosition)) {
+            Cursor cursor = getCursor();
+            if (cursor != null && cursor.moveToPosition(oldPosition)) {
                 int week = weeks[selectedWeekPosition];
                 int day = fragment.getDayOfWeek();
 

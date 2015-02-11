@@ -75,8 +75,12 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     private RecyclerView mRecyclerView;
     private ScheduleItemAdapter mAdapter;
 
+    private boolean isAttached = false;
+//    private Runnable runReload
+
     private boolean isViewCreated = false;
     private Runnable runFab;
+
     private Handler handler = new Handler();
 
     public static ScheduleFragment newInstance(int position, boolean isToday, int groupId,
@@ -127,6 +131,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
             throw new ClassCastException(activity.toString()
                     + " must implement OnScheduleItemClickListener");
         }
+        isAttached = true;
     }
 
     @Override
@@ -157,6 +162,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        isAttached = false;
     }
 
     @Override
@@ -223,7 +229,15 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         this.isToday = isToday;
         this.startOfWeek = startOfWeek;
         this.periodicity = periodicity;
-        getLoaderManager().restartLoader(LOADER_SCHEDULE_OF_THE_DAY_1, null, this);
+        Bundle args = getArguments();
+        if (args != null) {
+            args.putBoolean(ARG_IS_TODAY, isToday);
+            args.putLong(ARG_START_OF_WEEK, startOfWeek);
+            args.putInt(ARG_PERIODICITY, periodicity);
+        }
+        if (isAttached) {
+            getLoaderManager().restartLoader(LOADER_SCHEDULE_OF_THE_DAY_1, null, this);
+        }
     }
 
     /**
