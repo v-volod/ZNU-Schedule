@@ -209,8 +209,10 @@ public class ScheduleOfWeekFragment extends Fragment
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        mAdapter.swapCursor(null);
-        onPeriodicityChanged(0);
+        if (!isRemoving()) {
+            mAdapter.swapCursor(null);
+            onPeriodicityChanged(0);
+        }
     }
 
     private void onPeriodicityChanged(int periodicity) {
