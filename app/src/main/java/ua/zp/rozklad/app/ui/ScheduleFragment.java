@@ -46,6 +46,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
     private static final int LOADER_SCHEDULE_OF_THE_DAY_1 = 0;
 
+    private static final String ARG_POSITION = "position";
     private static final String ARG_SCHEDULE_TYPE = "scheduleType";
     private static final String ARG_TYPE_FILTER_ID = "typeFilterId";
     private static final String ARG_SUBGROUP_ID = "subgroupId";
@@ -59,6 +60,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     private static final int BY_GROUP = 0;
     private static final int BY_LECTURER = 1;
 
+    private int position;
     private boolean isToday;
     private long startOfWeek;
     private int scheduleType;
@@ -77,11 +79,13 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     private Runnable runFab;
     private Handler handler = new Handler();
 
-    public static ScheduleFragment newInstance(boolean isToday, int groupId, int subgroupId,
-                                               long startOfWeek, int dayOfWeek, int periodicity) {
+    public static ScheduleFragment newInstance(int position, boolean isToday, int groupId,
+                                               int subgroupId, long startOfWeek, int dayOfWeek,
+                                               int periodicity) {
         ScheduleFragment fragment = new ScheduleFragment();
         Bundle args = new Bundle();
 
+        args.putInt(ARG_POSITION, position);
         args.putInt(ARG_SCHEDULE_TYPE, BY_GROUP);
         args.putInt(ARG_TYPE_FILTER_ID, groupId);
         args.putInt(ARG_SUBGROUP_ID, subgroupId);
@@ -103,6 +107,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         super.onCreate(savedInstanceState);
         Bundle args = getArguments();
         if (args != null) {
+            position = args.getInt(ARG_POSITION);
             scheduleType = args.getInt(ARG_SCHEDULE_TYPE);
             typeFilterId = args.getInt(ARG_TYPE_FILTER_ID);
             periodicity = args.getInt(ARG_PERIODICITY, -1);
@@ -200,6 +205,25 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         if (mListener != null) {
             mListener.onScheduleItemClicked(scheduleItemId);
         }
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public int getDayOfWeek() {
+        return dayOfWeek;
+    }
+
+    public int getPeriodicity() {
+        return periodicity;
+    }
+
+    public void reload(boolean isToday, long startOfWeek, int periodicity) {
+        this.isToday = isToday;
+        this.startOfWeek = startOfWeek;
+        this.periodicity = periodicity;
+        getLoaderManager().restartLoader(LOADER_SCHEDULE_OF_THE_DAY_1, null, this);
     }
 
     /**
