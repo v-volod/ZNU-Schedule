@@ -42,6 +42,8 @@
     <string name="lorem_ipsum_short">Lorem ipsum dolor sit amet.</string>
     <string name="lorem_time">00:00</string>
     <string name="lorem_subject">Філософія</string>
+    <string name="lorem_location">Аудиторія 37 (1 корпус)</string>
+    <string name="icon_description_lorem">іконка</string>
     <string name="lorem_info">Чопоров Сергій Вікторович\n37 (1 корпус)</string>
     <string name="lorem_sub_header">Subheader</string>
 
@@ -68,6 +70,26 @@
         <item>жовтня</item>
         <item>листопада</item>
         <item>грудня</item>
+    </string-array>
+
+    <string-array name="periodicity">
+        <item>чисельник</item>
+        <item>знаменник</item>
+    </string-array>
+
+    <!-- ScheduleItemActivity values -->
+    <string name="location">Розташування</string>
+    <string name="lecturer">Викладач</string>
+    <string name="type">Тип</string>
+    <string name="time">Час</string>
+
+    <string-array name="lesson_type">
+        <item>Не задано</item>
+        <item>Лекція</item>
+        <item>Семінар</item>
+        <item>Лабораторна робота</item>
+        <item>Консультація</item>
+        <item>Екзамен</item>
     </string-array>
 
 </resources>

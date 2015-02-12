@@ -471,7 +471,9 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     public void onScheduleItemClicked(long scheduleItemId) {
-        // TODO: Start ScheduleItemActivity
+        Intent intent = new Intent(this, ScheduleItemActivity.class);
+        intent.putExtra("id", scheduleItemId);
+        startActivity(intent);
     }
 
     @Override

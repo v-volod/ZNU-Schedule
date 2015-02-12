@@ -22,7 +22,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".ui.MainActivity"
-            android:label="@string/znu_schedule">
+            android:label="@string/znu_schedule"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -35,6 +36,14 @@
             android:label="@string/title_activity_login"
             android:screenOrientation="portrait"
             android:theme="@style/LoginScreen" />
+
+        <activity
+            android:name=".ui.ScheduleItemActivity"
+            android:parentActivityName=".ui.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.MainActivity" />
+        </activity>
 
         <provider
             android:name=".provider.ScheduleProvider"

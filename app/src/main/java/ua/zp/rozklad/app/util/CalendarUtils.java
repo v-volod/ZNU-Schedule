@@ -2,6 +2,7 @@ package ua.zp.rozklad.app.util;
 
 import java.util.Calendar;
 
+import static java.lang.String.format;
 import static java.util.Calendar.FRIDAY;
 import static java.util.Calendar.MONDAY;
 import static java.util.Calendar.SATURDAY;
@@ -18,6 +19,7 @@ public class CalendarUtils {
     public static final long SECOND_TIME_STAMP = 1000;
     public static final long MINUTE_TIME_STAMP = 60 * SECOND_TIME_STAMP;
     public static final long HOUR_TIME_STAMP = 60 * MINUTE_TIME_STAMP;
+    public static final long HALF_DAY_TIME_STAMP = 12 * HOUR_TIME_STAMP;
     public static final long DAY_TIME_STAMP = 24 * HOUR_TIME_STAMP;
     public static final long WEEK_TIME_STAMP = 7 * DAY_TIME_STAMP;
 
@@ -89,4 +91,16 @@ public class CalendarUtils {
     public static long getCurrentTimeOfDayMillis() {
         return System.currentTimeMillis() - getDayStartMillis(System.currentTimeMillis());
     }
+
+    public static String makeTime(long timeToMake) {
+        return makeTime(timeToMake, ":");
+    }
+
+    public static String makeTime(long timeToMake, String divider) {
+        int hours = (int) (timeToMake / HOUR_TIME_STAMP);
+        int minutes = (int) (timeToMake % HOUR_TIME_STAMP / MINUTE_TIME_STAMP);
+        return format("%02d%s%02d", hours, divider, minutes);
+    }
+
+
 }

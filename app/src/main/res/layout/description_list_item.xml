@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/two_line_list_item_height"
+    android:clickable="true"
+    android:background="@drawable/list_item_background">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/thumbnail"
+            android:contentDescription="@string/icon_description_lorem"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerInParent="true"
+            android:layout_margin="@dimen/key_line_1"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/thumbnail"
+            android:layout_alignParentLeft="true"
+            android:layout_margin="@dimen/key_line_1">
+            <TextView
+                android:id="@+id/text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                android:textSize="@dimen/text_size_primary"
+                android:text="Аудиторія 123, 6 корпус" />
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:text="Розташування" />
+
+        </RelativeLayout>
+    </RelativeLayout>
+</FrameLayout>

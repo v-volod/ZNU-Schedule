@@ -217,19 +217,22 @@ public class SlidingTabLayout extends HorizontalScrollView {
         }
     }
 
+    private int mLastScrollTo;
+
     private void scrollToTab(int tabIndex, int positionOffset) {
         final int tabStripChildCount = mTabStrip.getChildCount();
         if (tabStripChildCount == 0 || tabIndex < 0 || tabIndex >= tabStripChildCount) {
             return;
         }
         View selectedChild = mTabStrip.getChildAt(tabIndex);
-        if (selectedChild != null) {
-            int targetScrollX = selectedChild.getLeft() + positionOffset;
-            if (tabIndex > 0 || positionOffset > 0) {
-// If we're not at the first child and are mid-scroll, make sure we obey the offset
-                targetScrollX -= mTitleOffset;
+        if (selectedChild != null && selectedChild.getMeasuredWidth() != 0) {
+
+            int targetScrollX = ((positionOffset + selectedChild.getLeft()) - getWidth() / 2) + selectedChild.getWidth() / 2;
+
+            if (targetScrollX != mLastScrollTo) {
+                scrollTo(targetScrollX, 0);
+                mLastScrollTo = targetScrollX;
             }
-            scrollTo(targetScrollX, 0);
         }
     }
 
@@ -244,13 +247,14 @@ public class SlidingTabLayout extends HorizontalScrollView {
             }
             mTabStrip.onViewPagerPageChanged(position, positionOffset);
             View selectedTitle = mTabStrip.getChildAt(position);
-            int extraOffset = (selectedTitle != null)
-                    ? (int) (positionOffset * selectedTitle.getWidth())
-                    : 0;
+            int selectedOffset = (selectedTitle == null) ? 0 : selectedTitle.getWidth();
+            int nextTitlePosition = position + 1;
+            View nextTitle = mTabStrip.getChildAt(nextTitlePosition);
+            int nextOffset = (nextTitle == null) ? 0 : nextTitle.getWidth();
+            int extraOffset = (int)(0.5F * (positionOffset * (float)(selectedOffset + nextOffset)));
             scrollToTab(position, extraOffset);
             if (mViewPagerPageChangeListener != null) {
-                mViewPagerPageChangeListener.onPageScrolled(position, positionOffset,
-                        positionOffsetPixels);
+                mViewPagerPageChangeListener.onPageScrolled(position, positionOffset, positionOffsetPixels);
             }
         }
 
