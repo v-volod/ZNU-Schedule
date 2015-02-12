@@ -110,12 +110,7 @@ public class MainActivity extends ActionBarActivity
         setContentView(R.layout.activity_main);
 
         mGroupAuthenticatorHelper = new GroupAuthenticatorHelper(this);
-        if (getAccount()) {
-            setUpUi(savedInstanceState);
-        }
-    }
 
-    private void setUpUi(Bundle savedInstanceState) {
         appBar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(appBar);
 
@@ -130,8 +125,10 @@ public class MainActivity extends ActionBarActivity
                     .getInt(EXTRA_KEY.SELECTED_NAV_DRAWER_ITEM_ID, NAV_DRAWER_ITEM_SCHEDULE);
         }
 
-        setUpNavDrawer();
-        onNavDrawerItemClicked(selectedNavDrawerItemId);
+        if (getAccount()) {
+            setUpNavDrawer();
+            onNavDrawerItemClicked(selectedNavDrawerItemId);
+        }
     }
 
     private boolean getAccount() {
