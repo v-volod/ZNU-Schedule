@@ -13,6 +13,7 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 
 import com.melnykov.fab.FloatingActionButton;
 
@@ -146,6 +147,16 @@ public class ScheduleOfWeekFragment extends Fragment
         mAdapter = new DayPagerAdapter(getFragmentManager(), null);
         mPager.setAdapter(mAdapter);
         mTabs.setViewPager(mPager);
+//        TODO: Delete FROM HERE for remove first tab padding
+        mTabs.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+
+            @Override
+            public void onGlobalLayout() {
+                View first = mTabs.getChildAt(0);
+                first.setPadding(88, first.getPaddingTop(), first.getPaddingRight(), first.getPaddingBottom());
+            }
+        });
+//        TO HERE
         getLoaderManager().initLoader(LOADER_SCHEDULE_OF_WEEK_1, null, this);
     }
 
