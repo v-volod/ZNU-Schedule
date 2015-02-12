@@ -103,4 +103,8 @@
     <dimen name="text_size_secondary">14sp</dimen>
 
     <dimen name="status_bar_height">0dp</dimen>
+
+    <!-- Tabs -->
+    <dimen name="tabs_padding_left">44dp</dimen>
+    <dimen name="tabs_padding_right">@dimen/key_line_1</dimen>
 </resources>

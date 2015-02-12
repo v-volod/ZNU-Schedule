@@ -12,8 +12,8 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import android.view.ViewTreeObserver;
+import android.widget.Toast;
 
 import com.melnykov.fab.FloatingActionButton;
 
@@ -66,6 +66,32 @@ public class ScheduleOfWeekFragment extends Fragment
     private FloatingActionButton mFab;
 
     private boolean isAttached = false;
+
+    private ViewTreeObserver.OnGlobalLayoutListener onGlobalLayoutListener =
+            new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if (mTabs.getChildCount() > 0) {
+                        View first = mTabs.getChildAt(0);
+                        View second = mTabs.getChildAt(mTabs.getChildCount() - 1);
+
+                        first.setPadding(
+                                (int) getResources().getDimension(R.dimen.tabs_padding_left),
+                                first.getPaddingTop(),
+                                first.getPaddingRight(),
+                                first.getPaddingBottom()
+                        );
+
+                        second.setPadding(
+                                second.getPaddingLeft(),
+                                second.getPaddingTop(),
+                                (int) getResources().getDimension(R.dimen.tabs_padding_right),
+                                second.getPaddingBottom()
+                        );
+                    }
+
+                }
+            };
 
     public static ScheduleOfWeekFragment newInstance(int groupId, int subgroupId) {
         ScheduleOfWeekFragment fragment = new ScheduleOfWeekFragment();
@@ -158,17 +184,14 @@ public class ScheduleOfWeekFragment extends Fragment
         mAdapter = new DayPagerAdapter(getFragmentManager(), null);
         mPager.setAdapter(mAdapter);
         mTabs.setViewPager(mPager);
-//        TODO: Delete FROM HERE for remove first tab padding
-        mTabs.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-
-            @Override
-            public void onGlobalLayout() {
-                View first = mTabs.getChildAt(0);
-                first.setPadding(88, first.getPaddingTop(), first.getPaddingRight(), first.getPaddingBottom());
-            }
-        });
-//        TO HERE
+        mTabs.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
         getLoaderManager().initLoader(LOADER_SCHEDULE_OF_WEEK_1, null, this);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mTabs.invalidate();
     }
 
     @Override
