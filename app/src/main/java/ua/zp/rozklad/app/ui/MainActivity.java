@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -15,8 +16,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.util.ArrayList;
 
@@ -75,22 +82,19 @@ public class MainActivity extends ActionBarActivity
     private View.OnClickListener changeGroupClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-//            drawerLayout.closeDrawer(Gravity.START);
-//            new MaterialDialog.Builder(MainActivity.this)
-//                    .content(R.string.change_group_question)
-//                    .positiveText(R.string.change_group)
-//                    .negativeText(R.string.cancel)
-//                    .callback(new MaterialDialog.ButtonCallback() {
-//                        @Override
-//                        public void onPositive(MaterialDialog dialog) {
-//                            // TODO: Implement changing group (and switching subgroup if needed)
-//                        }
-//
-//                        @Override
-//                        public void onNegative(MaterialDialog dialog) {
-//                            drawerLayout.openDrawer(Gravity.START);
-//                        }
-//                    }).show();
+            if (account != null) {
+                new MaterialDialog.Builder(MainActivity.this)
+                        .content(R.string.change_group_question)
+                        .positiveText(R.string.change_group)
+                        .negativeText(R.string.cancel)
+                        .callback(new MaterialDialog.ButtonCallback() {
+                            @Override
+                            public void onPositive(MaterialDialog dialog) {
+                                super.onPositive(dialog);
+                                changeGroup();
+                            }
+                        }).show();
+            }
         }
     };
 
@@ -98,12 +102,14 @@ public class MainActivity extends ActionBarActivity
 
     private GroupAccount account;
     private boolean isLoginRequested = false;
+    private GroupAuthenticatorHelper mGroupAuthenticatorHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mGroupAuthenticatorHelper = new GroupAuthenticatorHelper(this);
         if (getAccount()) {
             setUpUi(savedInstanceState);
         }
@@ -129,14 +135,13 @@ public class MainActivity extends ActionBarActivity
     }
 
     private boolean getAccount() {
-        GroupAuthenticatorHelper helper = new GroupAuthenticatorHelper(this);
-        if (!helper.hasAccount()) {
+        if (!mGroupAuthenticatorHelper.hasAccount()) {
             requestLogin();
             return false;
         } else {
-            account = helper.getActiveAccount();
+            account = mGroupAuthenticatorHelper.getActiveAccount();
             if (account == null) {
-                Account[] accounts = helper.getAccounts();
+                Account[] accounts = mGroupAuthenticatorHelper.getAccounts();
                 if (accounts.length > 0) {
                     account = new GroupAccount(AccountManager.get(this), accounts[0]);
                 } else {
@@ -161,7 +166,7 @@ public class MainActivity extends ActionBarActivity
     protected void onResume() {
         super.onResume();
 
-        if (!isLoginRequested && !new GroupAuthenticatorHelper(this).hasAccount()) {
+        if (!isLoginRequested && !mGroupAuthenticatorHelper.hasAccount()) {
             requestLogin();
         }
     }
@@ -175,7 +180,8 @@ public class MainActivity extends ActionBarActivity
                     break;
                 case LoginActivity.RESULT_OK:
                     if (getAccount()) {
-                        setUpUi(null);
+                        setUpNavDrawer();
+                        reloadContentFragment();
                         isLoginRequested = false;
                     }
                     break;
@@ -190,10 +196,15 @@ public class MainActivity extends ActionBarActivity
         switch (selectedNavDrawerItemId) {
             case NAV_DRAWER_ITEM_SCHEDULE:
                 getMenuInflater().inflate(R.menu.schedule_menu, menu);
-                return true;
-            default:
-                return super.onCreateOptionsMenu(menu);
+                break;
         }
+        getMenuInflater().inflate(R.menu.default_menu, menu);
+
+        if (account != null && account.getSubgroupCount() > 0) {
+            menu.findItem(R.id.action_change_subgroup).setVisible(true);
+        }
+
+        return true;
     }
 
     @Override
@@ -206,6 +217,9 @@ public class MainActivity extends ActionBarActivity
                     return true;
                 }
                 return false;
+            case R.id.action_change_subgroup:
+                changeSubgroup();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -217,18 +231,63 @@ public class MainActivity extends ActionBarActivity
         startActivityForResult(intent, REQUEST_LOGIN);
     }
 
+    private void changeGroup() {
+        AccountManager mAccountManager = AccountManager.get(this);
+        if (account != null) {
+            mAccountManager.removeAccount(account.getBaseAccount(), null, new Handler());
+            requestLogin();
+        }
+    }
+
+    private void changeSubgroup() {
+        String[] subgroups = new String[account.getSubgroupCount()];
+        for (int i = 0; i < account.getSubgroupCount(); i++) {
+            subgroups[i] = String.format(getString(R.string.subgroup_format_1), i + 1);
+        }
+
+        ListAdapter subgroupsAdapter =
+                new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, subgroups);
+
+        final MaterialDialog changeSubgroupDialog = new MaterialDialog.Builder(this)
+                .title(R.string.choose_subgroup_hint)
+                .adapter(subgroupsAdapter)
+                .negativeText(R.string.cancel)
+                .build();
+        ListView list = changeSubgroupDialog.getListView();
+
+        if (null != list) {
+            list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    changeSubgroupDialog.dismiss();
+                    int subgroup = position + 1;
+                    if (subgroup != account.getSubgroup()) {
+                        account.setSubgroup(subgroup);
+                        mGroupAuthenticatorHelper.setSubgroup(account);
+                        setUpNavDrawerAccountInfo();
+                        reloadContentFragment();
+                    }
+                }
+            });
+        }
+
+        changeSubgroupDialog.show();
+    }
+
+    private void reloadContentFragment() {
+        switch (selectedNavDrawerItemId) {
+            case NAV_DRAWER_ITEM_SCHEDULE:
+                reloadSchedule();
+                break;
+        }
+        invalidateOptionsMenu();
+    }
+
     private void setUpNavDrawer() {
         drawerLayout.findViewById(R.id.change_group_box_indicator)
                 .setOnClickListener(changeGroupClickListener);
 
-        String groupName = account.getGroupName() + ((account.getSubgroupCount() > 0) ?
-                format(getString(R.string.subgroup_format_2), account.getSubgroup()) : "");
-        String departmentName = account.getDepartmentName();
-
-        ((TextView) drawerLayout.findViewById(R.id.group_name_text))
-                .setText(groupName);
-        ((TextView) drawerLayout.findViewById(R.id.department_name_text))
-                .setText(departmentName);
+        setUpNavDrawerAccountInfo();
 
         drawerToggle = new ActionBarDrawerToggle(this,
                 drawerLayout, appBar,
@@ -253,6 +312,7 @@ public class MainActivity extends ActionBarActivity
             }
         });
 
+        navDrawerItems.clear();
         navDrawerItems.add(NAV_DRAWER_ITEM_SCHEDULE);
         navDrawerItems.add(NAV_DRAWER_ITEM_SUBJECTS);
         navDrawerItems.add(NAV_DRAWER_ITEM_LECTURERS);
@@ -260,6 +320,18 @@ public class MainActivity extends ActionBarActivity
         navDrawerItems.add(NAV_DRAWER_ITEM_SETTINGS);
         navDrawerItems.add(NAV_DRAWER_ITEM_INFO_RECALL);
         createNavDrawerItems();
+    }
+
+    private void setUpNavDrawerAccountInfo() {
+        String groupName = getString(R.string.nav_drawer_group_qualifier) + " " +
+                account.getGroupName() + ((account.getSubgroupCount() > 0) ?
+                format(getString(R.string.subgroup_format_2), account.getSubgroup()) : "");
+        String departmentName = account.getDepartmentName();
+
+        ((TextView) drawerLayout.findViewById(R.id.group_name_text))
+                .setText(groupName);
+        ((TextView) drawerLayout.findViewById(R.id.department_name_text))
+                .setText(departmentName);
     }
 
     private void createNavDrawerItems() {
@@ -391,6 +463,14 @@ public class MainActivity extends ActionBarActivity
                     .commit();
         }
         getSupportActionBar().setTitle(R.string.schedule);
+    }
+
+    private void reloadSchedule() {
+        Fragment scheduleOfWeek = getFragmentManager().findFragmentById(R.id.main_content);
+        if (scheduleOfWeek != null && scheduleOfWeek instanceof ScheduleOfWeekFragment) {
+            ((ScheduleOfWeekFragment) scheduleOfWeek)
+                    .reload(account.getGroupId(), account.getSubgroup());
+        }
     }
 
     @Override

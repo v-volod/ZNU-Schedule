@@ -64,6 +64,8 @@ public class ScheduleOfWeekFragment extends Fragment
     private SlidingTabLayout mTabs;
     private FloatingActionButton mFab;
 
+    private boolean isAttached = false;
+
     public static ScheduleOfWeekFragment newInstance(int groupId, int subgroupId) {
         ScheduleOfWeekFragment fragment = new ScheduleOfWeekFragment();
         Bundle args = new Bundle();
@@ -86,6 +88,13 @@ public class ScheduleOfWeekFragment extends Fragment
             throw new ClassCastException(activity.toString()
                     + " must implement OnPeriodicityChangeListener");
         }
+        isAttached = true;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        isAttached = false;
     }
 
     @Override
@@ -105,7 +114,8 @@ public class ScheduleOfWeekFragment extends Fragment
 
         if (savedInstanceState != null) {
             selectedWeekPosition = savedInstanceState.getInt(ARG_SELECTED_WEEK_POSITION, 0);
-            selectedDayPosition = savedInstanceState.getInt(ARG_SELECTED_DAY_POSITION, -1);
+            selectedDayPosition = savedInstanceState
+                    .getInt(ARG_SELECTED_DAY_POSITION, CURRENT_CONVENIENT_DAY);
         }
     }
 
@@ -277,6 +287,21 @@ public class ScheduleOfWeekFragment extends Fragment
                     .restartLoader(LOADER_SCHEDULE_OF_WEEK_1, null, ScheduleOfWeekFragment.this);
         }
     };
+
+    public void reload(int groupId, int subgroupId) {
+        this.groupId = groupId;
+        this.subgroupId = subgroupId;
+        Bundle args = getArguments();
+        if (args != null) {
+            args.putInt(ARG_GROUP_ID, groupId);
+            args.putInt(ARG_SUBGROUP_ID, subgroupId);
+        }
+        if (isAttached) {
+            mAdapter.changeCursor(null);
+            getLoaderManager()
+                    .restartLoader(LOADER_SCHEDULE_OF_WEEK_1, null, this);
+        }
+    }
 
     /**
      * Interface definition for a callback to be invoked when a periodicity changed.

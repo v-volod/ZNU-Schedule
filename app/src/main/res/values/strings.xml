@@ -31,8 +31,10 @@
     <string name="nav_drawer_open">Відкрити</string>
     <string name="nav_drawer_close">Закрити</string>
 
+    <string name="action_change_subgroup">Змінити підгрупу</string>
     <string name="change_group_question">Змінити групу?</string>
     <string name="change_group">змінити групу</string>
+    <string name="change_subgroup">змінити підгрупу</string>
 
     <string name="volley_error">Volley Error</string>
 

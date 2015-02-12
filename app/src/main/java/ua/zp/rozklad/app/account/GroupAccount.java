@@ -49,4 +49,8 @@ public class GroupAccount {
     public Account getBaseAccount() {
         return account;
     }
+
+    public void setSubgroup(int subgroup) {
+        this.subgroup = subgroup;
+    }
 }

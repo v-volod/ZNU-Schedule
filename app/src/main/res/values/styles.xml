@@ -6,6 +6,11 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowBackground">@color/white</item>
+
+        <!-- Material Dialog colors -->
+        <item name="md_positive_color">@color/colorPrimary</item>
+        <item name="md_neutral_color">@color/colorPrimary</item>
+        <item name="md_negative_color">@color/colorPrimary</item>
     </style>
 
     <style name="AppTheme" parent="AppTheme.Base">

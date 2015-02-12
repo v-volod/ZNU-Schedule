@@ -8,6 +8,8 @@ import android.support.annotation.Nullable;
 import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.util.PreferencesUtils;
 
+import static java.lang.String.valueOf;
+
 /**
  * @author Vojko Vladimir
  */
@@ -19,8 +21,7 @@ public class GroupAuthenticatorHelper {
     private PreferencesUtils mPreferencesUtils;
 
     public GroupAuthenticatorHelper(Context context) {
-        Context mContext = context;
-        mAccountManager = AccountManager.get(mContext);
+        mAccountManager = AccountManager.get(context);
         mPreferencesUtils = App.getInstance().getPreferencesUtils();
     }
 
@@ -48,5 +49,11 @@ public class GroupAuthenticatorHelper {
 
     public Account[] getAccounts() {
         return mAccountManager.getAccountsByType(TYPE);
+    }
+
+    public void setSubgroup(GroupAccount groupAccount) {
+        Account account = groupAccount.getBaseAccount();
+        mAccountManager.setUserData(account, GroupAuthenticator.KEY_SUBGROUP,
+                valueOf(groupAccount.getSubgroup()));
     }
 }
