@@ -242,6 +242,9 @@ public class ScheduleOfWeekFragment extends Fragment
 
 
     public void setCurrentDayPage() {
+        if (mAdapter.getCount() == 0) {
+            return;
+        }
         int currentDayPosition = mAdapter.findCurrentDayPosition();
 
         if (currentDayPosition == DayPagerAdapter.DAY_POSITION_UNDEFINED) {
@@ -289,17 +292,19 @@ public class ScheduleOfWeekFragment extends Fragment
     };
 
     public void reload(int groupId, int subgroupId) {
-        this.groupId = groupId;
-        this.subgroupId = subgroupId;
-        Bundle args = getArguments();
-        if (args != null) {
-            args.putInt(ARG_GROUP_ID, groupId);
-            args.putInt(ARG_SUBGROUP_ID, subgroupId);
-        }
-        if (isAttached) {
-            mAdapter.changeCursor(null);
-            getLoaderManager()
-                    .restartLoader(LOADER_SCHEDULE_OF_WEEK_1, null, this);
+        if (this.groupId != groupId || this.subgroupId != subgroupId) {
+            this.groupId = groupId;
+            this.subgroupId = subgroupId;
+            Bundle args = getArguments();
+            if (args != null) {
+                args.putInt(ARG_GROUP_ID, groupId);
+                args.putInt(ARG_SUBGROUP_ID, subgroupId);
+            }
+            if (isAttached) {
+                mAdapter.changeCursor(null);
+                getLoaderManager()
+                        .restartLoader(LOADER_SCHEDULE_OF_WEEK_1, null, this);
+            }
         }
     }
 

@@ -3,6 +3,7 @@ package ua.zp.rozklad.app.ui;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAuthenticator;
+import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.rest.GetDepartmentsMethod;
 import ua.zp.rozklad.app.rest.GetGroupsMethod;
 import ua.zp.rozklad.app.rest.RESTMethod;
@@ -120,6 +122,9 @@ public class LoginActivity extends AccountAuthenticatorActivity
             intent.putExtra(AccountManager.KEY_AUTHTOKEN, accountType);
 
             App.getInstance().getPreferencesUtils().saveActiveAccount(account.name);
+            ContentResolver.setSyncAutomatically(
+                    account, ScheduleContract.CONTENT_AUTHORITY, true
+            );
 
             setAccountAuthenticatorResult(intent.getExtras());
             setResult(RESULT_OK, intent);

@@ -3,7 +3,6 @@ package ua.zp.rozklad.app.ui;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Fragment;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAccount;
 import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
-import ua.zp.rozklad.app.provider.ScheduleContract;
 
 import static java.lang.String.format;
 
@@ -127,7 +125,6 @@ public class MainActivity extends ActionBarActivity
 
         if (getAccount()) {
             setUpNavDrawer();
-            onNavDrawerItemClicked(selectedNavDrawerItemId);
         }
     }
 
@@ -147,9 +144,6 @@ public class MainActivity extends ActionBarActivity
                 }
             }
         }
-        ContentResolver.setSyncAutomatically(
-                account.getBaseAccount(), ScheduleContract.CONTENT_AUTHORITY, true
-        );
         return true;
     }
 
@@ -229,6 +223,7 @@ public class MainActivity extends ActionBarActivity
     }
 
     private void changeGroup() {
+        drawerLayout.closeDrawer(Gravity.START);
         AccountManager mAccountManager = AccountManager.get(this);
         if (account != null) {
             mAccountManager.removeAccount(account.getBaseAccount(), null, new Handler());
@@ -317,6 +312,8 @@ public class MainActivity extends ActionBarActivity
         navDrawerItems.add(NAV_DRAWER_ITEM_SETTINGS);
         navDrawerItems.add(NAV_DRAWER_ITEM_INFO_RECALL);
         createNavDrawerItems();
+
+        onNavDrawerItemClicked(selectedNavDrawerItemId);
     }
 
     private void setUpNavDrawerAccountInfo() {
@@ -436,7 +433,9 @@ public class MainActivity extends ActionBarActivity
         }
         selectedNavDrawerItemId = itemId;
         setSelectedNavDrawerItem(itemId);
-        drawerLayout.closeDrawer(Gravity.START);
+        if (drawerLayout.isShown()) {
+            drawerLayout.closeDrawer(Gravity.START);
+        }
         invalidateOptionsMenu();
     }
 
