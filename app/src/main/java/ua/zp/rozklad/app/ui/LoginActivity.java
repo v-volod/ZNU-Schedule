@@ -21,6 +21,7 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 
 import java.util.ArrayList;
 
+import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAuthenticator;
 import ua.zp.rozklad.app.rest.GetDepartmentsMethod;
@@ -110,17 +111,22 @@ public class LoginActivity extends AccountAuthenticatorActivity
         userData.putString(GroupAuthenticator.KEY_DEPARTMENT_NAME, department.getName());
 
         final Account account = new Account(group.getName(), accountType);
-        accountManager.addAccountExplicitly(account, null, userData);
+        boolean isAdded = accountManager.addAccountExplicitly(account, null, userData);
 
+        if (isAdded) {
+            final Intent intent = new Intent();
+            intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name);
+            intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, accountType);
+            intent.putExtra(AccountManager.KEY_AUTHTOKEN, accountType);
 
-        final Intent intent = new Intent();
-        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name);
-        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, accountType);
-        intent.putExtra(AccountManager.KEY_AUTHTOKEN, accountType);
+            App.getInstance().getPreferencesUtils().saveActiveAccount(account.name);
 
-        setAccountAuthenticatorResult(intent.getExtras());
-        setResult(RESULT_OK, intent);
-        finish();
+            setAccountAuthenticatorResult(intent.getExtras());
+            setResult(RESULT_OK, intent);
+            finish();
+        } else {
+            Toast.makeText(this, R.string.can_not_create_account, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showErrorMessage(int errorCode) {
@@ -429,7 +435,7 @@ public class LoginActivity extends AccountAuthenticatorActivity
                     Group group = getItem(selectedGroup);
                     String[] subgroups = new String[group.getSubgroupCount()];
                     for (int i = 0; i < group.getSubgroupCount(); i++) {
-                        subgroups[i] = String.format(getString(R.string.subgroup_format), i + 1);
+                        subgroups[i] = String.format(getString(R.string.subgroup_format_1), i + 1);
                     }
 
                     chooseSubgroupDialog = new MaterialDialog.Builder(LoginActivity.this)
@@ -484,7 +490,7 @@ public class LoginActivity extends AccountAuthenticatorActivity
                 clearSubgroupSelection();
             } else {
                 subgroupName.setText(
-                        String.format(getString(R.string.subgroup_format), getSelectedSubgroup())
+                        String.format(getString(R.string.subgroup_format_1), getSelectedSubgroup())
                 );
                 loginButton.setVisibility(View.VISIBLE);
             }

@@ -9,7 +9,8 @@
     <string name="choose_department_hint">Оберіть факультет&#8230;</string>
     <string name="choose_group_hint">Оберіть групу&#8230;</string>
     <string name="choose_subgroup_hint">Оберіть підгрупу&#8230;</string>
-    <string name="subgroup_format">%d підгрупа</string>
+    <string name="subgroup_format_1">%d підгрупа</string>
+    <string name="subgroup_format_2">&#160;(%d підгрупа)</string>
     <string name="cancel">відмінити</string>
     <string name="login_button">УВІЙТИ</string>
     <string name="no_schedule">Поки що розклад відсутній</string>
@@ -17,6 +18,8 @@
     <string name="numerator">чисельник</string>
     <string name="denominator">знаменник</string>
     <string name="day_off">Сьогодні вихідний</string>
+    <string name="can_not_create_account">Помилка, не можливо створити обліковий запис</string>
+    <string name="one_account_allowed">Тільки один обліковий запис дозволено</string>
 
     <!-- NavigationDrawer List Items -->
     <string name="nav_drawer_group_qualifier">Група</string>
@@ -31,7 +34,6 @@
     <string name="change_group_question">Змінити групу?</string>
     <string name="change_group">змінити групу</string>
 
-    <string name="one_account_allowed">Only one account allowed</string>
     <string name="volley_error">Volley Error</string>
 
     <!-- Lorem Ipsum values -->

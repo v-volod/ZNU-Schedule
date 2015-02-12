@@ -6,7 +6,6 @@ import android.app.Fragment;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -19,24 +18,25 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.afollestad.materialdialogs.MaterialDialog;
-
 import java.util.ArrayList;
 
 import ua.zp.rozklad.app.R;
-import ua.zp.rozklad.app.account.GroupAuthenticator;
+import ua.zp.rozklad.app.account.GroupAccount;
+import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
 import ua.zp.rozklad.app.provider.ScheduleContract;
+
+import static java.lang.String.format;
 
 
 public class MainActivity extends ActionBarActivity
         implements ScheduleFragment.OnScheduleItemClickListener,
         ScheduleOfWeekFragment.OnPeriodicityChangeListener {
 
+    private static final int REQUEST_LOGIN = 100;
+
     public static interface EXTRA_KEY {
         String SELECTED_NAV_DRAWER_ITEM_ID = "SELECTED_NAV_DRAWER_ITEM_ID";
     }
-
-    private static final int NAV_DRAWER_CLOSE_DELAY = 300;
 
     private static final int NAV_DRAWER_ITEM_SCHEDULE = 0;
     private static final int NAV_DRAWER_ITEM_SUBJECTS = 1;
@@ -75,43 +75,41 @@ public class MainActivity extends ActionBarActivity
     private View.OnClickListener changeGroupClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            drawerLayout.closeDrawer(Gravity.START);
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    new MaterialDialog.Builder(MainActivity.this)
-                            .content(R.string.change_group_question)
-                            .positiveText(R.string.change_group)
-                            .negativeText(R.string.cancel)
-                            .callback(new MaterialDialog.ButtonCallback() {
-                                @Override
-                                public void onPositive(MaterialDialog dialog) {
-                                    // TODO: Implement changing group (and switching subgroup if needed)
-                                }
-
-                                @Override
-                                public void onNegative(MaterialDialog dialog) {
-                                    drawerLayout.openDrawer(Gravity.START);
-                                }
-                            }).show();
-                }
-            }, NAV_DRAWER_CLOSE_DELAY);
+//            drawerLayout.closeDrawer(Gravity.START);
+//            new MaterialDialog.Builder(MainActivity.this)
+//                    .content(R.string.change_group_question)
+//                    .positiveText(R.string.change_group)
+//                    .negativeText(R.string.cancel)
+//                    .callback(new MaterialDialog.ButtonCallback() {
+//                        @Override
+//                        public void onPositive(MaterialDialog dialog) {
+//                            // TODO: Implement changing group (and switching subgroup if needed)
+//                        }
+//
+//                        @Override
+//                        public void onNegative(MaterialDialog dialog) {
+//                            drawerLayout.openDrawer(Gravity.START);
+//                        }
+//                    }).show();
         }
     };
 
-    private int groupId;
-    private int subgroupId;
-    private int periodicity;
-
-    private Handler handler;
-
     private Toolbar appBar;
+
+    private GroupAccount account;
+    private boolean isLoginRequested = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (getAccount()) {
+            setUpUi(savedInstanceState);
+        }
+    }
+
+    private void setUpUi(Bundle savedInstanceState) {
         appBar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(appBar);
 
@@ -119,15 +117,6 @@ public class MainActivity extends ActionBarActivity
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerLayout.setStatusBarBackground(R.color.colorPrimaryDark);
-
-        handler = new Handler();
-
-        /*
-        * JUST FOR DEBUG
-        * TODO: Set from preferences.
-        * */
-        groupId = 1;
-        subgroupId = 1;
 
         selectedNavDrawerItemId = NAV_DRAWER_ITEM_SCHEDULE;
         if (savedInstanceState != null) {
@@ -139,6 +128,29 @@ public class MainActivity extends ActionBarActivity
         onNavDrawerItemClicked(selectedNavDrawerItemId);
     }
 
+    private boolean getAccount() {
+        GroupAuthenticatorHelper helper = new GroupAuthenticatorHelper(this);
+        if (!helper.hasAccount()) {
+            requestLogin();
+            return false;
+        } else {
+            account = helper.getActiveAccount();
+            if (account == null) {
+                Account[] accounts = helper.getAccounts();
+                if (accounts.length > 0) {
+                    account = new GroupAccount(AccountManager.get(this), accounts[0]);
+                } else {
+                    requestLogin();
+                    return false;
+                }
+            }
+        }
+        ContentResolver.setSyncAutomatically(
+                account.getBaseAccount(), ScheduleContract.CONTENT_AUTHORITY, true
+        );
+        return true;
+    }
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -148,36 +160,28 @@ public class MainActivity extends ActionBarActivity
     @Override
     protected void onResume() {
         super.onResume();
-        final AccountManager manager = AccountManager.get(getApplicationContext());
 
-        // TODO: Fix checking authorization
-        Account[] accounts = manager.getAccountsByType(GroupAuthenticator.ACCOUNT_TYPE);
-
-        if (accounts.length == 0) {
-            final Intent intent = new Intent(this, LoginActivity.class);
-            startActivityForResult(intent, 0);
-        } else {
-            String groupName = getString(R.string.nav_drawer_group_qualifier) +
-                    " " + accounts[0].name;
-            String departmentName = "Математичний факультет" /*getDepartment from account*/;
-
-            ((TextView) drawerLayout.findViewById(R.id.group_name_text))
-                    .setText(groupName);
-            ((TextView) drawerLayout.findViewById(R.id.department_name_text))
-                    .setText(departmentName);
-            ContentResolver
-                    .setSyncAutomatically(accounts[0], ScheduleContract.CONTENT_AUTHORITY, true);
+        if (!isLoginRequested && !new GroupAuthenticatorHelper(this).hasAccount()) {
+            requestLogin();
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (resultCode) {
-            case LoginActivity.RESULT_CANCELED:
-                finish();
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_LOGIN) {
+            switch (resultCode) {
+                case LoginActivity.RESULT_CANCELED:
+                    finish();
+                    break;
+                case LoginActivity.RESULT_OK:
+                    if (getAccount()) {
+                        setUpUi(null);
+                        isLoginRequested = false;
+                    }
+                    break;
+                default:
+                    super.onActivityResult(requestCode, resultCode, data);
+            }
         }
     }
 
@@ -207,9 +211,24 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+    private void requestLogin() {
+        isLoginRequested = true;
+        final Intent intent = new Intent(this, LoginActivity.class);
+        startActivityForResult(intent, REQUEST_LOGIN);
+    }
+
     private void setUpNavDrawer() {
         drawerLayout.findViewById(R.id.change_group_box_indicator)
                 .setOnClickListener(changeGroupClickListener);
+
+        String groupName = account.getGroupName() + ((account.getSubgroupCount() > 0) ?
+                format(getString(R.string.subgroup_format_2), account.getSubgroup()) : "");
+        String departmentName = account.getDepartmentName();
+
+        ((TextView) drawerLayout.findViewById(R.id.group_name_text))
+                .setText(groupName);
+        ((TextView) drawerLayout.findViewById(R.id.department_name_text))
+                .setText(departmentName);
 
         drawerToggle = new ActionBarDrawerToggle(this,
                 drawerLayout, appBar,
@@ -368,7 +387,7 @@ public class MainActivity extends ActionBarActivity
         if (scheduleOfWeek == null || !(scheduleOfWeek instanceof ScheduleOfWeekFragment)) {
             getFragmentManager().beginTransaction()
                     .replace(R.id.main_content, ScheduleOfWeekFragment
-                            .newInstance(groupId, subgroupId))
+                            .newInstance(account.getGroupId(), account.getSubgroup()))
                     .commit();
         }
         getSupportActionBar().setTitle(R.string.schedule);
