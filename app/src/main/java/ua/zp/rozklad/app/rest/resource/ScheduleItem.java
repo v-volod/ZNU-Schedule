@@ -27,6 +27,7 @@ public class ScheduleItem extends Resource {
     private long startDate;
     private long endDate;
     private int classType;
+    private boolean freeTrajectory;
     private long lastUpdate;
 
     public ScheduleItem(GlobalScheduleItem item, int groupId) {
@@ -42,23 +43,8 @@ public class ScheduleItem extends Resource {
         startDate = item.getStartDate();
         endDate = item.getEndDate();
         classType = item.getClassType();
+        freeTrajectory = item.getFreeTrajectory();
         lastUpdate = item.getLastUpdate();
-    }
-
-    public ScheduleItem(JSONObject json) throws JSONException {
-        id = json.getInt(RESTMethod.Key.ID);
-        groupId = json.getInt(RESTMethod.Key.GROUP_ID);
-        subgroup = json.getInt(RESTMethod.Key.SUBGROUP);
-        subjectId = json.getInt(RESTMethod.Key.LESSON_ID);
-        dayOfWeek = json.getInt(RESTMethod.Key.DAY);
-        academicHourId = json.getInt(RESTMethod.Key.TIME_ID);
-        lecturerId = json.getInt(RESTMethod.Key.TEACHER_ID);
-        audienceId = json.getInt(RESTMethod.Key.AUDIENCE_ID);
-        periodicity = json.getInt(RESTMethod.Key.PERIODICITY);
-        startDate = parseDate(json.getString(RESTMethod.Key.DATE_START));
-        endDate = parseDate(json.getString(RESTMethod.Key.DATE_END));
-        classType = json.getInt(RESTMethod.Key.LESSON_TYPE);
-        lastUpdate = json.getLong(RESTMethod.Key.LAST_UPDATE);
     }
 
     public void setId(int id) {
@@ -113,16 +99,11 @@ public class ScheduleItem extends Resource {
         return classType;
     }
 
-    public long getLastUpdate() {
-        return lastUpdate;
+    public boolean getFreeTrajectory() {
+        return freeTrajectory;
     }
 
-    private long parseDate(String dateToParse) {
-        String[] date = dateToParse.split("-");
-
-        Calendar calendar = new GregorianCalendar();
-        calendar.set(parseInt(date[0]), parseInt(date[1]), parseInt(date[2]), 0, 0);
-
-        return calendar.getTimeInMillis();
+    public long getLastUpdate() {
+        return lastUpdate;
     }
 }

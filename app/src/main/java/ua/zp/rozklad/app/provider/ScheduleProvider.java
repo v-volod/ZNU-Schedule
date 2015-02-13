@@ -14,8 +14,10 @@ import ua.zp.rozklad.app.provider.ScheduleContract.AcademicHour;
 import ua.zp.rozklad.app.provider.ScheduleContract.Audience;
 import ua.zp.rozklad.app.provider.ScheduleContract.Campus;
 import ua.zp.rozklad.app.provider.ScheduleContract.Department;
-import ua.zp.rozklad.app.provider.ScheduleContract.Group;
+import ua.zp.rozklad.app.provider.ScheduleContract.FullLecturer;
 import ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
+import ua.zp.rozklad.app.provider.ScheduleContract.FullSubject;
+import ua.zp.rozklad.app.provider.ScheduleContract.Group;
 import ua.zp.rozklad.app.provider.ScheduleContract.Lecturer;
 import ua.zp.rozklad.app.provider.ScheduleContract.Schedule;
 import ua.zp.rozklad.app.provider.ScheduleContract.Subject;
@@ -51,6 +53,10 @@ public class ScheduleProvider extends ContentProvider {
         int SCHEDULE_ID = 901;
         int FULL_SCHEDULE = 902;
         int FULL_SCHEDULE_ID = 903;
+        int FULL_SUBJECT = 1000;
+        int FULL_SUBJECT_ID = 1001;
+        int FULL_LECTURER = 1101;
+        int FULL_LECTURER_ID = 1102;
     }
 
     /**
@@ -87,6 +93,12 @@ public class ScheduleProvider extends ContentProvider {
 
         matcher.addURI(authority, "full_schedule/", URI_CODE.FULL_SCHEDULE);
         matcher.addURI(authority, "full_schedule/#", URI_CODE.FULL_SCHEDULE_ID);
+
+        matcher.addURI(authority, "full_subject/", URI_CODE.FULL_SUBJECT);
+        matcher.addURI(authority, "full_subject/#", URI_CODE.FULL_SUBJECT_ID);
+
+        matcher.addURI(authority, "full_lecturer/", URI_CODE.FULL_LECTURER);
+        matcher.addURI(authority, "full_lecturer/#", URI_CODE.FULL_LECTURER_ID);
 
         return matcher;
     }
@@ -140,6 +152,14 @@ public class ScheduleProvider extends ContentProvider {
                 return FullSchedule.CONTENT_TYPE;
             case URI_CODE.FULL_SCHEDULE_ID:
                 return FullSchedule.CONTENT_ITEM_TYPE;
+            case URI_CODE.FULL_SUBJECT:
+                return FullSubject.CONTENT_TYPE;
+            case URI_CODE.FULL_SUBJECT_ID:
+                return FullSubject.CONTENT_ITEM_TYPE;
+            case URI_CODE.FULL_LECTURER:
+                return FullLecturer.CONTENT_TYPE;
+            case URI_CODE.FULL_LECTURER_ID:
+                return FullLecturer.CONTENT_ITEM_TYPE;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
@@ -157,13 +177,11 @@ public class ScheduleProvider extends ContentProvider {
 
         switch (match) {
             case URI_CODE.DEPARTMENT:
-                id = db.insertOrThrow(Tables.DEPARTMENT, null, values);
-                notifyChange(uri);
-                return ContentUris.withAppendedId(uri, id);
+                table = Tables.DEPARTMENT;
+                break;
             case URI_CODE.GROUP:
-                id = db.insertOrThrow(Tables.GROUP, null, values);
-                notifyChange(uri);
-                return ContentUris.withAppendedId(uri, id);
+                table = Tables.GROUP;
+                break;
             case URI_CODE.LECTURER:
                 table = Tables.LECTURER;
                 break;
@@ -188,7 +206,7 @@ public class ScheduleProvider extends ContentProvider {
 
         id = db.insertOrThrow(table, null, values);
 
-        notifyChange(uri);
+        notifyChange(uri, match);
 
         return ContentUris.withAppendedId(uri, id);
     }
@@ -268,7 +286,7 @@ public class ScheduleProvider extends ContentProvider {
 
         deleteCount = db.delete(table, appendSelection(where, selection), selectionArgs);
 
-        notifyChange(uri);
+        notifyChange(uri, match);
 
         return deleteCount;
     }
@@ -348,7 +366,7 @@ public class ScheduleProvider extends ContentProvider {
 
         updateCount = db.update(table, values, appendSelection(where, selection), selectionArgs);
 
-        notifyChange(uri);
+        notifyChange(uri, match);
 
         return updateCount;
     }
@@ -428,6 +446,24 @@ public class ScheduleProvider extends ContentProvider {
                 queryBuilder.setTables(FullSchedule.Summary.TABLES);
                 queryBuilder.appendWhere(FullSchedule._ID + " = " + uri.getLastPathSegment());
                 break;
+            case URI_CODE.FULL_SUBJECT:
+                queryBuilder.setTables(FullSubject.TABLES);
+                break;
+            case URI_CODE.FULL_SUBJECT_ID:
+                queryBuilder.setTables(FullSubject.TABLES);
+                queryBuilder.appendWhere(FullSubject._ID + " = " + uri.getLastPathSegment());
+                break;
+            case URI_CODE.FULL_LECTURER:
+                queryBuilder.setTables(FullLecturer.TABLES);
+                /*
+                * Ignore "Empty" Lecturer which used in schedule items with undefined lecturer.
+                * */
+                queryBuilder.appendWhere(FullLecturer.LECTURER_NAME + "!=''");
+                break;
+            case URI_CODE.FULL_LECTURER_ID:
+                queryBuilder.setTables(FullLecturer.TABLES);
+                queryBuilder.appendWhere(FullLecturer._ID + " = " + uri.getLastPathSegment());
+                break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
         }
@@ -439,7 +475,6 @@ public class ScheduleProvider extends ContentProvider {
                 selectionArgs,
                 null,
                 null,
-                // TODO: Add default sort order, for all tables
                 sortOrder);
 
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
@@ -448,8 +483,35 @@ public class ScheduleProvider extends ContentProvider {
     }
 
     private void notifyChange(Uri uri) {
-        getContext().getContentResolver().notifyChange(uri, null);
-        // TODO: Notify dependent URIs after changes.
+        notifyChange(uri, false);
+    }
+
+    private void notifyChange(Uri uri, boolean syncToNetwork) {
+        getContext().getContentResolver().notifyChange(uri, null, syncToNetwork);
+    }
+
+    private void notifyChange(Uri uri, int match) {
+        notifyChange(uri);
+        switch (match) {
+            case URI_CODE.SCHEDULE:
+                notifyChange(FullSchedule.CONTENT_URI);
+                break;
+            case URI_CODE.SUBJECT:
+                notifyChange(FullSchedule.CONTENT_URI);
+                notifyChange(FullSubject.CONTENT_URI);
+                break;
+            case URI_CODE.ACADEMIC_HOUR:
+                notifyChange(FullSchedule.CONTENT_URI);
+                break;
+            case URI_CODE.LECTURER:
+                notifyChange(FullSchedule.CONTENT_URI);
+                notifyChange(FullLecturer.CONTENT_URI);
+                break;
+            case URI_CODE.AUDIENCE:
+            case URI_CODE.CAMPUS:
+                notifyChange(FullSchedule.CONTENT_URI);
+                break;
+        }
     }
 
     private String appendSelection(String where, String selection) {

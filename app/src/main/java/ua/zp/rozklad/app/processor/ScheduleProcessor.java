@@ -84,6 +84,7 @@ public class ScheduleProcessor extends Processor<ScheduleItem, ScheduleDependenc
         values.put(Schedule.START_DATE, scheduleItem.getStartDate());
         values.put(Schedule.END_DATE, scheduleItem.getEndDate());
         values.put(Schedule.CLASS_TYPE, scheduleItem.getClassType());
+        values.put(Schedule.FREE_TRAJECTORY, scheduleItem.getFreeTrajectory());
         values.put(Schedule.UPDATED, scheduleItem.getLastUpdate());
 
         return values;

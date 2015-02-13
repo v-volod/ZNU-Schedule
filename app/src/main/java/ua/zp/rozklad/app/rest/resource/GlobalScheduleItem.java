@@ -29,6 +29,7 @@ public class GlobalScheduleItem extends Resource {
     private long startDate;
     private long endDate;
     private int classType;
+    private boolean freeTrajectory;
     private long lastUpdate;
 
     public GlobalScheduleItem(JSONObject json) throws JSONException {
@@ -48,6 +49,7 @@ public class GlobalScheduleItem extends Resource {
         startDate = parseDate(json.getString(RESTMethod.Key.DATE_START));
         endDate = parseDate(json.getString(RESTMethod.Key.DATE_END));
         classType = json.getInt(RESTMethod.Key.LESSON_TYPE);
+        freeTrajectory = json.getBoolean(RESTMethod.Key.FREE_TRAJECTORY);
         lastUpdate = json.getLong(RESTMethod.Key.LAST_UPDATE);
     }
 
@@ -97,6 +99,10 @@ public class GlobalScheduleItem extends Resource {
 
     public int getClassType() {
         return classType;
+    }
+
+    public boolean getFreeTrajectory() {
+        return freeTrajectory;
     }
 
     public long getLastUpdate() {

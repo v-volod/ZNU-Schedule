@@ -95,11 +95,15 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
             ArrayList<Group> groups = response.getResponse();
 
             GroupsProcessor processor = new GroupsProcessor(getContext());
-            groups = processor.process(groups);
 
-            for (Group group : groups) {
+            ArrayList<Group> dependency = new ArrayList<>();
+            processor.resolveDependency(groups, dependency);
+
+            for (Group group : dependency) {
                 performGroupSync(group);
             }
+
+            processor.process(groups);
         }
 
         Log.d("ScheduleLOGS", "onPerformSync finished");

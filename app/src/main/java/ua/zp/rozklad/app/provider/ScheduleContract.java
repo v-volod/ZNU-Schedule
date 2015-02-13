@@ -67,6 +67,7 @@ public class ScheduleContract {
         String START_DATE = "start_date";
         String END_DATE = "end_date";
         String CLASS_TYPE = "class_type";
+        String FREE_TRAJECTORY = "free_trajectory";
     }
 
     public static final String CONTENT_AUTHORITY = "ua.zp.rozklad.app.provider";
@@ -82,6 +83,8 @@ public class ScheduleContract {
     private static final String PATH_AUDIENCE = "audience";
     private static final String PATH_SCHEDULE = "schedule";
     private static final String PATH_FULL_SCHEDULE = "full_schedule";
+    private static final String PATH_FULL_SUBJECT = "full_subject";
+    private static final String PATH_FULL_LECTURER = "full_lecturer";
 
     private static final String INNER_JOIN = " INNER JOIN ";
     private static final String ON = " ON ";
@@ -91,6 +94,7 @@ public class ScheduleContract {
     private static final String ASC = " ASC";
     private static final String DESC = " DESC";
     private static final String GROUP_BY = " GROUP BY ";
+    private static final String DISTINCT = "DISTINCT ";
 
     public static class Department implements DepartmentColumns, BaseColumns {
         public static final Uri CONTENT_URI =
@@ -464,12 +468,72 @@ public class ScheduleContract {
         }
     }
 
+    public static class FullSubject {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_FULL_SUBJECT).build();
+
+        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." +
+                CONTENT_AUTHORITY + ".full_subject";
+        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE +
+                "/vnd." + CONTENT_AUTHORITY + ".full_subject";
+
+        public static final String _ID =
+                Tables.SUBJECT + "." + BaseColumns._ID;
+        public static final String SUBJECT_NAME =
+                Tables.SUBJECT + "." + SubjectColumns.SUBJECT_NAME;
+
+        public static final String TABLES = Tables.SCHEDULE +
+                INNER_JOIN + Tables.SUBJECT + ON + _ID + EQ + FullSchedule.SCHEDULE_SUBJECT_ID;
+
+        public static final String[] PROJECTION = {
+                DISTINCT + _ID,
+                SUBJECT_NAME
+        };
+
+        public static interface Column {
+            int _ID = 0;
+            int SUBJECT_NAME = 1;
+        }
+
+        public static final String DEFAULT_SORT_ORDER = SUBJECT_NAME + ASC;
+    }
+
+    public static class FullLecturer {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_FULL_LECTURER).build();
+
+        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." +
+                CONTENT_AUTHORITY + ".full_lecturer";
+        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE +
+                "/vnd." + CONTENT_AUTHORITY + ".full_lecturer";
+
+        public static final String _ID =
+                Tables.LECTURER + "." + BaseColumns._ID;
+        public static final String LECTURER_NAME =
+                Tables.LECTURER + "." + LecturerColumns.LECTURER_NAME;
+
+        public static final String TABLES = Tables.SCHEDULE +
+                INNER_JOIN + Tables.LECTURER + ON + _ID + EQ + FullSchedule.SCHEDULE_LECTURER_ID;
+
+        public static final String[] PROJECTION = {
+                DISTINCT + _ID,
+                LECTURER_NAME
+        };
+
+        public static interface Column {
+            int _ID = 0;
+            int LECTURER_NAME = 1;
+        }
+
+        public static final String DEFAULT_SORT_ORDER = LECTURER_NAME + ASC;
+    }
+
     /**
      * Generate GROUP BY clause to put in selection to hack {@link ContentResolver#query(android.net.Uri, String[], String, String[], String)}
      * method which dose not contains group by.
      */
     public static String groupBySelection(String... args) {
-        return  ")" + GROUP_BY + "(" + combine(",", args);
+        return ")" + GROUP_BY + "(" + combine(",", args);
     }
 
     private static String combine(String combiner, String... args) {

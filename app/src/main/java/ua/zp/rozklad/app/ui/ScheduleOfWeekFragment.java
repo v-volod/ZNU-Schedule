@@ -12,7 +12,6 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
 import com.melnykov.fab.FloatingActionButton;
@@ -61,6 +60,7 @@ public class ScheduleOfWeekFragment extends Fragment
     private OnPeriodicityChangeListener mListener;
 
     private DayPagerAdapter mAdapter;
+    private View scheduleContainer;
     private ViewPager mPager;
     private SlidingTabLayout mTabs;
     private FloatingActionButton mFab;
@@ -149,6 +149,8 @@ public class ScheduleOfWeekFragment extends Fragment
         mFab = (FloatingActionButton) view.findViewById(R.id.fab);
         mFab.setOnClickListener(togglePeriodicityListener);
 
+        scheduleContainer = view.findViewById(R.id.schedule_of_week_container);
+
         return view;
     }
 
@@ -193,14 +195,15 @@ public class ScheduleOfWeekFragment extends Fragment
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data.getCount() > 0) {
+            if (scheduleContainer.getVisibility() == View.GONE) {
+                scheduleContainer.setVisibility(View.VISIBLE);
+            }
+
             /*
             * Check if day is not selected before.
             * */
-
             if (selectedDayPosition == CURRENT_APPROXIMATE_DAY) {
                 selectedDayPosition = mAdapter.findCurrentDayPosition(data, false, false);
-
-
             } else if (selectedDayPosition == CURRENT_CONVENIENT_DAY) {
                 /*
                 * Find position of the current day.
@@ -220,6 +223,9 @@ public class ScheduleOfWeekFragment extends Fragment
                     periodicity.getPeriodicity(weeks[selectedWeekPosition])
             );
         } else {
+            if (scheduleContainer.getVisibility() == View.VISIBLE) {
+                scheduleContainer.setVisibility(View.GONE);
+            }
             onPeriodicityChanged(0);
         }
 
@@ -230,6 +236,9 @@ public class ScheduleOfWeekFragment extends Fragment
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        if (scheduleContainer.getVisibility() == View.VISIBLE) {
+            scheduleContainer.setVisibility(View.GONE);
+        }
         if (!isRemoving()) {
             mAdapter.swapCursor(null);
             onPeriodicityChanged(0);
@@ -431,8 +440,15 @@ public class ScheduleOfWeekFragment extends Fragment
                         // Return higher day position.
                         return position;
                     }
+
                     position++;
                 } while (cursor.moveToNext());
+
+                // If current day higher than the last day of the week and request allow to switch
+                // week.
+                if (currentDay > day && switchWeek) {
+                    return DAY_POSITION_NON_THIS_WEEK;
+                }
             }
 
             // Return undefined day position.

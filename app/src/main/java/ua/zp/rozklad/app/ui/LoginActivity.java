@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAuthenticator;
+import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
 import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.rest.GetDepartmentsMethod;
 import ua.zp.rozklad.app.rest.GetGroupsMethod;
@@ -112,6 +113,11 @@ public class LoginActivity extends AccountAuthenticatorActivity
         userData.putString(GroupAuthenticator.KEY_SUBGROUP, "" + subgroup);
         userData.putString(GroupAuthenticator.KEY_DEPARTMENT_NAME, department.getName());
 
+        if (new GroupAuthenticatorHelper(this).hasAccount()) {
+            Toast.makeText(this, R.string.error_already_has_account, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         final Account account = new Account(group.getName(), accountType);
         boolean isAdded = accountManager.addAccountExplicitly(account, null, userData);
 
@@ -124,6 +130,15 @@ public class LoginActivity extends AccountAuthenticatorActivity
             App.getInstance().getPreferencesUtils().saveActiveAccount(account.name);
             ContentResolver.setSyncAutomatically(
                     account, ScheduleContract.CONTENT_AUTHORITY, true
+            );
+            ContentResolver.addPeriodicSync(
+                    account,
+                    ScheduleContract.CONTENT_AUTHORITY,
+                    Bundle.EMPTY,
+                    /*
+                    * TODO: store interval in preferences. 1 hour def val.
+                    * */
+                    60L * 60L
             );
 
             setAccountAuthenticatorResult(intent.getExtras());

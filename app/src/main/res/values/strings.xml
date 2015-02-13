@@ -20,6 +20,8 @@
     <string name="day_off">Сьогодні вихідний</string>
     <string name="can_not_create_account">Помилка, не можливо створити обліковий запис</string>
     <string name="one_account_allowed">Тільки один обліковий запис дозволено</string>
+    <string name="error_already_has_account">Помилка! Ви вже маєте обліковий запис</string>
+    <string name="no_loaded_schedule">Розклад ще не завантажено, або відсутній</string>
 
     <!-- NavigationDrawer List Items -->
     <string name="nav_drawer_group_qualifier">Група</string>

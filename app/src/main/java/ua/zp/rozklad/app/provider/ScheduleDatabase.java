@@ -88,6 +88,7 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
                 + ScheduleColumns.START_DATE + " INTEGER NOT NULL, "
                 + ScheduleColumns.END_DATE + " INTEGER NOT NULL, "
                 + ScheduleColumns.CLASS_TYPE + " INTEGER NOT NULL, "
+                + ScheduleColumns.FREE_TRAJECTORY + " INTEGER NOT NULL, "
                 + SyncColumns.UPDATED + " INTEGER NOT NULL)");
     }
 

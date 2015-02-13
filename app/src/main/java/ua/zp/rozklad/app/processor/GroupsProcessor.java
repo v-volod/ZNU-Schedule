@@ -7,6 +7,7 @@ import android.database.Cursor;
 
 import java.util.ArrayList;
 
+import ua.zp.rozklad.app.processor.dependency.ResolveDependency;
 import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.rest.resource.Group;
 
@@ -15,39 +16,34 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.Group.buildGroupUri;
 /**
  * @author Vojko Vladimir
  */
-public class GroupsProcessor extends Processor<Group, ArrayList<Group>> {
+public class GroupsProcessor extends Processor<Group, Void>
+        implements ResolveDependency<ArrayList<Group>, ArrayList<Group>> {
 
     public GroupsProcessor(Context context) {
         super(context);
     }
 
     @Override
-    public ArrayList<Group> process(ArrayList<Group> groups) {
+    public Void process(ArrayList<Group> groups) {
         ContentResolver resolver = context.getContentResolver();
         Cursor cursor;
-
-        ArrayList<Group> dependency = new ArrayList<>();
 
         for (Group group : groups) {
             cursor = resolver.query(buildGroupUri(group.getId()),
                     new String[]{ScheduleContract.Group.UPDATED}, null, null, null);
 
             if (cursor.moveToFirst()) {
-                if (cursor.getLong(0) != group.getLastUpdate()) {
-                    resolver.update(
-                            buildGroupUri(group.getId()), buildValuesForUpdate(group), null, null
-                    );
-                    dependency.add(group);
-                }
+                resolver.update(
+                        buildGroupUri(group.getId()), buildValuesForUpdate(group), null, null
+                );
             } else {
                 resolver.insert(ScheduleContract.Group.CONTENT_URI, buildValuesForInsert(group));
-                dependency.add(group);
             }
 
             cursor.close();
         }
 
-        return dependency;
+        return null;
     }
 
     @Override
@@ -70,5 +66,26 @@ public class GroupsProcessor extends Processor<Group, ArrayList<Group>> {
         values.put(ScheduleContract.Group.UPDATED, group.getLastUpdate());
 
         return values;
+    }
+
+    @Override
+    public void resolveDependency(ArrayList<Group> groups, ArrayList<Group> dependency) {
+        ContentResolver resolver = context.getContentResolver();
+        Cursor cursor;
+
+        for (Group group : groups) {
+            cursor = resolver.query(buildGroupUri(group.getId()),
+                    new String[]{ScheduleContract.Group.UPDATED}, null, null, null);
+
+            if (cursor.moveToFirst()) {
+                if (cursor.getLong(0) != group.getLastUpdate()) {
+                    dependency.add(group);
+                }
+            } else {
+                dependency.add(group);
+            }
+
+            cursor.close();
+        }
     }
 }
