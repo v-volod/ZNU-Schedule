@@ -285,12 +285,10 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         }
 
         public void update(boolean isToday, ScheduleItem item) {
-            if (isToday) {
-                if (item.isNow()) {
-                    status.setVisibility(View.VISIBLE);
-                } else {
-                    status.setVisibility(View.GONE);
-                }
+            if (isToday && item.isNow()) {
+                status.setVisibility(View.VISIBLE);
+            } else {
+                status.setVisibility(View.GONE);
             }
             subject.setText(item.getSubject());
             info.setText(item.getInfo());
