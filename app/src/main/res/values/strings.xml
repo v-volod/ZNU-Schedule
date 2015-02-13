@@ -83,7 +83,7 @@
     <string name="type">Тип</string>
     <string name="time">Час</string>
 
-    <string-array name="lesson_type">
+    <string-array name="class_type">
         <item>Не задано</item>
         <item>Лекція</item>
         <item>Семінар</item>

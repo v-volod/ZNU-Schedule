@@ -1,36 +1,41 @@
 package ua.zp.rozklad.app.model;
 
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.text.TextUtils;
 
 import java.util.Calendar;
 
+import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.util.CalendarUtils;
 
-import static java.lang.String.format;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Column;
 
 /**
  * @author Vojko Vladimir
  */
 public class ScheduleItem {
-    private static final String INFO_FORMAT_FULL = "%s\n%d (%s)";
-    private static final String INFO_FORMAT_SHORT = "%s\n%s";
 
     private long startTime;
     private long endTime;
     private String subject;
     private String info;
 
-    public ScheduleItem(Cursor cursor) {
-        int audienceNumber = cursor.getInt(Column.AUDIENCE_NUMBER);
+    public ScheduleItem(Resources res, Cursor cursor) {
         startTime = cursor.getLong(Column.ACADEMIC_HOUR_STAT_TIME);
         endTime = cursor.getInt(Column.ACADEMIC_HOUR_END_TIME);
         subject = cursor.getString(Column.SUBJECT_NAME);
-        info = (audienceNumber > 0) ?
-                format(INFO_FORMAT_FULL, cursor.getString(Column.LECTURER_NAME), audienceNumber,
-                        cursor.getString(Column.CAMPUS_NAME)) :
-                format(INFO_FORMAT_SHORT, cursor.getString(Column.LECTURER_NAME),
-                        cursor.getInt(Column.CAMPUS_NAME));
+        String audience = cursor.getString(Column.AUDIENCE_NUMBER);
+        String campus = cursor.getString(Column.CAMPUS_NAME);
+        String location = audience +
+                ((TextUtils.isEmpty(campus)) ? "" :
+                        (TextUtils.isEmpty(audience) ? "(" : " (") + campus + ")");
+        int type = cursor.getInt(Column.CLASS_TYPE);
+        info = cursor.getString(Column.LECTURER_NAME) + "\n" +
+                ((TextUtils.isEmpty(location)) ? "" : location) +
+                ((type == 0) ? "" :
+                        ((TextUtils.isEmpty(location) ? "" : ", ") +
+                                res.getStringArray(R.array.class_type)[type]));
     }
 
     private boolean inRange(long startAt, long endAt) {

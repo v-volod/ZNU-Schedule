@@ -13,4 +13,9 @@
     <declare-styleable name="ScrimInsetsView">
         <attr name="insetForeground" format="reference|color" />
     </declare-styleable>
+
+    <declare-styleable name="SlidingTabLayout">
+        <attr name="tabStripMarginLeft" format="reference|dimension" />
+        <attr name="tabStripMarginRight" format="reference|dimension" />
+    </declare-styleable>
 </resources>

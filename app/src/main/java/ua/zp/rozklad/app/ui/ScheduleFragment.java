@@ -314,7 +314,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final Cursor cursor) {
-            ((ItemViewHolder) viewHolder).update(isToday, new ScheduleItem(cursor));
+            ((ItemViewHolder) viewHolder).update(isToday, new ScheduleItem(getResources(), cursor));
         }
 
         @Override

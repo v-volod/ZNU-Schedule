@@ -16,8 +16,8 @@ package ua.zp.rozklad.app.ui.tabs;
 */
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
@@ -30,6 +30,8 @@ import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import ua.zp.rozklad.app.R;
 
 /**
  * To be used with ViewPager to provide a tab indicator component which give constant feedback as to
@@ -87,6 +89,22 @@ public class SlidingTabLayout extends HorizontalScrollView {
         setFillViewport(true);
         mTitleOffset = (int) (TITLE_OFFSET_DIPS * getResources().getDisplayMetrics().density);
         mTabStrip = new SlidingTabStrip(context);
+        TypedArray a = context.getTheme().obtainStyledAttributes(
+                attrs,
+                R.styleable.SlidingTabLayout,
+                0,
+                0
+        );
+        try {
+            mTabStrip.setPadding(
+                    (int) a.getDimension(R.styleable.SlidingTabLayout_tabStripMarginLeft, 0),
+                    mTabStrip.getPaddingTop(),
+                    (int) a.getDimension(R.styleable.SlidingTabLayout_tabStripMarginRight, 0),
+                    mTabStrip.getPaddingBottom()
+            );
+        } finally {
+            a.recycle();
+        }
         addView(mTabStrip, LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
     }
 
@@ -251,7 +269,7 @@ public class SlidingTabLayout extends HorizontalScrollView {
             int nextTitlePosition = position + 1;
             View nextTitle = mTabStrip.getChildAt(nextTitlePosition);
             int nextOffset = (nextTitle == null) ? 0 : nextTitle.getWidth();
-            int extraOffset = (int)(0.5F * (positionOffset * (float)(selectedOffset + nextOffset)));
+            int extraOffset = (int) (0.5F * (positionOffset * (float) (selectedOffset + nextOffset)));
             scrollToTab(position, extraOffset);
             if (mViewPagerPageChangeListener != null) {
                 mViewPagerPageChangeListener.onPageScrolled(position, positionOffset, positionOffsetPixels);

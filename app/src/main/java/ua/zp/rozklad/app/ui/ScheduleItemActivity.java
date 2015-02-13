@@ -61,7 +61,7 @@ public class ScheduleItemActivity extends ActionBarActivity {
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         Intent intent = getIntent();
 
-        lesson_type = getResources().getStringArray(R.array.lesson_type);
+        lesson_type = getResources().getStringArray(R.array.class_type);
 
         title = (TextView) appBar.findViewById(R.id.title);
 
