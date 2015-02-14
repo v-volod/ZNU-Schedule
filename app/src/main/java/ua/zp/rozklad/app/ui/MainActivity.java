@@ -35,7 +35,9 @@ import static java.lang.String.format;
 
 public class MainActivity extends ActionBarActivity
         implements ScheduleFragment.OnScheduleItemClickListener,
-        ScheduleOfWeekFragment.OnPeriodicityChangeListener {
+        ScheduleOfWeekFragment.OnPeriodicityChangeListener,
+        SubjectsFragment.OnSubjectClickListener,
+        LecturersFragment.OnLecturerClickListener {
 
     private static final int REQUEST_LOGIN = 100;
 
@@ -271,6 +273,9 @@ public class MainActivity extends ActionBarActivity
             case NAV_DRAWER_ITEM_SCHEDULE:
                 reloadSchedule();
                 break;
+            case NAV_DRAWER_ITEM_LECTURERS:
+                reloadLecturers();
+                break;
         }
         invalidateOptionsMenu();
     }
@@ -422,13 +427,9 @@ public class MainActivity extends ActionBarActivity
                 break;
             case NAV_DRAWER_ITEM_SUBJECTS:
                 onSubjectsSelected();
-                // for DEBUG
-                clearMainContentContainer();
                 break;
             case NAV_DRAWER_ITEM_LECTURERS:
                 onLecturersSelected();
-                // for DEBUG
-                clearMainContentContainer();
                 break;
         }
         selectedNavDrawerItemId = itemId;
@@ -451,6 +452,9 @@ public class MainActivity extends ActionBarActivity
     }
 
     private void onScheduleSelected() {
+        getSupportActionBar().setTitle(R.string.schedule);
+        getSupportActionBar().setSubtitle(0);
+
         Fragment scheduleOfWeek = getFragmentManager().findFragmentById(R.id.main_content);
         if (scheduleOfWeek == null || !(scheduleOfWeek instanceof ScheduleOfWeekFragment)) {
             getFragmentManager().beginTransaction()
@@ -458,7 +462,6 @@ public class MainActivity extends ActionBarActivity
                             .newInstance(account.getGroupId(), account.getSubgroup()))
                     .commit();
         }
-        getSupportActionBar().setTitle(R.string.schedule);
     }
 
     private void reloadSchedule() {
@@ -484,11 +487,43 @@ public class MainActivity extends ActionBarActivity
     private void onSubjectsSelected() {
         getSupportActionBar().setTitle(R.string.nav_drawer_item_subjects);
         getSupportActionBar().setSubtitle(0);
+
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
+        if (fragment == null || !(fragment instanceof SubjectsFragment)) {
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.main_content, SubjectsFragment.newInstance(account.getGroupId()))
+                    .commit();
+        }
+    }
+
+    @Override
+    public void onSubjectClicked(long subjectId) {
+
     }
 
     private void onLecturersSelected() {
         getSupportActionBar().setTitle(R.string.nav_drawer_item_lecturers);
         getSupportActionBar().setSubtitle(0);
+
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
+        if (fragment == null || !(fragment instanceof LecturersFragment)) {
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.main_content, LecturersFragment
+                            .newInstance(account.getGroupId(), account.getSubgroup()))
+                    .commit();
+        }
+    }
+
+    private void reloadLecturers() {
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
+        if (fragment != null && fragment instanceof LecturersFragment) {
+            ((LecturersFragment) fragment).reload(account.getGroupId(), account.getSubgroup());
+        }
+    }
+
+    @Override
+    public void onLecturerClicked(long lecturerId) {
+
     }
 
     private void clearMainContentContainer() {

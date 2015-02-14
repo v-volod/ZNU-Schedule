@@ -6,6 +6,7 @@
     <color name="yellow_600">#fdd835</color>
     <color name="yellow_700">#fbc02d</color>
     <color name="yellow_800">#f9a825</color>
+    <color name="black">#000</color>
 
     <color name="colorPrimary">#2196f3</color>
     <color name="colorPrimaryDark">#1976d2</color>
