@@ -159,6 +159,14 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (isToday) {
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
