@@ -22,6 +22,7 @@ import ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary;
 
 import static ua.zp.rozklad.app.provider.ScheduleContract.combineArgs;
 import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.groupBySelection;
 
 public class LecturersFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String ARG_GROUP_ID = "groupId";
@@ -99,7 +100,8 @@ public class LecturersFragment extends Fragment implements LoaderManager.LoaderC
 
         loader.setUri(FullLecturer.CONTENT_URI);
         loader.setProjection(FullLecturer.PROJECTION);
-        loader.setSelection(combineSelection(Summary.Selection.GROUP, Summary.Selection.SUBGROUP));
+        loader.setSelection(combineSelection(Summary.Selection.GROUP, Summary.Selection.SUBGROUP) +
+                groupBySelection(FullLecturer._ID));
         loader.setSelectionArgs(combineArgs(groupId, subgroup));
         loader.setSortOrder(FullLecturer.DEFAULT_SORT_ORDER);
 
@@ -142,21 +144,37 @@ public class LecturersFragment extends Fragment implements LoaderManager.LoaderC
         public void onLecturerClicked(long lecturerId);
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class LecturerVH extends RecyclerView.ViewHolder {
 
-        TextView mTextView;
+        TextView lecturerName;
+        TextView lecturerSubjects;
 
-        public ViewHolder(View itemView) {
+        public LecturerVH(View itemView) {
             super(itemView);
-            mTextView = (TextView) itemView;
+            lecturerName = (TextView) itemView.findViewById(R.id.primary_text);
+            lecturerSubjects = (TextView) itemView.findViewById(R.id.secondary_text);
         }
 
-        public void update(String text) {
-            mTextView.setText(text);
+        public void update(Cursor cursor) {
+            lecturerName.setText(cursor.getString(FullLecturer.Column.LECTURER_NAME));
+//            String[] subjects = cursor.getString(FullLecturer.Column.SUBJECTS).split(",");
+//            String subjectsText = "";
+//            for (int i = 0; i < subjects.length; i++) {
+//                if (subjects[i].length() > 17 && i != (subjects.length - 1)) {
+//                    subjectsText += subjects[i].substring(0, 16) + "...";
+//                } else {
+//                    subjectsText += subjects[i];
+//                }
+//                if (i != subjects.length - 1) {
+//                    subjectsText += ", ";
+//                }
+//            }
+//            lecturerSubjects.setText(subjectsText);
+            lecturerSubjects.setText(cursor.getString(FullLecturer.Column.SUBJECTS));
         }
     }
 
-    private class LecturersAdapter extends CursorRecyclerViewAdapter<ViewHolder>
+    private class LecturersAdapter extends CursorRecyclerViewAdapter<LecturerVH>
             implements View.OnClickListener {
 
         public LecturersAdapter(Context context, Cursor cursor) {
@@ -164,16 +182,16 @@ public class LecturersFragment extends Fragment implements LoaderManager.LoaderC
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder viewHolder, Cursor cursor) {
-            viewHolder.update(cursor.getString(FullLecturer.Column.LECTURER_NAME));
+        public void onBindViewHolder(LecturerVH viewHolder, Cursor cursor) {
+            viewHolder.update(cursor);
         }
 
         @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public LecturerVH onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater
-                    .from(getActivity()).inflate(R.layout.single_line_item, parent, false);
+                    .from(getActivity()).inflate(R.layout.two_line_item, parent, false);
             view.setOnClickListener(this);
-            return new ViewHolder(view);
+            return new LecturerVH(view);
         }
 
         @Override

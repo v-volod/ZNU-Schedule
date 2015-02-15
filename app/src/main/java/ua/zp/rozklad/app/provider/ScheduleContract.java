@@ -414,7 +414,7 @@ public class ScheduleContract {
         public static final String LECTURER_NAME =
                 Tables.LECTURER + "." + LecturerColumns.LECTURER_NAME;
 
-        public static final String MAX_END_TIME = "max(" + ACADEMIC_HOUR_END_TIME + ") AS max_end_time";
+        public static final String MAX_END_TIME = "max(" + ACADEMIC_HOUR_END_TIME + ")";
 
         public static interface Summary {
             String TABLES = Tables.SCHEDULE + INNER_JOIN + Tables.SUBJECT +
@@ -514,20 +514,28 @@ public class ScheduleContract {
         public static final String LECTURER_NAME =
                 Tables.LECTURER + "." + LecturerColumns.LECTURER_NAME;
 
-        public static final String TABLES = Tables.SCHEDULE +
-                INNER_JOIN + Tables.LECTURER + ON + _ID + EQ + FullSchedule.SCHEDULE_LECTURER_ID;
+        public static final String TABLES = Tables.LECTURER +
+                INNER_JOIN + Tables.SCHEDULE + ON + _ID + EQ + FullSchedule.SCHEDULE_LECTURER_ID +
+                INNER_JOIN + Tables.SUBJECT + ON + FullSubject._ID + EQ +
+                FullSchedule.SCHEDULE_SUBJECT_ID;
 
         public static final String[] PROJECTION = {
-                DISTINCT + _ID,
-                LECTURER_NAME
+                _ID,
+                LECTURER_NAME,
+                buildGroupConcatSelection(DISTINCT + FullSubject.SUBJECT_NAME)
         };
 
         public static interface Column {
             int _ID = 0;
             int LECTURER_NAME = 1;
+            int SUBJECTS = 2;
         }
 
         public static final String DEFAULT_SORT_ORDER = LECTURER_NAME + ASC;
+    }
+
+    public static String buildGroupConcatSelection(String group) {
+        return "GROUP_CONCAT(" + group + ")";
     }
 
     /**
