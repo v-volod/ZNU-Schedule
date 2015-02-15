@@ -484,17 +484,21 @@ public class ScheduleContract {
         public static final String SUBJECT_NAME =
                 Tables.SUBJECT + "." + SubjectColumns.SUBJECT_NAME;
 
-        public static final String TABLES = Tables.SCHEDULE +
-                INNER_JOIN + Tables.SUBJECT + ON + _ID + EQ + FullSchedule.SCHEDULE_SUBJECT_ID;
+        public static final String TABLES = Tables.SUBJECT +
+                INNER_JOIN + Tables.SCHEDULE + ON + _ID + EQ + FullSchedule.SCHEDULE_SUBJECT_ID +
+                INNER_JOIN + Tables.LECTURER + ON + FullLecturer._ID + EQ +
+                FullSchedule.SCHEDULE_LECTURER_ID;
 
         public static final String[] PROJECTION = {
                 DISTINCT + _ID,
-                SUBJECT_NAME
+                SUBJECT_NAME,
+                buildGroupConcatSelection(DISTINCT + FullLecturer.LECTURER_NAME)
         };
 
         public static interface Column {
             int _ID = 0;
             int SUBJECT_NAME = 1;
+            int LECTURERS = 2;
         }
 
         public static final String DEFAULT_SORT_ORDER = SUBJECT_NAME + ASC;

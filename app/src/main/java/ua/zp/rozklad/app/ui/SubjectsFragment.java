@@ -21,22 +21,27 @@ import ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary;
 import ua.zp.rozklad.app.provider.ScheduleContract.FullSubject;
 
 import static ua.zp.rozklad.app.provider.ScheduleContract.combineArgs;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.groupBySelection;
 
 public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String ARG_GROUP_ID = "groupId";
+    private static final String ARG_SUBGROUP = "subgroup";
 
     private OnSubjectClickListener mListener;
 
     private int groupId;
+    private int subgroup;
 
     private RecyclerView mRecyclerView;
     private SubjectsAdapter mAdapter;
 
-    public static SubjectsFragment newInstance(int groupId) {
+    public static SubjectsFragment newInstance(int groupId, int subgroup) {
         SubjectsFragment fragment = new SubjectsFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_GROUP_ID, groupId);
+        args.putInt(ARG_SUBGROUP, subgroup);
         fragment.setArguments(args);
         return fragment;
     }
@@ -50,6 +55,7 @@ public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCa
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             groupId = getArguments().getInt(ARG_GROUP_ID);
+            subgroup = getArguments().getInt(ARG_SUBGROUP);
         }
     }
 
@@ -95,8 +101,9 @@ public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCa
 
         loader.setUri(FullSubject.CONTENT_URI);
         loader.setProjection(FullSubject.PROJECTION);
-        loader.setSelection(Summary.Selection.GROUP);
-        loader.setSelectionArgs(combineArgs(groupId));
+        loader.setSelection(combineSelection(Summary.Selection.GROUP, Summary.Selection.SUBGROUP) +
+                groupBySelection(FullSubject._ID));
+        loader.setSelectionArgs(combineArgs(groupId, subgroup));
         loader.setSortOrder(FullSubject.DEFAULT_SORT_ORDER);
 
         return loader;
@@ -118,6 +125,16 @@ public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCa
         }
     }
 
+    public void reload(int groupId, int subgroup) {
+        this.groupId = groupId;
+        this.subgroup = subgroup;
+        if (getArguments() != null) {
+            getArguments().putInt(ARG_GROUP_ID, groupId);
+            getArguments().putInt(ARG_SUBGROUP, subgroup);
+            getLoaderManager().restartLoader(0, null, this);
+        }
+    }
+
     /**
      * Interface definition for a callback to be invoked when a subject is clicked.
      */
@@ -128,21 +145,29 @@ public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCa
         public void onSubjectClicked(long subjectId);
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class SubjectVH extends RecyclerView.ViewHolder {
 
-        TextView mTextView;
+        TextView subjectName;
+        TextView lecturers;
 
-        public ViewHolder(View itemView) {
+        public SubjectVH(View itemView) {
             super(itemView);
-            mTextView = (TextView) itemView;
+            subjectName = (TextView) itemView.findViewById(R.id.primary_text);
+            lecturers = (TextView) itemView.findViewById(R.id.secondary_text);
         }
 
-        public void update(String text) {
-            mTextView.setText(text);
+        public void update(Cursor cursor) {
+            subjectName.setText(cursor.getString(FullSubject.Column.SUBJECT_NAME));
+            String lecturersText = cursor.getString(FullSubject.Column.LECTURERS);
+            if (lecturersText == null) {
+                lecturers.setText("");
+            } else {
+                lecturers.setText(lecturersText.replace(",", ", "));
+            }
         }
     }
 
-    private class SubjectsAdapter extends CursorRecyclerViewAdapter<ViewHolder>
+    private class SubjectsAdapter extends CursorRecyclerViewAdapter<SubjectVH>
             implements View.OnClickListener {
 
         public SubjectsAdapter(Context context, Cursor cursor) {
@@ -150,16 +175,16 @@ public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCa
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder viewHolder, Cursor cursor) {
-            viewHolder.update(cursor.getString(FullSubject.Column.SUBJECT_NAME));
+        public void onBindViewHolder(SubjectVH viewHolder, Cursor cursor) {
+            viewHolder.update(cursor);
         }
 
         @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public SubjectVH onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater
-                    .from(getActivity()).inflate(R.layout.single_line_item, parent, false);
+                    .from(getActivity()).inflate(R.layout.two_line_item, parent, false);
             view.setOnClickListener(this);
-            return new ViewHolder(view);
+            return new SubjectVH(view);
         }
 
         @Override

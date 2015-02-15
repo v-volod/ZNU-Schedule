@@ -273,6 +273,9 @@ public class MainActivity extends ActionBarActivity
             case NAV_DRAWER_ITEM_SCHEDULE:
                 reloadSchedule();
                 break;
+            case NAV_DRAWER_ITEM_SUBJECTS:
+                reloadSubjects();
+                break;
             case NAV_DRAWER_ITEM_LECTURERS:
                 reloadLecturers();
                 break;
@@ -491,8 +494,16 @@ public class MainActivity extends ActionBarActivity
         Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
         if (fragment == null || !(fragment instanceof SubjectsFragment)) {
             getFragmentManager().beginTransaction()
-                    .replace(R.id.main_content, SubjectsFragment.newInstance(account.getGroupId()))
+                    .replace(R.id.main_content, SubjectsFragment
+                            .newInstance(account.getGroupId(), account.getSubgroup()))
                     .commit();
+        }
+    }
+
+    private void reloadSubjects() {
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
+        if (fragment != null && fragment instanceof SubjectsFragment) {
+            ((SubjectsFragment) fragment).reload(account.getGroupId(), account.getSubgroup());
         }
     }
 
