@@ -44,8 +44,6 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.combineSortOrder;
  */
 public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final int LOADER_SCHEDULE_OF_THE_DAY_1 = 0;
-
     private static final String ARG_POSITION = "position";
     private static final String ARG_SCHEDULE_TYPE = "scheduleType";
     private static final String ARG_TYPE_FILTER_ID = "typeFilterId";
@@ -57,14 +55,16 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
     private static final String DATE_FORMAT = "%2d %s";
 
-    private static final int BY_GROUP = 0;
-    private static final int BY_LECTURER = 1;
+    public static interface Type {
+        int BY_GROUP = 0;
+        int BY_LECTURER = 1;
+    }
 
     private int position;
     private boolean isToday;
     private long startOfWeek;
     private int scheduleType;
-    private int typeFilterId;
+    private long typeFilterId;
     private int periodicity;
     private int dayOfWeek;
 
@@ -83,16 +83,33 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
     private Handler handler = new Handler();
 
-    public static ScheduleFragment newInstance(int position, boolean isToday, int groupId,
+    public static ScheduleFragment newInstance(int position, boolean isToday, long groupId,
                                                int subgroupId, long startOfWeek, int dayOfWeek,
                                                int periodicity) {
         ScheduleFragment fragment = new ScheduleFragment();
         Bundle args = new Bundle();
 
         args.putInt(ARG_POSITION, position);
-        args.putInt(ARG_SCHEDULE_TYPE, BY_GROUP);
-        args.putInt(ARG_TYPE_FILTER_ID, groupId);
+        args.putInt(ARG_SCHEDULE_TYPE, Type.BY_GROUP);
+        args.putLong(ARG_TYPE_FILTER_ID, groupId);
         args.putInt(ARG_SUBGROUP_ID, subgroupId);
+        args.putLong(ARG_START_OF_WEEK, startOfWeek);
+        args.putInt(ARG_DAY_OF_WEEK, dayOfWeek);
+        args.putInt(ARG_PERIODICITY, periodicity);
+        args.putBoolean(ARG_IS_TODAY, isToday);
+
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static ScheduleFragment newInstance(int position, boolean isToday, long lecturerId,
+                                               long startOfWeek, int dayOfWeek, int periodicity) {
+        ScheduleFragment fragment = new ScheduleFragment();
+        Bundle args = new Bundle();
+
+        args.putInt(ARG_POSITION, position);
+        args.putInt(ARG_SCHEDULE_TYPE, Type.BY_LECTURER);
+        args.putLong(ARG_TYPE_FILTER_ID, lecturerId);
         args.putLong(ARG_START_OF_WEEK, startOfWeek);
         args.putInt(ARG_DAY_OF_WEEK, dayOfWeek);
         args.putInt(ARG_PERIODICITY, periodicity);
@@ -113,7 +130,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         if (args != null) {
             position = args.getInt(ARG_POSITION);
             scheduleType = args.getInt(ARG_SCHEDULE_TYPE);
-            typeFilterId = args.getInt(ARG_TYPE_FILTER_ID);
+            typeFilterId = args.getLong(ARG_TYPE_FILTER_ID);
             periodicity = args.getInt(ARG_PERIODICITY, -1);
             dayOfWeek = args.getInt(ARG_DAY_OF_WEEK, -1);
             startOfWeek = args.getLong(ARG_START_OF_WEEK, -1);
@@ -155,7 +172,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         super.onActivityCreated(savedInstanceState);
         mAdapter = new ScheduleItemAdapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
-        getLoaderManager().initLoader(LOADER_SCHEDULE_OF_THE_DAY_1, null, this);
+        getLoaderManager().initLoader(scheduleType, null, this);
     }
 
     @Override
@@ -179,15 +196,28 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
         loader.setUri(FullSchedule.CONTENT_URI);
         loader.setProjection(Summary.PROJECTION);
-        loader.setSelection(combineSelection(
-                Selection.GROUP,
-                Selection.SUBGROUP,
-                Selection.DAY_OF_WEEK,
-                Selection.PERIODICITY
-        ));
-        loader.setSelectionArgs(new String[]{
-                valueOf(typeFilterId), valueOf(subgroupId), valueOf(dayOfWeek), valueOf(periodicity)
-        });
+        switch (id) {
+            case Type.BY_GROUP:
+                loader.setSelection(combineSelection(
+                        Selection.GROUP,
+                        Selection.SUBGROUP,
+                        Selection.DAY_OF_WEEK,
+                        Selection.PERIODICITY
+                ));
+                loader.setSelectionArgs(new String[]{
+                        valueOf(typeFilterId), valueOf(subgroupId), valueOf(dayOfWeek), valueOf(periodicity)
+                });
+                break;
+            case Type.BY_LECTURER:
+                loader.setSelection(combineSelection(
+                        Selection.LECTURER,
+                        Selection.DAY_OF_WEEK,
+                        Selection.PERIODICITY
+                ));
+                loader.setSelectionArgs(new String[]{
+                        valueOf(typeFilterId), valueOf(dayOfWeek), valueOf(periodicity)
+                });
+        }
         loader.setSortOrder(combineSortOrder(SortOrder.DAY_OF_WEEK, SortOrder.ACADEMIC_HOUR_NUM));
 
         return loader;
@@ -245,7 +275,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
             args.putInt(ARG_PERIODICITY, periodicity);
         }
         if (isAttached) {
-            getLoaderManager().restartLoader(LOADER_SCHEDULE_OF_THE_DAY_1, null, this);
+            getLoaderManager().restartLoader(scheduleType, null, this);
         }
     }
 

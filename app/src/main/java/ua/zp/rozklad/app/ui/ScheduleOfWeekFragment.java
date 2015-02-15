@@ -41,21 +41,27 @@ public class ScheduleOfWeekFragment extends Fragment
     private static final int CURRENT_APPROXIMATE_DAY = -1;
     private static final int CURRENT_CONVENIENT_DAY = -2;
 
-    private static final int LOADER_SCHEDULE_OF_WEEK_1 = 0;
-
-    private static final String ARG_GROUP_ID = "groupId";
+    private static final String ARG_SCHEDULE_TYPE = "scheduleType";
+    private static final String ARG_TYPE_FILTER_ID = "typeFilterId";
     private static final String ARG_SUBGROUP_ID = "subgroupId";
     private static final String ARG_SELECTED_DAY_POSITION = "selectedDayPosition";
     private static final String ARG_SELECTED_WEEK_POSITION = "selectedWeekPosition";
-    private static final int[] weeks = new int[2];
+
+    public static interface Type {
+        int BY_GROUP = 0;
+        int BY_LECTURER = 1;
+    }
 
     private Periodicity periodicity;
 
     private int selectedDayPosition;
     private int selectedWeekPosition;
 
-    private int groupId;
+    private int scheduleType;
+    private long typeFilterId;
     private int subgroupId;
+
+    private static final int[] weeks = new int[2];
 
     private OnPeriodicityChangeListener mListener;
 
@@ -67,11 +73,21 @@ public class ScheduleOfWeekFragment extends Fragment
 
     private boolean isAttached = false;
 
-    public static ScheduleOfWeekFragment newInstance(int groupId, int subgroupId) {
+    public static ScheduleOfWeekFragment newInstance(long groupId, int subgroupId) {
         ScheduleOfWeekFragment fragment = new ScheduleOfWeekFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_GROUP_ID, groupId);
+        args.putInt(ARG_SCHEDULE_TYPE, Type.BY_GROUP);
+        args.putLong(ARG_TYPE_FILTER_ID, groupId);
         args.putInt(ARG_SUBGROUP_ID, subgroupId);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static ScheduleOfWeekFragment newInstance(long lecturerId) {
+        ScheduleOfWeekFragment fragment = new ScheduleOfWeekFragment();
+        Bundle args = new Bundle();
+        args.putInt(ARG_SCHEDULE_TYPE, Type.BY_LECTURER);
+        args.putLong(ARG_TYPE_FILTER_ID, lecturerId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -103,7 +119,8 @@ public class ScheduleOfWeekFragment extends Fragment
         super.onCreate(savedInstanceState);
         Bundle args = getArguments();
         if (args != null) {
-            groupId = args.getInt(ARG_GROUP_ID);
+            scheduleType = args.getInt(ARG_SCHEDULE_TYPE);
+            typeFilterId = args.getLong(ARG_TYPE_FILTER_ID);
             subgroupId = args.getInt(ARG_SUBGROUP_ID);
         }
         weeks[0] = getCurrentWeekOfYear();
@@ -160,7 +177,7 @@ public class ScheduleOfWeekFragment extends Fragment
         mAdapter = new DayPagerAdapter(getFragmentManager(), null);
         mPager.setAdapter(mAdapter);
         mTabs.setViewPager(mPager);
-        getLoaderManager().initLoader(LOADER_SCHEDULE_OF_WEEK_1, null, this);
+        getLoaderManager().initLoader(scheduleType, null, this);
     }
 
     @Override
@@ -178,15 +195,29 @@ public class ScheduleOfWeekFragment extends Fragment
                 FullSchedule.DAY_OF_WEEK,
                 FullSchedule.MAX_END_TIME
         });
-        loader.setSelection(
-                combineSelection(Selection.GROUP, Selection.SUBGROUP, Selection.PERIODICITY) +
-                        groupBySelection(FullSchedule.DAY_OF_WEEK)
-        );
-        loader.setSelectionArgs(new String[]{
-                valueOf(groupId),
-                valueOf(subgroupId),
-                valueOf(periodicity.getPeriodicity(weeks[selectedWeekPosition]))
-        });
+        switch (id) {
+            case Type.BY_GROUP:
+                loader.setSelection(
+                        combineSelection(Selection.GROUP, Selection.SUBGROUP, Selection.PERIODICITY) +
+                                groupBySelection(FullSchedule.DAY_OF_WEEK)
+                );
+                loader.setSelectionArgs(new String[]{
+                        valueOf(typeFilterId),
+                        valueOf(subgroupId),
+                        valueOf(periodicity.getPeriodicity(weeks[selectedWeekPosition]))
+                });
+                break;
+            case Type.BY_LECTURER:
+                loader.setSelection(
+                        combineSelection(Selection.LECTURER, Selection.PERIODICITY) +
+                                groupBySelection(FullSchedule.DAY_OF_WEEK)
+                );
+                loader.setSelectionArgs(new String[]{
+                        valueOf(typeFilterId),
+                        valueOf(periodicity.getPeriodicity(weeks[selectedWeekPosition]))
+                });
+                break;
+        }
         loader.setSortOrder(combineSortOrder(SortOrder.DAY_OF_WEEK, SortOrder.END_TIME_DESC));
 
         return loader;
@@ -219,16 +250,15 @@ public class ScheduleOfWeekFragment extends Fragment
                 selectedDayPosition = currentDayPosition;
             }
 
-            mListener.onPeriodicityChanged(
-                    periodicity.getPeriodicity(weeks[selectedWeekPosition])
-            );
         } else {
             if (scheduleContainer.getVisibility() == View.VISIBLE) {
                 scheduleContainer.setVisibility(View.GONE);
             }
-            onPeriodicityChanged(0);
         }
 
+        mListener.onPeriodicityChanged(
+                periodicity.getPeriodicity(weeks[selectedWeekPosition])
+        );
         mAdapter.swapCursor(data);
         mTabs.setViewPager(mPager);
         mPager.setCurrentItem(selectedDayPosition, true);
@@ -247,7 +277,7 @@ public class ScheduleOfWeekFragment extends Fragment
 
     public void toggleWeek() {
         selectedWeekPosition = abs(selectedWeekPosition - 1);
-        getLoaderManager().restartLoader(LOADER_SCHEDULE_OF_WEEK_1, null, this);
+        getLoaderManager().restartLoader(scheduleType, null, this);
     }
 
     private void onPeriodicityChanged(int periodicity) {
@@ -303,23 +333,23 @@ public class ScheduleOfWeekFragment extends Fragment
         public void onClick(View v) {
             selectedWeekPosition = abs(selectedWeekPosition - 1);
             getLoaderManager()
-                    .restartLoader(LOADER_SCHEDULE_OF_WEEK_1, null, ScheduleOfWeekFragment.this);
+                    .restartLoader(scheduleType, null, ScheduleOfWeekFragment.this);
         }
     };
 
     public void reload(int groupId, int subgroupId) {
-        if (this.groupId != groupId || this.subgroupId != subgroupId) {
-            this.groupId = groupId;
+        if (this.typeFilterId != groupId || this.subgroupId != subgroupId) {
+            this.typeFilterId = groupId;
             this.subgroupId = subgroupId;
             Bundle args = getArguments();
             if (args != null) {
-                args.putInt(ARG_GROUP_ID, groupId);
+                args.putInt(ARG_TYPE_FILTER_ID, groupId);
                 args.putInt(ARG_SUBGROUP_ID, subgroupId);
             }
             if (isAttached) {
                 mAdapter.changeCursor(null);
                 getLoaderManager()
-                        .restartLoader(LOADER_SCHEDULE_OF_WEEK_1, null, this);
+                        .restartLoader(scheduleType, null, this);
             }
         }
     }
@@ -351,15 +381,29 @@ public class ScheduleOfWeekFragment extends Fragment
             int week = weeks[selectedWeekPosition];
             int day = cursor.getInt(0);
 
-            return ScheduleFragment.newInstance(
-                    position,
-                    week == getCurrentWeekOfYear() && day == getCurrentDayOfWeek(),
-                    groupId,
-                    subgroupId,
-                    getStartOfWeekMillis(week),
-                    day,
-                    periodicity.getPeriodicity(week)
-            );
+            switch (scheduleType) {
+                case Type.BY_GROUP:
+                    return ScheduleFragment.newInstance(
+                            position,
+                            week == getCurrentWeekOfYear() && day == getCurrentDayOfWeek(),
+                            typeFilterId,
+                            subgroupId,
+                            getStartOfWeekMillis(week),
+                            day,
+                            periodicity.getPeriodicity(week)
+                    );
+                case Type.BY_LECTURER:
+                    return ScheduleFragment.newInstance(
+                            position,
+                            week == getCurrentWeekOfYear() && day == getCurrentDayOfWeek(),
+                            typeFilterId,
+                            getStartOfWeekMillis(week),
+                            day,
+                            periodicity.getPeriodicity(week)
+                    );
+                default:
+                    throw new IllegalArgumentException(scheduleType + " unknown schedule type");
+            }
         }
 
         @Override

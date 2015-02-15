@@ -441,6 +441,7 @@ public class ScheduleContract {
 
             interface Selection {
                 String GROUP = SCHEDULE_GROUP_ID + EQ + "?";
+                String LECTURER = SCHEDULE_LECTURER_ID + EQ + "?";
                 String SUBGROUP = "(" + FullSchedule.SUBGROUP + EQ + "0" +
                         OR + FullSchedule.SUBGROUP + EQ + "?)";
                 String PERIODICITY = "(" + FullSchedule.PERIODICITY + EQ + "0" +

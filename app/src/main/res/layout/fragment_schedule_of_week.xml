@@ -4,7 +4,8 @@
     xmlns:tabs="http://schemas.android.com/apk/res-auto"
     tools:context="ua.zp.rozklad.app.ui.ScheduleOfWeekFragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
     <!--  TODO: style this element-->
     <TextView
@@ -17,44 +18,38 @@
         android:textSize="@dimen/text_size_medium_material"
         android:padding="@dimen/key_line_1" />
 
-    <FrameLayout
+    <RelativeLayout
         android:id="@+id/schedule_of_week_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
         android:background="@color/white">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ua.zp.rozklad.app.ui.tabs.SlidingTabLayout
-                android:id="@+id/tabs"
-                android:background="@color/colorPrimary"
-                tabs:tabStripMarginLeft="@dimen/tabs_padding_left"
-                tabs:tabStripMarginRight="@dimen/tabs_padding_right"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent" />
-
-            <android.support.v4.view.ViewPager
-                android:id="@+id/pager"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@id/tabs" />
-
-        </RelativeLayout>
-
-        <com.melnykov.fab.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="wrap_content"
+        <ua.zp.rozklad.app.ui.tabs.SlidingTabLayout
+            android:id="@+id/tabs"
+            android:background="@color/colorPrimary"
+            tabs:tabStripMarginLeft="@dimen/tabs_padding_left"
+            tabs:tabStripMarginRight="@dimen/tabs_padding_right"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|right"
-            android:layout_margin="@dimen/key_line_1"
-            android:src="@drawable/ic_swap_vert_white_24dp"
-            fab:fab_colorNormal="@color/colorAccent"
-            fab:fab_colorPressed="@color/colorAccentDark"
-            fab:fab_colorRipple="@color/yellow_800" />
-    </FrameLayout>
+            android:layout_width="match_parent" />
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/tabs" />
+    </RelativeLayout>
+
+    <com.melnykov.fab.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:layout_margin="@dimen/key_line_1"
+        android:src="@drawable/ic_swap_vert_white_24dp"
+        fab:fab_colorNormal="@color/colorAccent"
+        fab:fab_colorPressed="@color/colorAccentDark"
+        fab:fab_colorRipple="@color/yellow_800" />
 
 </FrameLayout>
 

@@ -534,7 +534,11 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     public void onLecturerClicked(long lecturerId) {
-
+        getFragmentManager().beginTransaction()
+                .add(R.id.main_content, ScheduleOfWeekFragment
+                .newInstance(lecturerId))
+                .addToBackStack(null)
+                .commit();
     }
 
     private void clearMainContentContainer() {
