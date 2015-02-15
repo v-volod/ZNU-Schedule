@@ -60,6 +60,8 @@ public class CampusesProcessor extends Processor<Campus, Void> {
 
         values.put(ScheduleContract.Campus.CAMPUS_NAME, campus.getName());
         values.put(ScheduleContract.Campus.UPDATED, campus.getLastUpdate());
+        values.put(ScheduleContract.Campus.LATITUDE, campus.getLatitude());
+        values.put(ScheduleContract.Campus.LONGITUDE, campus.getLongitude());
 
         return values;
     }

@@ -12,11 +12,15 @@ public class Campus extends Resource {
 
     private int id;
     private String name;
+    private float latitude;
+    private float longitude;
     private long lastUpdate;
 
     public Campus(JSONObject json) throws JSONException {
         id = json.getInt(RESTMethod.Key.ID);
         name = json.getString(RESTMethod.Key.NAME);
+        latitude = (float) json.getDouble(RESTMethod.Key.LATITUDE);
+        longitude = (float) json.getDouble(RESTMethod.Key.LONGITUDE);
         lastUpdate = json.getLong(RESTMethod.Key.LAST_UPDATE);
     }
 
@@ -30,5 +34,13 @@ public class Campus extends Resource {
 
     public long getLastUpdate() {
         return lastUpdate;
+    }
+
+    public float getLatitude() {
+        return latitude;
+    }
+
+    public float getLongitude() {
+        return longitude;
     }
 }

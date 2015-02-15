@@ -81,6 +81,8 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
         String GROUP = "group";
         String FREE_TRAJECTORY = "free_trajectory";
         String WEEK = "week";
+        String LATITUDE = "latitude";
+        String LONGITUDE = "longitude";
     }
 
     public interface Filter {

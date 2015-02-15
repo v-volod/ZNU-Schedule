@@ -68,6 +68,8 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + Tables.CAMPUS + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + CampusColumns.CAMPUS_NAME + " TEXT NOT NULL, "
+                + CampusColumns.LATITUDE + " REAL NOT NULL, "
+                + CampusColumns.LONGITUDE + " REAL NOT NULL, "
                 + SyncColumns.UPDATED + " INTEGER NOT NULL)");
         db.execSQL("CREATE TABLE " + Tables.AUDIENCE + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "

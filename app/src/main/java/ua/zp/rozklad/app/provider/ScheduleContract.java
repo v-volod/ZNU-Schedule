@@ -47,6 +47,8 @@ public class ScheduleContract {
 
     interface CampusColumns {
         String CAMPUS_NAME = "campus_name";
+        String LATITUDE = "latitude";
+        String LONGITUDE = "longitude";
     }
 
     interface AudienceColumns {
