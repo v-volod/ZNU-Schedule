@@ -18,9 +18,9 @@ public class Campus extends Resource {
 
     public Campus(JSONObject json) throws JSONException {
         id = json.getInt(RESTMethod.Key.ID);
-        name = json.getString(RESTMethod.Key.NAME);
-        latitude = (float) json.getDouble(RESTMethod.Key.LATITUDE);
-        longitude = (float) json.getDouble(RESTMethod.Key.LONGITUDE);
+        name = json.optString(RESTMethod.Key.NAME, "");
+        latitude = (float) json.optDouble(RESTMethod.Key.LATITUDE, -1.0f);
+        longitude = (float) json.optDouble(RESTMethod.Key.LONGITUDE, -1.0f);
         lastUpdate = json.getLong(RESTMethod.Key.LAST_UPDATE);
     }
 
