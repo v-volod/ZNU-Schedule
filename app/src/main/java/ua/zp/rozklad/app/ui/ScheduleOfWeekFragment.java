@@ -239,7 +239,7 @@ public class ScheduleOfWeekFragment extends Fragment
         if (scheduleContainer.getVisibility() == View.VISIBLE) {
             scheduleContainer.setVisibility(View.GONE);
         }
-        if (!isRemoving()) {
+        if (getActivity() != null && !getActivity().isFinishing() && !isRemoving()) {
             mAdapter.swapCursor(null);
             onPeriodicityChanged(0);
         }
