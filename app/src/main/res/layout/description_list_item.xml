@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/two_line_item_height"
+    android:layout_height="@dimen/two_line_item_tile_height"
     android:clickable="true"
     android:background="@drawable/list_item_background">
     <RelativeLayout
