@@ -95,7 +95,7 @@
     <dimen name="three_line_list_item_height">88dp</dimen>
 
     <dimen name="single_line_item_tile_height">48dp</dimen>
-    <dimen name="two_line_list_item_height">72dp</dimen>
+    <dimen name="two_line_item_height">72dp</dimen>
     <dimen name="sub_header_tile_height">@dimen/single_line_item_tile_height</dimen>
 
     <dimen name="default_toolbar_height">56dp</dimen>
