@@ -2,22 +2,33 @@
 <resources>
 
     <!-- Colors by name -->
-    <color name="red_600">#f44336</color>
+
+    <color name="red_500">#f44336</color>
+    <color name="red_600">#e53935</color>
+    <color name="red_700">#d32f2f</color>
+
     <color name="green_500">#4caf50</color>
+    <color name="green_700">#388e3c</color>
+
     <color name="blue_500">#2196f3</color>
     <color name="blue_600">#1e88e5</color>
     <color name="blue_700">#1976d2</color>
+
     <color name="purple_500">#9c27b0</color>
     <color name="purple_700">#7b1fa2</color>
+
     <color name="yellow_600">#fdd835</color>
     <color name="yellow_700">#fbc02d</color>
     <color name="yellow_800">#f9a825</color>
+
+    <color name="amber_500">#ffc107</color>
+    <color name="amber_700">#ffa000</color>
+
+    <color name="deep_purple_500">#673ab7</color>
+    <color name="deep_purple_700">#512da8</color>
+
     <color name="black">#000</color>
 
-    <color name="colorPrimary">@color/blue_500</color>
-    <color name="colorPrimaryDark">@color/blue_700</color>
-    <color name="colorAccent">@color/yellow_600</color>
-    <color name="colorAccentDark">@color/yellow_700</color>
     <color name="button_login_normal">#009688</color>
     <color name="button_login_focused">#00897b</color>
     <color name="button_login_pressed">#00796b</color>
@@ -34,9 +45,9 @@
 
     <color name="nav_drawer_background">#ffffffff</color>
     <color name="nav_drawer_text_color">#de000000</color>
-    <color name="nav_drawer_text_color_selected">@color/colorPrimary</color>
+    <color name="nav_drawer_text_color_selected">?attr/colorPrimary</color>
     <color name="nav_drawer_icon_tint">#888</color>
-    <color name="nav_drawer_icon_tint_selected">@color/colorPrimary</color>
+    <color name="nav_drawer_icon_tint_selected">?attr/colorPrimary</color>
     <color name="nav_drawer_item_tint_selection">@color/list_item_tint_selection</color>
 
 </resources>

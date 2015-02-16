@@ -158,7 +158,7 @@ public class ScheduleContract {
         /**
          * Build {@link Uri} for requested lecturer.
          */
-        public static Uri buildLecturerUri(int lecturerId) {
+        public static Uri buildLecturerUri(long lecturerId) {
             return CONTENT_URI.buildUpon().appendPath(String.valueOf(lecturerId)).build();
         }
     }

@@ -21,6 +21,7 @@ import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.adapter.CursorFragmentStatePagerAdapter;
 import ua.zp.rozklad.app.model.Periodicity;
 import ua.zp.rozklad.app.ui.tabs.SlidingTabLayout;
+import ua.zp.rozklad.app.util.UiUtils;
 
 import static java.lang.Math.abs;
 import static java.lang.String.valueOf;
@@ -154,13 +155,9 @@ public class ScheduleOfWeekFragment extends Fragment
 
         mTabs = (SlidingTabLayout) view.findViewById(R.id.tabs);
         mTabs.setCustomTabView(R.layout.tab_indicator, android.R.id.text1);
-        mTabs.setSelectedIndicatorColors(getResources().getColor(R.color.colorPrimaryDark));
-        mTabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
-            @Override
-            public int getIndicatorColor(int position) {
-                return getResources().getColor(R.color.colorAccent);
-            }
-        });
+        mTabs.setSelectedIndicatorColors(
+                UiUtils.getThemeAttribute(getActivity(), R.attr.colorAccent).data
+        );
         mTabs.setOnPageChangeListener(onPageChangeListener);
 
         mFab = (FloatingActionButton) view.findViewById(R.id.fab);
@@ -337,6 +334,10 @@ public class ScheduleOfWeekFragment extends Fragment
         }
     };
 
+    public int getScheduleType() {
+        return scheduleType;
+    }
+
     public void reload(int groupId, int subgroupId) {
         if (this.typeFilterId != groupId || this.subgroupId != subgroupId) {
             this.typeFilterId = groupId;
@@ -352,6 +353,9 @@ public class ScheduleOfWeekFragment extends Fragment
                         .restartLoader(scheduleType, null, this);
             }
         }
+    }
+
+    public void reload(int lecturerId) {
     }
 
     /**

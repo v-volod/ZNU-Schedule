@@ -2,15 +2,16 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme.Base" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">@color/blue_500</item>
+        <item name="colorPrimaryDark">@color/blue_700</item>
+        <item name="colorAccent">@color/yellow_600</item>
+        <item name="colorAccentDark">@color/yellow_700</item>
         <item name="android:windowBackground">@color/white</item>
 
         <!-- Material Dialog colors -->
-        <item name="md_positive_color">@color/colorPrimary</item>
-        <item name="md_neutral_color">@color/colorPrimary</item>
-        <item name="md_negative_color">@color/colorPrimary</item>
+        <item name="md_positive_color">?attr/colorPrimary</item>
+        <item name="md_neutral_color">?attr/colorPrimary</item>
+        <item name="md_negative_color">?attr/colorPrimary</item>
     </style>
 
     <style name="AppTheme" parent="AppTheme.Base">
@@ -21,11 +22,15 @@
     <!-- Login Screen Style -->
     <style name="LoginScreen" parent="AppTheme.Base"/>
 
-    <!-- Schedule Item Activity Style -->
-    <style name="ScheduleItemActivity" parent="AppTheme.Base">
+    <!-- NoDrawer Theme -->
+    <style name="NoDrawerTheme" parent="AppTheme"/>
+
+    <!-- Purple Theme -->
+    <style name="AppTheme.Purple" parent="AppTheme.Base">
         <item name="colorPrimary">@color/purple_500</item>
         <item name="colorPrimaryDark">@color/purple_700</item>
-        <item name="colorAccent">@color/blue_700</item>
+        <item name="colorAccent">@color/blue_500</item>
+        <item name="colorAccentDark">@color/blue_700</item>
     </style>
 
     <!-- AppTextLogo -->

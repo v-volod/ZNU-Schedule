@@ -358,7 +358,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
             ((SectionViewHolder) viewHolder).update(
                     section,
                     (isToday) ?
-                            getResources().getColor(R.color.colorPrimary) :
+                            getResources().getColor(R.color.blue_500) :
                             getResources().getColor(R.color.sub_header_text_color)
             );
         }

@@ -27,7 +27,7 @@
 
         <ua.zp.rozklad.app.ui.tabs.SlidingTabLayout
             android:id="@+id/tabs"
-            android:background="@color/colorPrimary"
+            android:background="?attr/colorPrimary"
             tabs:tabStripMarginLeft="@dimen/tabs_padding_left"
             tabs:tabStripMarginRight="@dimen/tabs_padding_right"
             android:layout_height="wrap_content"
@@ -47,9 +47,9 @@
         android:layout_gravity="bottom|right"
         android:layout_margin="@dimen/key_line_1"
         android:src="@drawable/ic_swap_vert_white_24dp"
-        fab:fab_colorNormal="@color/colorAccent"
-        fab:fab_colorPressed="@color/colorAccentDark"
-        fab:fab_colorRipple="@color/yellow_800" />
+        fab:fab_colorNormal="?attr/colorAccent"
+        fab:fab_colorPressed="?attr/colorAccentDark"
+        fab:fab_colorRipple="?attr/colorAccentDark" />
 
 </FrameLayout>
 

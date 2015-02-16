@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAccount;
 import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
+import ua.zp.rozklad.app.util.UiUtils;
 
 import static java.lang.String.format;
 
@@ -66,14 +67,6 @@ public class MainActivity extends ActionBarActivity
             R.drawable.ic_people_white_24dp,
             R.drawable.ic_settings_white_24dp,
             R.drawable.ic_help_white_24dp
-    };
-
-    private static final int[] NAV_DRAWER_TINT_COLOR_RES_ID = {
-            R.color.colorPrimary,
-            R.color.green_500,
-            R.color.red_600,
-            R.color.colorPrimary,
-            R.color.colorPrimary
     };
 
     private static final int[] PERIODICITY_SUBTITLE_RES_ID = {
@@ -125,7 +118,9 @@ public class MainActivity extends ActionBarActivity
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawerLayout.setStatusBarBackground(R.color.colorPrimaryDark);
+        drawerLayout.setStatusBarBackground(
+                UiUtils.getThemeAttribute(this, R.attr.colorPrimaryDark).resourceId
+        );
 
         selectedNavDrawerItemId = NAV_DRAWER_ITEM_SCHEDULE;
         if (savedInstanceState != null) {
@@ -353,15 +348,17 @@ public class MainActivity extends ActionBarActivity
 
         navDrawerItemViews = new View[navDrawerItems.size()];
         navDrawerItemsListContainer.removeAllViews();
+        int itemId;
         for (int i = 0; i < navDrawerItems.size(); i++) {
+            itemId = navDrawerItems.get(i);
             navDrawerItemViews[i] =
-                    makeNavDrawerItem(navDrawerItems.get(i), navDrawerItemsListContainer);
+                    makeNavDrawerItem(itemId, navDrawerItemsListContainer);
+            formatNavDrawerItem(navDrawerItemViews[i], itemId, itemId == selectedNavDrawerItemId);
             navDrawerItemsListContainer.addView(navDrawerItemViews[i]);
         }
     }
 
     private View makeNavDrawerItem(final int itemId, ViewGroup container) {
-        boolean selected = itemId == selectedNavDrawerItemId;
         int layoutResId;
 
         if (itemId == NAV_DRAWER_ITEM_SEPARATOR) {
@@ -392,8 +389,6 @@ public class MainActivity extends ActionBarActivity
 
         titleView.setText(getString(titleResId));
 
-        formatNavDrawerItem(view, itemId, selected);
-
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -414,10 +409,10 @@ public class MainActivity extends ActionBarActivity
         view.setSelected(selected);
 
         titleView.setTextColor(selected ?
-                getResources().getColor(NAV_DRAWER_TINT_COLOR_RES_ID[itemId]) :
+                UiUtils.getThemeAttribute(this, R.attr.colorPrimary).data :
                 getResources().getColor(R.color.nav_drawer_text_color));
         iconView.setColorFilter(selected ?
-                getResources().getColor(NAV_DRAWER_TINT_COLOR_RES_ID[itemId]) :
+                UiUtils.getThemeAttribute(this, R.attr.colorPrimary).data :
                 getResources().getColor(R.color.nav_drawer_icon_tint));
     }
 
@@ -449,7 +444,6 @@ public class MainActivity extends ActionBarActivity
             drawerLayout.closeDrawer(Gravity.START);
         }
         invalidateOptionsMenu();
-        appBar.setBackgroundResource(NAV_DRAWER_TINT_COLOR_RES_ID[itemId]);
     }
 
     private void setSelectedNavDrawerItem(int itemId) {
@@ -467,12 +461,42 @@ public class MainActivity extends ActionBarActivity
         getSupportActionBar().setTitle(R.string.schedule);
         getSupportActionBar().setSubtitle(0);
 
-        Fragment scheduleOfWeek = getFragmentManager().findFragmentById(R.id.main_content);
-        if (scheduleOfWeek == null || !(scheduleOfWeek instanceof ScheduleOfWeekFragment)) {
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.main_content, ScheduleOfWeekFragment
-                            .newInstance(account.getGroupId(), account.getSubgroup()))
-                    .commit();
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
+        if (fragment != null) {
+            if (fragment instanceof ScheduleOfWeekFragment) {
+                if (((ScheduleOfWeekFragment) fragment).getScheduleType()
+                        == ScheduleOfWeekFragment.Type.BY_GROUP) {
+                    return;
+                }
+            }
+        }
+        replaceMainContent(ScheduleOfWeekFragment
+                .newInstance(account.getGroupId(), account.getSubgroup()));
+    }
+
+    private void onSubjectsSelected() {
+        getSupportActionBar().setTitle(R.string.nav_drawer_item_subjects);
+        getSupportActionBar().setSubtitle(0);
+
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
+        if (fragment == null || !(fragment instanceof SubjectsFragment)) {
+            replaceMainContent(SubjectsFragment
+                    .newInstance(account.getGroupId(), account.getSubgroup()));
+        } else {
+            reloadSubjects();
+        }
+    }
+
+    private void onLecturersSelected() {
+        getSupportActionBar().setTitle(R.string.nav_drawer_item_lecturers);
+        getSupportActionBar().setSubtitle(0);
+
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
+        if (fragment == null || !(fragment instanceof LecturersFragment)) {
+            replaceMainContent(LecturersFragment
+                    .newInstance(account.getGroupId(), account.getSubgroup()));
+        } else {
+            reloadLecturers();
         }
     }
 
@@ -484,53 +508,10 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
-    @Override
-    public void onScheduleItemClicked(long scheduleItemId) {
-        Intent intent = new Intent(this, ScheduleItemActivity.class);
-        intent.putExtra("id", scheduleItemId);
-        startActivity(intent);
-    }
-
-    @Override
-    public void onPeriodicityChanged(int periodicity) {
-        getSupportActionBar().setSubtitle(PERIODICITY_SUBTITLE_RES_ID[periodicity]);
-    }
-
-    private void onSubjectsSelected() {
-        getSupportActionBar().setTitle(R.string.nav_drawer_item_subjects);
-        getSupportActionBar().setSubtitle(0);
-
-        Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
-        if (fragment == null || !(fragment instanceof SubjectsFragment)) {
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.main_content, SubjectsFragment
-                            .newInstance(account.getGroupId(), account.getSubgroup()))
-                    .commit();
-        }
-    }
-
     private void reloadSubjects() {
         Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
         if (fragment != null && fragment instanceof SubjectsFragment) {
             ((SubjectsFragment) fragment).reload(account.getGroupId(), account.getSubgroup());
-        }
-    }
-
-    @Override
-    public void onSubjectClicked(long subjectId) {
-
-    }
-
-    private void onLecturersSelected() {
-        getSupportActionBar().setTitle(R.string.nav_drawer_item_lecturers);
-        getSupportActionBar().setSubtitle(0);
-
-        Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
-        if (fragment == null || !(fragment instanceof LecturersFragment)) {
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.main_content, LecturersFragment
-                            .newInstance(account.getGroupId(), account.getSubgroup()))
-                    .commit();
         }
     }
 
@@ -542,25 +523,30 @@ public class MainActivity extends ActionBarActivity
     }
 
     @Override
+    public void onScheduleItemClicked(long scheduleItemId) {
+        Intent intent = new Intent(this, ScheduleItemActivity.class);
+        intent.putExtra("id", scheduleItemId);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onSubjectClicked(long subjectId) {
+
+    }
+
+    @Override
     public void onLecturerClicked(long lecturerId) {
-        getFragmentManager().beginTransaction()
-                .add(R.id.main_content, ScheduleOfWeekFragment
-                        .newInstance(lecturerId))
-                .addToBackStack(null)
-                .commit();
+        Intent intent = new Intent(this, LecturerScheduleActivity.class);
+        intent.putExtra(LecturerScheduleActivity.ARG_LECTURER_ID, lecturerId);
+        startActivity(intent);
     }
 
-    private void clearMainContentContainer() {
-        /*
-        * Just for DEBUG
-        * */
-        Fragment fragment = getFragmentManager()
-                .findFragmentById(R.id.main_content);
-        if (fragment != null) {
-            getFragmentManager().beginTransaction()
-                    .remove(fragment)
-                    .commit();
-        }
+    @Override
+    public void onPeriodicityChanged(int periodicity) {
+        getSupportActionBar().setSubtitle(PERIODICITY_SUBTITLE_RES_ID[periodicity]);
     }
 
+    private void replaceMainContent(Fragment fragment) {
+        getFragmentManager().beginTransaction().replace(R.id.main_content, fragment).commit();
+    }
 }
