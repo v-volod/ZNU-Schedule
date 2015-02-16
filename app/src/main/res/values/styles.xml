@@ -21,6 +21,13 @@
     <!-- Login Screen Style -->
     <style name="LoginScreen" parent="AppTheme.Base"/>
 
+    <!-- Schedule Item Activity Style -->
+    <style name="ScheduleItemActivity" parent="AppTheme.Base">
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryDark">@color/purple_700</item>
+        <item name="colorAccent">@color/blue_700</item>
+    </style>
+
     <!-- AppTextLogo -->
     <style name="AppTextLogo">
         <item name="android:textSize">@dimen/app_text_logo_text_size</item>

@@ -39,6 +39,7 @@
 
         <activity
             android:name=".ui.ScheduleItemActivity"
+            android:theme="@style/ScheduleItemActivity"
             android:parentActivityName=".ui.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

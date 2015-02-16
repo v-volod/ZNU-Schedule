@@ -68,6 +68,14 @@ public class MainActivity extends ActionBarActivity
             R.drawable.ic_help_white_24dp
     };
 
+    private static final int[] NAV_DRAWER_TINT_COLOR_RES_ID = {
+            R.color.colorPrimary,
+            R.color.green_500,
+            R.color.red_600,
+            R.color.colorPrimary,
+            R.color.colorPrimary
+    };
+
     private static final int[] PERIODICITY_SUBTITLE_RES_ID = {
             0,
             R.string.numerator,
@@ -406,10 +414,10 @@ public class MainActivity extends ActionBarActivity
         view.setSelected(selected);
 
         titleView.setTextColor(selected ?
-                getResources().getColor(R.color.nav_drawer_text_color_selected) :
+                getResources().getColor(NAV_DRAWER_TINT_COLOR_RES_ID[itemId]) :
                 getResources().getColor(R.color.nav_drawer_text_color));
         iconView.setColorFilter(selected ?
-                getResources().getColor(R.color.nav_drawer_icon_tint_selected) :
+                getResources().getColor(NAV_DRAWER_TINT_COLOR_RES_ID[itemId]) :
                 getResources().getColor(R.color.nav_drawer_icon_tint));
     }
 
@@ -441,6 +449,7 @@ public class MainActivity extends ActionBarActivity
             drawerLayout.closeDrawer(Gravity.START);
         }
         invalidateOptionsMenu();
+        appBar.setBackgroundResource(NAV_DRAWER_TINT_COLOR_RES_ID[itemId]);
     }
 
     private void setSelectedNavDrawerItem(int itemId) {
@@ -536,7 +545,7 @@ public class MainActivity extends ActionBarActivity
     public void onLecturerClicked(long lecturerId) {
         getFragmentManager().beginTransaction()
                 .add(R.id.main_content, ScheduleOfWeekFragment
-                .newInstance(lecturerId))
+                        .newInstance(lecturerId))
                 .addToBackStack(null)
                 .commit();
     }

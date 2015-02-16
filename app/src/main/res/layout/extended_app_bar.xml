@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/extended_toolbar_height"
     android:minHeight="?attr/actionBarSize"
-    android:background="@color/schedule_item_activity_toolbar"
+    android:background="?attr/colorPrimary"
     app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
     app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
     android:gravity="bottom">
