@@ -8,7 +8,6 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.RequestFuture;
 
 import org.json.JSONException;
 
@@ -52,6 +51,10 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
         String AUDIENCE = "audience";
         String TIMETABLE = "timetable";
         String CURRENT_WEEK = "current_week";
+        /*
+        * sub model
+        * */
+        String TEACHERS_BY_GROUP = "teachers_by_group";
     }
 
     public static interface Key {
@@ -94,6 +97,7 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
         int BY_GROUP_ID = 6;
         int BY_LECTURER_ID = 7;
         int BY_GROUP_AND_LECTURER_IDS = 8;
+        int LECTURERS_SCHEDULE_BY_GROUP = 9;
     }
 
     public static interface ResponseCode {

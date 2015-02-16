@@ -11,12 +11,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
 import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.rest.resource.GlobalScheduleItem;
-import ua.zp.rozklad.app.rest.resource.Lecturer;
-import ua.zp.rozklad.app.rest.resource.ScheduleItem;
 
 /**
  * @author Vojko Vladimir
@@ -39,6 +36,10 @@ public class GetScheduleMethod extends RESTMethod<ArrayList<GlobalScheduleItem>,
                 requestUrl = String.format(MODEL_URL_FORMAT, MODEL) +
                         buildModelFilter(Model.GROUP, params[0]) +
                         buildModelFilter(Model.TEACHER, params[1]);
+                break;
+            case Filter.LECTURERS_SCHEDULE_BY_GROUP:
+                requestUrl = String.format(MODEL_URL_FORMAT, Model.TIMETABLE +
+                        "/" + Model.TEACHERS_BY_GROUP) + buildModelFilter(Model.GROUP, params[0]);
                 break;
         }
     }

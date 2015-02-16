@@ -103,6 +103,22 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
                 performGroupSync(group);
             }
 
+            for (Group group: groups) {
+                /*
+                * Download Schedule of all dependent lecturers of all groups
+                * */
+                Log.d("ScheduleLOGS", "Sync Lecturers Schedule");
+                GetScheduleMethod getLecturersSchedule = new GetScheduleMethod();
+                getLecturersSchedule.prepare(RESTMethod.Filter.LECTURERS_SCHEDULE_BY_GROUP, String.valueOf(group.getId()));
+
+                MethodResponse<ArrayList<GlobalScheduleItem>> scheduleItemsResponse =
+                        getLecturersSchedule.executeBlocking();
+
+                if (scheduleItemsResponse.getResponseCode() == RESTMethod.ResponseCode.OK) {
+                    processScheduleData(scheduleItemsResponse.getResponse());
+                }
+            }
+
             processor.process(groups);
         }
 
@@ -119,32 +135,36 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
                 method.executeBlocking();
 
         if (scheduleItemsResponse.getResponseCode() == RESTMethod.ResponseCode.OK) {
-            ArrayList<ScheduleItem> scheduleItems = new ArrayList<>();
+            processScheduleData(scheduleItemsResponse.getResponse());
+        }
+    }
 
-            for (GlobalScheduleItem item : scheduleItemsResponse.getResponse()) {
-                scheduleItems.addAll(item.getScheduleItems());
-            }
+    private void processScheduleData(ArrayList<GlobalScheduleItem> response) {
+        ArrayList<ScheduleItem> scheduleItems = new ArrayList<>();
 
-            ScheduleProcessor processor = new ScheduleProcessor(getContext());
-            ScheduleDependency dependency = processor.process(scheduleItems);
+        for (GlobalScheduleItem item : response) {
+            scheduleItems.addAll(item.getScheduleItems());
+        }
 
-            Log.d("ScheduleLOGS", "ScheduleDependency " + dependency.toString());
+        ScheduleProcessor processor = new ScheduleProcessor(getContext());
+        ScheduleDependency dependency = processor.process(scheduleItems);
 
-            if (dependency.hasSubjects()) {
-                performSubjectsSync(dependency.getSubjects());
-            }
+        Log.d("ScheduleLOGS", "ScheduleDependency " + dependency.toString());
 
-            if (dependency.hasAcademicHours()) {
-                performAcademicHoursSync(dependency.getAcademicHours());
-            }
+        if (dependency.hasSubjects()) {
+            performSubjectsSync(dependency.getSubjects());
+        }
 
-            if (dependency.hasLecturers()) {
-                performLecturersSync(dependency.getLecturers());
-            }
+        if (dependency.hasAcademicHours()) {
+            performAcademicHoursSync(dependency.getAcademicHours());
+        }
 
-            if (dependency.hasAudiences()) {
-                performAudiencesSync(dependency.getAudiences());
-            }
+        if (dependency.hasLecturers()) {
+            performLecturersSync(dependency.getLecturers());
+        }
+
+        if (dependency.hasAudiences()) {
+            performAudiencesSync(dependency.getAudiences());
         }
     }
 
