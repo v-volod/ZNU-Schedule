@@ -401,6 +401,10 @@ public class ScheduleContract {
                 Tables.CAMPUS + "." + BaseColumns._ID;
         public static final String CAMPUS_NAME =
                 Tables.CAMPUS + "." + CampusColumns.CAMPUS_NAME;
+        public static final String CAMPUS_LATITUDE =
+                Tables.CAMPUS + "." + CampusColumns.LATITUDE;
+        public static final String CAMPUS_LONGITUDE =
+                Tables.CAMPUS + "." + CampusColumns.LONGITUDE;
 
         public static final String AUDIENCE_ID =
                 Tables.AUDIENCE + "." + BaseColumns._ID;
@@ -429,14 +433,16 @@ public class ScheduleContract {
                     _ID,
                     SUBGROUP,
                     DAY_OF_WEEK,
-                    ACADEMIC_HOUR_NUM,
+                    SCHEDULE_LECTURER_ID,
                     ACADEMIC_HOUR_STAT_TIME,
                     ACADEMIC_HOUR_END_TIME,
                     CLASS_TYPE,
                     SUBJECT_NAME,
                     LECTURER_NAME,
                     CAMPUS_NAME,
-                    AUDIENCE_NUMBER
+                    AUDIENCE_NUMBER,
+                    CAMPUS_LATITUDE,
+                    CAMPUS_LONGITUDE
             };
 
             interface Selection {
@@ -459,7 +465,7 @@ public class ScheduleContract {
                 int _ID = 0;
                 int SUBGROUP = 1;
                 int DAY_OF_WEEK = 2;
-                int ACADEMIC_HOUR_NUM = 3;
+                int SCHEDULE_LECTURER_ID = 3;
                 int ACADEMIC_HOUR_STAT_TIME = 4;
                 int ACADEMIC_HOUR_END_TIME = 5;
                 int CLASS_TYPE = 6;
@@ -467,7 +473,16 @@ public class ScheduleContract {
                 int LECTURER_NAME = 8;
                 int CAMPUS_NAME = 9;
                 int AUDIENCE_NUMBER = 10;
+                int CAMPUS_LATITUDE = 11;
+                int CAMPUS_LONGITUDE = 12;
             }
+        }
+
+        /**
+         * Build {@link Uri} for requested schedule item.
+         */
+        public static Uri buildScheduleItemUri(long scheduleItemId) {
+            return buildItemUri(CONTENT_URI, scheduleItemId);
         }
     }
 

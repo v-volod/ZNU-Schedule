@@ -525,7 +525,7 @@ public class MainActivity extends ActionBarActivity
     @Override
     public void onScheduleItemClicked(long scheduleItemId) {
         Intent intent = new Intent(this, ScheduleItemActivity.class);
-        intent.putExtra("id", scheduleItemId);
+        intent.putExtra(ScheduleItemActivity.ARG_SCHEDULE_ITEM_ID, scheduleItemId);
         startActivity(intent);
     }
 

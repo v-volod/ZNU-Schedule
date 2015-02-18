@@ -1,39 +1,35 @@
 package ua.zp.rozklad.app.ui;
 
 import android.content.Intent;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.util.CalendarUtils;
 
-import static java.lang.String.format;
-import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Column;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
+import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Column;
+import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.buildScheduleItemUri;
 
-/**
- * Created by kkxmshu on 03.02.15.
- */
-public class ScheduleItemActivity extends ActionBarActivity {
+public class ScheduleItemActivity extends ActionBarActivity implements View.OnClickListener {
 
-    private String[] lesson_type;
+    public static final String ARG_SCHEDULE_ITEM_ID = "SCHEDULE_ITEM_ID";
 
-    private Toolbar appBar;
-    private TextView title;
-
-    private View location;
-    private View lecturer;
-    private View type;
-    private View time;
+    private long lecturerId;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -51,80 +47,118 @@ public class ScheduleItemActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule_item);
 
-        appBar = (Toolbar) findViewById(R.id.extended_app_bar);
+        Toolbar appBar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(appBar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawerLayout.setStatusBarBackground(R.color.schedule_item_activity_statusbar);
-        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         Intent intent = getIntent();
 
-        lesson_type = getResources().getStringArray(R.array.class_type);
+        String[] classTypes = getResources().getStringArray(R.array.class_type);
 
-        title = (TextView) appBar.findViewById(R.id.title);
+        TextView title = (TextView) appBar.findViewById(R.id.title);
 
-        Long id = intent.getLongExtra("id", 0);
-        Log.d("ScheduleItemActivity", "id: " + id);
+        long scheduleItemId = intent.getLongExtra(ARG_SCHEDULE_ITEM_ID, -1);
 
-        Resources res = getResources();
-        Cursor cursor = getContentResolver().query(FullSchedule.CONTENT_URI
-                        .buildUpon()
-                        .appendPath(String.valueOf(id)).build(),
-                FullSchedule.Summary.PROJECTION, null, null, null);
+        Cursor cursor = getContentResolver()
+                .query(buildScheduleItemUri(scheduleItemId),
+                        FullSchedule.Summary.PROJECTION, null, null, null);
 
-        String sSubj = "";
-        String sLect = "";
-        String sLoc = "";
-        int type_index = 0;
-        String sTime = "";
+        if (cursor.moveToFirst()) {
+            title.setText(cursor.getString(Column.SUBJECT_NAME));
+            String lecturerName = cursor.getString(Column.LECTURER_NAME);
+            String classTypeText = classTypes[cursor.getInt(Column.CLASS_TYPE)];
+            String timeText =
+                    CalendarUtils.makeTime(cursor.getLong(Column.ACADEMIC_HOUR_STAT_TIME)) +
+                            " - " + CalendarUtils.makeTime(cursor.getLong(Column.ACADEMIC_HOUR_END_TIME));
+            String audience = cursor.getString(Column.AUDIENCE_NUMBER);
+            final String campus = cursor.getString(Column.CAMPUS_NAME);
+            String locationText =
+                    (TextUtils.isEmpty(audience) ? "" :
+                            getString(R.string.audience) + " " + audience + ", ") + campus;
+            final float latitude = cursor.getFloat(Column.CAMPUS_LATITUDE);
+            final float longitude = cursor.getFloat(Column.CAMPUS_LONGITUDE);
 
-        if (cursor != null) {
+            lecturerId = cursor.getLong(Column.SCHEDULE_LECTURER_ID);
 
-            while (cursor.moveToNext()) {
-                sSubj = cursor.getString(Column.SUBJECT_NAME);
-                sLect = cursor.getString(Column.LECTURER_NAME);
-                sLoc = format("Аудитория %d, %s", cursor.getInt(Column.AUDIENCE_NUMBER),
-                        cursor.getString(Column.CAMPUS_NAME));
-                type_index = cursor.getInt(Column.CLASS_TYPE);
-                sTime = CalendarUtils.makeTime(cursor.getLong(Column.ACADEMIC_HOUR_STAT_TIME)) +
-                        " - " + CalendarUtils.makeTime(cursor.getLong(Column
-                        .ACADEMIC_HOUR_END_TIME));
-                title.setText(sSubj);
+            View lecturer = findViewById(R.id.lecturer);
+            View classType = findViewById(R.id.class_type);
+            View location = findViewById(R.id.location);
+            View time = findViewById(R.id.time);
 
+            ((ImageView) lecturer.findViewById(R.id.icon))
+                    .setImageResource(R.drawable.ic_person_white_24dp);
+            ((ImageView) classType.findViewById(R.id.icon))
+                    .setImageResource(R.drawable.ic_class_white_24dp);
+            ((ImageView) location.findViewById(R.id.icon))
+                    .setImageResource(R.drawable.ic_map_white_24dp);
+            ((ImageView) time.findViewById(R.id.icon))
+                    .setImageResource(R.drawable.ic_query_builder_white_24dp);
+
+            MapFragment mMapFragment = (MapFragment) getFragmentManager()
+                    .findFragmentById(R.id.map);
+
+            if (latitude == -1.0f && longitude == -1.0f) {
+                getFragmentManager()
+                        .beginTransaction()
+                        .hide(mMapFragment)
+                        .commit();
+            } else {
+                mMapFragment.getMapAsync(new OnMapReadyCallback() {
+                    @Override
+                    public void onMapReady(final GoogleMap map) {
+                        LatLng campusLatLng = new LatLng(latitude, longitude);
+                        MarkerOptions mMarkerOptions = new MarkerOptions()
+                                .title(campus)
+                                .position(campusLatLng);
+
+                        map.setMyLocationEnabled(true);
+                        map.animateCamera(CameraUpdateFactory.newLatLngZoom(campusLatLng, 16));
+                        map.addMarker(mMarkerOptions).showInfoWindow();
+                    }
+                });
             }
 
+            if (lecturerName.isEmpty()) {
+                lecturerName = getString(R.string.not_specified);
+                lecturer.setClickable(false);
+            }
+
+            if (locationText.isEmpty()) {
+                locationText = getString(R.string.not_specified);
+            }
+
+            setUpItem(lecturer, lecturerName, getString(R.string.lecturer));
+            setUpItem(classType, classTypeText, getString(R.string.type));
+            setUpItem(location, locationText, getString(R.string.location));
+            setUpItem(time, timeText, getString(R.string.time));
+
+
+            lecturer.setOnClickListener(this);
+            classType.setClickable(false);
+            location.setClickable(false);
+            time.setClickable(false);
+        } else {
+            finish();
         }
 
-        location = findViewById(R.id.location_layout);
-        lecturer = findViewById(R.id.lecturer_layout);
-        type = findViewById(R.id.type_layout);
-        time = findViewById(R.id.time_layout);
-
-        setTexts(location, sLoc, res.getString(R.string.location));
-        ImageView thumb = (ImageView) location.findViewById(R.id.thumbnail);
-        thumb.setImageResource(R.drawable.ic_place_white_18dp);
-        thumb.setColorFilter(res.getColor(R.color.nav_drawer_icon_tint));
-
-        setTexts(lecturer, sLect, res.getString(R.string.lecturer));
-        thumb = (ImageView) lecturer.findViewById(R.id.thumbnail);
-        thumb.setImageResource(R.drawable.ic_info_white_18dp);
-        thumb.setColorFilter(res.getColor(R.color.nav_drawer_icon_tint));
-
-        setTexts(type, lesson_type[type_index], res.getString(R.string.type));
-        type.setClickable(false);
-        setTexts(time, sTime, res.getString(R.string.time));
-        time.setClickable(false);
-
+        cursor.close();
     }
 
 
-    public static void setTexts(View v, String t, String d) {
-        TextView text = (TextView) v.findViewById(R.id.text);
-        text.setText(t);
+    public void setUpItem(View view, String primary, String secondary) {
+        ((TextView) view.findViewById(R.id.primary_text)).setText(primary);
+        ((TextView) view.findViewById(R.id.secondary_text)).setText(secondary);
+    }
 
-        TextView description = (TextView) v.findViewById(R.id.description);
-        description.setText(d);
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.lecturer:
+                Intent intent = new Intent(this, LecturerScheduleActivity.class);
+                intent.putExtra(LecturerScheduleActivity.ARG_LECTURER_ID, lecturerId);
+                startActivity(intent);
+                break;
+        }
     }
 }
