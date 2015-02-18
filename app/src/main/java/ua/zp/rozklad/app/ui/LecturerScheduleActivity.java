@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.provider.ScheduleContract.Lecturer;
@@ -51,6 +52,17 @@ public class LecturerScheduleActivity extends ActionBarActivity
                 .beginTransaction()
                 .add(R.id.container, fragment)
                 .commit();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
