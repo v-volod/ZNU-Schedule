@@ -177,7 +177,18 @@
                 android:layout_below="@id/login_button"
                 wheel:matProg_barColor="@android:color/white"
                 wheel:matProg_progressIndeterminate="true" />
+
+            <Button
+                android:visibility="gone"
+                android:id="@+id/retry_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/progress_wheel"
+                android:text="@string/retry"
+                android:background="@drawable/button_retry"
+                android:textColor="@color/white" />
         </RelativeLayout>
+
     </RelativeLayout>
 
 </FrameLayout>

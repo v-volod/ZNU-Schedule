@@ -1,7 +1,5 @@
 package ua.zp.rozklad.app.model;
 
-import ua.zp.rozklad.app.rest.resource.CurrentWeek;
-
 import static java.lang.Math.abs;
 
 /**
@@ -26,6 +24,9 @@ public class Periodicity {
     }
 
     public int getPeriodicity(int week) {
+        if (!isValid()) {
+            return 0;
+        }
         return toggledPeriodicity(abs(weekOfYear - week));
     }
 

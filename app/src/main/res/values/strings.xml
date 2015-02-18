@@ -23,6 +23,7 @@
     <string name="error_already_has_account">Помилка! Ви вже маєте обліковий запис</string>
     <string name="no_loaded_schedule">Розклад ще не завантажено, або відсутній</string>
     <string name="not_specified">Не задано</string>
+    <string name="retry">ПОВТОРИТИ</string>
 
     <!-- NavigationDrawer List Items -->
     <string name="nav_drawer_group_qualifier">Група</string>
@@ -39,6 +40,12 @@
     <string name="change_group">змінити групу</string>
     <string name="change_subgroup">змінити підгрупу</string>
 
+    <!-- REST Methods Errors -->
+    <string name="no_connection_error">Немає інтернет з’єднання</string>
+    <string name="time_out_error">Таймаут вичерпано, спробуйте пізніше</string>
+    <string name="server_error">Помилка серверу</string>
+    <string name="unknown_error">Невідома помилка</string>
+    <string name="network_error">Проблеми з інтернет з’єднанням</string>
     <string name="volley_error">Volley Error</string>
 
     <!-- Lorem Ipsum values -->
@@ -55,7 +62,7 @@
         <item>Вівторок</item>
         <item>Середа</item>
         <item>Четвер</item>
-        <item>П\'ятниця</item>
+        <item>П`ятниця</item>
         <item>Субота</item>
         <item>Неділя</item>
     </string-array>
