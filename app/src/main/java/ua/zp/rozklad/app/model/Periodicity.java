@@ -12,11 +12,6 @@ public class Periodicity {
     private int periodicity;
     private int weekOfYear;
 
-    public Periodicity(CurrentWeek currentWeek, int weekOfYear) {
-        this.periodicity = currentWeek.getWeek();
-        this.weekOfYear = weekOfYear;
-    }
-
     public Periodicity(int periodicity, int weekOfYear) {
         this.periodicity = periodicity;
         this.weekOfYear = weekOfYear;
@@ -38,4 +33,7 @@ public class Periodicity {
         return (times % 2 == 0) ? periodicity : abs(periodicity - 3);
     }
 
+    public boolean isValid() {
+        return periodicity != -1 && weekOfYear != -1;
+    }
 }

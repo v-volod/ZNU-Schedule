@@ -26,16 +26,16 @@ public class PreferencesUtils {
         SharedPreferences preferences =
                 mContext.getSharedPreferences(SCHEDULE_SETTINGS, Context.MODE_PRIVATE);
         return new Periodicity(
-                preferences.getInt(PERIODICITY, 1),
-                preferences.getInt(WEEK_OF_YEAR, CalendarUtils.getCurrentWeekOfYear())
+                preferences.getInt(PERIODICITY, -1),
+                preferences.getInt(WEEK_OF_YEAR, -1)
         );
     }
 
-    public void savePeriodicity(Periodicity periodicity) {
+    public void savePeriodicity(int periodicity, int weekOfYear) {
         mContext.getSharedPreferences(SCHEDULE_SETTINGS, Context.MODE_PRIVATE)
                 .edit()
-                .putInt(PERIODICITY, periodicity.getPeriodicity())
-                .putInt(WEEK_OF_YEAR, periodicity.getWeekOfYear())
+                .putInt(PERIODICITY, periodicity)
+                .putInt(WEEK_OF_YEAR, weekOfYear)
                 .apply();
     }
 
@@ -50,6 +50,13 @@ public class PreferencesUtils {
         mContext.getSharedPreferences(ACCOUNTS_SETTINGS, Context.MODE_PRIVATE)
                 .edit()
                 .putString(ACTIVE_ACCOUNT_NAME, accountName)
+                .apply();
+    }
+
+    public void removeActiveAccount() {
+        mContext.getSharedPreferences(ACCOUNTS_SETTINGS, Context.MODE_PRIVATE)
+                .edit()
+                .remove(ACTIVE_ACCOUNT_NAME)
                 .apply();
     }
 }
