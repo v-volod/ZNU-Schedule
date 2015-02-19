@@ -2,6 +2,7 @@ package ua.zp.rozklad.app;
 
 import android.app.Application;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -58,7 +59,22 @@ public class App extends Application {
         if (mPreferencesUtils == null) {
             mPreferencesUtils = new PreferencesUtils(this);
         }
-
         return mPreferencesUtils;
+    }
+
+    public static void LOG_D(String message) {
+        Log.d(TAG, message);
+    }
+
+    public static void LOG_E(String message) {
+        Log.e(TAG, message);
+    }
+
+    public static void LOG_E(String message, Throwable throwable) {
+        Log.e(TAG, message, throwable);
+    }
+
+    public static void LOG_I(String message) {
+        Log.i(TAG, message);
     }
 }
