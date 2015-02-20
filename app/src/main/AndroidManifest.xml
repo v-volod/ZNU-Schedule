@@ -54,6 +54,12 @@
                 android:value="ua.zp.rozklad.app.ui.MainActivity" />
         </activity>
 
+        <activity
+            android:name=".ui.SyncSettingsActivity"
+            android:configChanges="orientation|keyboard|keyboardHidden|screenSize|screenLayout|uiMode"
+            android:label="@string/nav_drawer_item_settings"
+            android:screenOrientation="portrait" />
+
         <provider
             android:name=".provider.ScheduleProvider"
             android:authorities="ua.zp.rozklad.app.provider"

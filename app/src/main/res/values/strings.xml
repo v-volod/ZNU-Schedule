@@ -94,4 +94,32 @@
         <item>Екзамен</item>
     </string-array>
 
+    <!-- Settings -->
+    <string name="general_settings">Налаштування</string>
+    <string name="sync_settings_summary">Настройка синхронизации расписания</string>
+    <string name="sync">Синхронизация</string>
+    <string name="sync_auto">Автоматичне синхронування</string>
+    <string name="sync_interval">інтервал</string>
+    <string name="auto_sync_summary">Синхронизация через определенный интервал времени</string>
+    <string name="auto_sync">Автоматическая синхронизация</string>
+    <string name="auto_sync_interval">Интервал Синхронизации</string>
+
+    <string name="auto_sync_interval_default">72</string>
+
+    <string-array name="auto_sync_intervals">
+        <item>Выключить</item>
+        <item>Каждый день</item>
+        <item>Каждые 3 дня</item>
+        <item>Раз в неделю</item>
+        <item>Раз в месяц</item>
+    </string-array>
+
+    <string-array name="auto_sync_interval_values">
+        <item>0</item>
+        <item>24</item>
+        <item>@string/auto_sync_interval_default</item>
+        <item>168</item>
+        <item>720</item>
+    </string-array>
+
 </resources>

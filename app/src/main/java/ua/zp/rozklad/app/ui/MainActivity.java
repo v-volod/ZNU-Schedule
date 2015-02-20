@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAccount;
+import ua.zp.rozklad.app.account.GroupAuthenticator;
 import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
 import ua.zp.rozklad.app.util.UiUtils;
 
@@ -419,9 +421,7 @@ public class MainActivity extends ActionBarActivity
     private void onNavDrawerItemClicked(int itemId) {
         switch (itemId) {
             case NAV_DRAWER_ITEM_SETTINGS:
-                /*
-                * Start Settings Activity
-                * */
+                onSettingsSelected();
                 return;
             case NAV_DRAWER_ITEM_INFO_RECALL:
                 /*
@@ -520,6 +520,12 @@ public class MainActivity extends ActionBarActivity
         if (fragment != null && fragment instanceof LecturersFragment) {
             ((LecturersFragment) fragment).reload(account.getGroupId(), account.getSubgroup());
         }
+    }
+
+    public void onSettingsSelected() {
+        Intent intent = new Intent(this, SyncSettingsActivity.class);
+        intent.putExtra(GroupAuthenticator.KEY_ACCOUNT_EXTRA, account.getBaseAccount());
+        startActivity(intent);
     }
 
     @Override
