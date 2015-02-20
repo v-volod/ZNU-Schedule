@@ -23,6 +23,7 @@ public class SyncSettingsFragment extends PreferenceFragment implements
 
     private static final String KEY_AUTO_SYNC = "ua.zp.rozklad.app.KEY_AUTO_SYNC";
     private static final String KEY_AUTO_SYNC_INTERVAL = "ua.zp.rozklad.app.KEY_AUTO_SYNC_INTERVAL";
+    private static final long DAY_SECONDS = 86400;
 
 
     private Account account;
@@ -73,10 +74,10 @@ public class SyncSettingsFragment extends PreferenceFragment implements
             final ListPreference interval = (ListPreference) getPreferenceManager()
                     .findPreference(key);
             interval.setSummary(interval.getEntry());
-            // TODO: Ask how to update periodicSync
+            // TODO: Translate string
             ContentResolver.addPeriodicSync(
                account, "ua.zp.rozklad.app",
-               Bundle.EMPTY, Long.parseLong(interval.getValue()) * 3600
+               Bundle.EMPTY, Long.parseLong(interval.getValue()) * DAY_SECONDS
             );
         }
     }
