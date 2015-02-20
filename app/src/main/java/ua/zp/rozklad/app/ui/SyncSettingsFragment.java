@@ -49,17 +49,11 @@ public class SyncSettingsFragment extends PreferenceFragment implements
                 .findPreference(KEY_AUTO_SYNC_INTERVAL);
         interval.setSummary(interval.getEntry());
 
-        Intent intent = getActivity().getIntent();
-//        account = intent.getParcelableExtra(GroupAuthenticator.KEY_ACCOUNT_EXTRA);
-//        if(account == null) {
-//
-//        }
-        GroupAccount account1 = null;
+        account = null;
         GroupAuthenticatorHelper mHelper = new GroupAuthenticatorHelper(getActivity());
         if(mHelper.hasAccount()) {
             Log.d("SYNC_SETTINGS -> hasAccount", "TRUE");
-            account1 = mHelper.getActiveAccount();
-            Log.d("SYNC_SETTINGS", "account1: " + account1.getGroupName());
+            account = mHelper.getActiveAccount().getBaseAccount();
         }
     }
 
@@ -82,7 +76,7 @@ public class SyncSettingsFragment extends PreferenceFragment implements
             // TODO: Ask how to update periodicSync
             ContentResolver.addPeriodicSync(
                account, "ua.zp.rozklad.app",
-               Bundle.EMPTY, Long.parseLong(interval.getValue()) /* * 3600*/
+               Bundle.EMPTY, Long.parseLong(interval.getValue()) * 3600
             );
         }
     }

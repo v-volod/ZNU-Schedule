@@ -524,7 +524,6 @@ public class MainActivity extends ActionBarActivity
 
     public void onSettingsSelected() {
         Intent intent = new Intent(this, SyncSettingsActivity.class);
-        intent.putExtra(GroupAuthenticator.KEY_ACCOUNT_EXTRA, account.getBaseAccount());
         startActivity(intent);
     }
 
