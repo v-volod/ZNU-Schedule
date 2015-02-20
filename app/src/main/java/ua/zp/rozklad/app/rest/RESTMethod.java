@@ -1,7 +1,6 @@
 package ua.zp.rozklad.app.rest;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -20,6 +19,7 @@ import org.json.JSONException;
 import java.util.concurrent.ExecutionException;
 
 import ua.zp.rozklad.app.App;
+import ua.zp.rozklad.app.BuildConfig;
 
 /**
  * @author Vojko Vladimir
@@ -161,7 +161,9 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
     }
 
     protected static int generateResponseCode(Throwable throwable) {
-        Log.e("RestLogs", throwable.toString());
+        if (BuildConfig.DEBUG) {
+            App.LOG_E(throwable.toString(), throwable);
+        }
         if (throwable instanceof ExecutionException) {
             return generateResponseCode(throwable.getCause());
         } else if (throwable instanceof VolleyError) {
