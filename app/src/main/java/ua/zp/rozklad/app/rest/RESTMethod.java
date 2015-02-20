@@ -3,10 +3,16 @@ package ua.zp.rozklad.app.rest;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.RetryPolicy;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 
 import org.json.JSONException;
@@ -102,9 +108,13 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
 
     public static interface ResponseCode {
         int INVALID_REQUEST = -1;
-        int PARSE_RESPONSE_ERROR = 101;
-        // TODO: Define own result code for all subclasses of VolleyError
+        int PARSE_ERROR = 101;
         int VOLLEY_ERROR = 102;
+        int NETWORK_ERROR = 103;
+        int SERVER_ERROR = 104;
+        int AUTH_FAILURE_ERROR = 105;
+        int NO_CONNECTION_ERROR = 106;
+        int TIMEOUT_ERROR = 107;
         int OK = 200;
         int UNKNOWN_ERROR = 500;
     }
@@ -156,9 +166,24 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
             return generateResponseCode(throwable.getCause());
         } else if (throwable instanceof VolleyError) {
 
+            if (throwable instanceof NetworkError) {
+                if (throwable instanceof NoConnectionError) {
+                    return ResponseCode.NO_CONNECTION_ERROR;
+                }
+                return ResponseCode.NETWORK_ERROR;
+            } else if (throwable instanceof ServerError) {
+                return ResponseCode.SERVER_ERROR;
+            } else if (throwable instanceof AuthFailureError) {
+                return ResponseCode.AUTH_FAILURE_ERROR;
+            } else if (throwable instanceof ParseError) {
+                return ResponseCode.PARSE_ERROR;
+            } else if (throwable instanceof TimeoutError) {
+                return ResponseCode.TIMEOUT_ERROR;
+            }
+
             return ResponseCode.VOLLEY_ERROR;
         } else if (throwable instanceof JSONException) {
-            return ResponseCode.PARSE_RESPONSE_ERROR;
+            return ResponseCode.PARSE_ERROR;
         } else {
             return ResponseCode.UNKNOWN_ERROR;
         }

@@ -22,6 +22,8 @@
     <string name="one_account_allowed">Тільки один обліковий запис дозволено</string>
     <string name="error_already_has_account">Помилка! Ви вже маєте обліковий запис</string>
     <string name="no_loaded_schedule">Розклад ще не завантажено, або відсутній</string>
+    <string name="not_specified">Не задано</string>
+    <string name="retry">ПОВТОРИТИ</string>
 
     <!-- NavigationDrawer List Items -->
     <string name="nav_drawer_group_qualifier">Група</string>
@@ -38,6 +40,12 @@
     <string name="change_group">змінити групу</string>
     <string name="change_subgroup">змінити підгрупу</string>
 
+    <!-- REST Methods Errors -->
+    <string name="no_connection_error">Немає інтернет з’єднання</string>
+    <string name="time_out_error">Таймаут вичерпано, спробуйте пізніше</string>
+    <string name="server_error">Помилка серверу</string>
+    <string name="unknown_error">Невідома помилка</string>
+    <string name="network_error">Проблеми з інтернет з’єднанням</string>
     <string name="volley_error">Volley Error</string>
 
     <!-- Lorem Ipsum values -->
@@ -54,7 +62,7 @@
         <item>Вівторок</item>
         <item>Середа</item>
         <item>Четвер</item>
-        <item>П\'ятниця</item>
+        <item>П`ятниця</item>
         <item>Субота</item>
         <item>Неділя</item>
     </string-array>
@@ -81,12 +89,13 @@
 
     <!-- ScheduleItemActivity values -->
     <string name="location">Розташування</string>
+    <string name="audience">Аудиторія</string>
     <string name="lecturer">Викладач</string>
     <string name="type">Тип</string>
     <string name="time">Час</string>
 
     <string-array name="class_type">
-        <item>Не задано</item>
+        <item>@string/not_specified</item>
         <item>Лекція</item>
         <item>Семінар</item>
         <item>Лабораторна робота</item>
@@ -121,5 +130,7 @@
         <item>168</item>
         <item>720</item>
     </string-array>
+
+    <string name="maps_api_key">AIzaSyAYjzB1ic2B4s52v2E7kZPW1v9btZa_NDQ</string>
 
 </resources>

@@ -1,10 +1,12 @@
 package ua.zp.rozklad.app.ui;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.provider.ScheduleContract.Lecturer;
@@ -31,32 +33,35 @@ public class LecturerScheduleActivity extends ActionBarActivity
         setSupportActionBar((Toolbar) findViewById(R.id.app_bar));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        if (getIntent() != null) {
-            long lecturerId = getIntent().getLongExtra(ARG_LECTURER_ID, -1);
-            if (lecturerId == -1) {
-                /*
-                * Should not been happen.
-                * */
+        long lecturerId = getIntent().getLongExtra(ARG_LECTURER_ID, -1);
+
+        Cursor cursor = getContentResolver()
+                .query(buildLecturerUri(lecturerId), new String[]{Lecturer.LECTURER_NAME},
+                        null, null, null);
+
+        if (cursor.moveToFirst()) {
+            getSupportActionBar().setTitle(cursor.getString(0));
+        } else {
+            finish();
+        }
+
+        cursor.close();
+
+        Fragment fragment = ScheduleOfWeekFragment.newInstance(lecturerId);
+        getFragmentManager()
+                .beginTransaction()
+                .add(R.id.container, fragment)
+                .commit();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
                 finish();
-            }
-
-            Cursor cursor = getContentResolver()
-                    .query(buildLecturerUri(lecturerId), new String[]{Lecturer.LECTURER_NAME},
-                            null, null, null);
-
-            if (cursor.moveToFirst()) {
-                getSupportActionBar().setTitle(cursor.getString(0));
-            } else {
-                finish();
-            }
-
-            cursor.close();
-
-            Fragment fragment = ScheduleOfWeekFragment.newInstance(lecturerId);
-            getFragmentManager()
-                    .beginTransaction()
-                    .add(R.id.container, fragment)
-                    .commit();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -67,8 +72,8 @@ public class LecturerScheduleActivity extends ActionBarActivity
 
     @Override
     public void onScheduleItemClicked(long scheduleItemId) {
-        /*
-        * TODO: start scheduleItemActivity
-        * */
+        Intent intent = new Intent(this, ScheduleItemActivity.class);
+        intent.putExtra(ScheduleItemActivity.ARG_SCHEDULE_ITEM_ID, scheduleItemId);
+        startActivity(intent);
     }
 }

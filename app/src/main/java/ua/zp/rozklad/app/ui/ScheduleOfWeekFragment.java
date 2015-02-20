@@ -222,6 +222,7 @@ public class ScheduleOfWeekFragment extends Fragment
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        periodicity = App.getInstance().getPreferencesUtils().getPeriodicity();
         if (data.getCount() > 0) {
             if (scheduleContainer.getVisibility() == View.GONE) {
                 scheduleContainer.setVisibility(View.VISIBLE);

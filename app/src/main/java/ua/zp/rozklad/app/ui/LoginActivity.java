@@ -42,6 +42,7 @@ public class LoginActivity extends AccountAuthenticatorActivity
     private GroupAdapter groupAdapter;
 
     private Button loginButton;
+    private Button retryButton;
 
     private AccountManager accountManager;
     private LayoutInflater inflater;
@@ -57,6 +58,9 @@ public class LoginActivity extends AccountAuthenticatorActivity
 
         loginButton = (Button) findViewById(R.id.login_button);
         loginButton.setOnClickListener(this);
+
+        retryButton = (Button) findViewById(R.id.retry_button);
+        retryButton.setOnClickListener(this);
 
         departmentAdapter = new DepartmentAdapter();
         groupAdapter = new GroupAdapter();
@@ -90,6 +94,10 @@ public class LoginActivity extends AccountAuthenticatorActivity
                         groupAdapter.getSelectedGroup(),
                         groupAdapter.getSelectedSubgroup()
                 );
+                break;
+            case R.id.retry_button:
+                retryButton.setVisibility(View.GONE);
+                departmentAdapter.reload();
                 break;
         }
     }
@@ -150,14 +158,31 @@ public class LoginActivity extends AccountAuthenticatorActivity
     }
 
     private void showErrorMessage(int errorCode) {
+        int errorTextResId;
         switch (errorCode) {
-            case RESTMethod.ResponseCode.VOLLEY_ERROR:
-                Toast.makeText(this, R.string.volley_error, Toast.LENGTH_SHORT).show();
+            case RESTMethod.ResponseCode.NETWORK_ERROR:
+                errorTextResId = R.string.network_error;
+                break;
+            case RESTMethod.ResponseCode.TIMEOUT_ERROR:
+                errorTextResId = R.string.time_out_error;
+                break;
+            case RESTMethod.ResponseCode.NO_CONNECTION_ERROR:
+                errorTextResId = R.string.no_connection_error;
                 break;
             case NO_SCHEDULE:
-                Toast.makeText(this, R.string.no_schedule, Toast.LENGTH_SHORT).show();
+                errorTextResId = R.string.no_schedule;
                 break;
+            case RESTMethod.ResponseCode.SERVER_ERROR:
+            case RESTMethod.ResponseCode.AUTH_FAILURE_ERROR:
+            case RESTMethod.ResponseCode.PARSE_ERROR:
+            case RESTMethod.ResponseCode.VOLLEY_ERROR:
+                errorTextResId = R.string.server_error;
+                break;
+            default:
+                errorTextResId = R.string.unknown_error;
         }
+        retryButton.setVisibility(View.VISIBLE);
+        Toast.makeText(this, errorTextResId, Toast.LENGTH_SHORT).show();
     }
 
     public class DepartmentAdapter extends BaseAdapter
@@ -244,10 +269,14 @@ public class LoginActivity extends AccountAuthenticatorActivity
 
         public void invalidate() {
             if (!loaded) {
-                showProgressWheel();
-                hide();
-                method.execute(this, RESTMethod.LOW_INTERNET_RETRY);
+                reload();
             }
+        }
+
+        public void reload() {
+            showProgressWheel();
+            hide();
+            method.execute(this, RESTMethod.LOW_INTERNET_RETRY);
         }
 
         @Override
@@ -560,6 +589,7 @@ public class LoginActivity extends AccountAuthenticatorActivity
     }
 
     public void showProgressWheel() {
+        retryButton.setVisibility(View.GONE);
         progressWheel.setVisibility(View.VISIBLE);
     }
 

@@ -1,7 +1,5 @@
 package ua.zp.rozklad.app.model;
 
-import ua.zp.rozklad.app.rest.resource.CurrentWeek;
-
 import static java.lang.Math.abs;
 
 /**
@@ -11,11 +9,6 @@ public class Periodicity {
 
     private int periodicity;
     private int weekOfYear;
-
-    public Periodicity(CurrentWeek currentWeek, int weekOfYear) {
-        this.periodicity = currentWeek.getWeek();
-        this.weekOfYear = weekOfYear;
-    }
 
     public Periodicity(int periodicity, int weekOfYear) {
         this.periodicity = periodicity;
@@ -31,6 +24,9 @@ public class Periodicity {
     }
 
     public int getPeriodicity(int week) {
+        if (!isValid()) {
+            return 0;
+        }
         return toggledPeriodicity(abs(weekOfYear - week));
     }
 
@@ -38,4 +34,7 @@ public class Periodicity {
         return (times % 2 == 0) ? periodicity : abs(periodicity - 3);
     }
 
+    public boolean isValid() {
+        return periodicity != -1 && weekOfYear != -1;
+    }
 }

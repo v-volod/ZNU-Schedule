@@ -29,18 +29,35 @@ public class GroupAuthenticatorHelper {
         return mAccountManager.getAccountsByType(TYPE).length > 0;
     }
 
+    /**
+     * Get active Group account.
+     * @return active Group account or or null if no one account exists.
+     * */
     @Nullable
     public GroupAccount getActiveAccount() {
-        return getAccountByName(mPreferencesUtils.getActiveAccount());
+        Account account = getAccountByName(mPreferencesUtils.getActiveAccount());
+
+        if (account == null) {
+            Account[] accounts = getAccounts();
+            if (accounts.length > 0) {
+                mPreferencesUtils.saveActiveAccount(accounts[0].name);
+                return new GroupAccount(mAccountManager, accounts[0]);
+            } else {
+                mPreferencesUtils.removeActiveAccount();
+                return null;
+            }
+        }
+
+        return new GroupAccount(mAccountManager, account);
     }
 
     @Nullable
-    public GroupAccount getAccountByName(String accountName) {
+    public Account getAccountByName(String accountName) {
         Account[] accounts = getAccounts();
 
         for (Account account : accounts) {
             if (accountName.equals(account.name)) {
-                return new GroupAccount(mAccountManager, account);
+                return account;
             }
         }
 
