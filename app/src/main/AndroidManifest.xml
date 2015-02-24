@@ -61,7 +61,7 @@
 
         <provider
             android:name=".provider.ScheduleProvider"
-            android:authorities="ua.zp.rozklad.app.provider"
+            android:authorities="ua.zp.rozklad.app.provider.ScheduleProvider"
             android:exported="false"
             android:label="@string/schedule"
             android:syncable="true" />
@@ -89,6 +89,50 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/sync_adapter" />
         </service>
+
+        <!-- Yandex Metrica -->
+        <service
+            android:name="com.yandex.metrica.MetricaService"
+            android:enabled="true"
+            android:exported="true"
+            android:process=":Metrica">
+
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="com.yandex.metrica.IMetricaService" />
+                <data android:scheme="metrica" />
+            </intent-filter>
+
+            <meta-data
+                android:name="metrica:api:level"
+                android:value="16" />
+        </service>
+
+        <receiver
+            android:name="com.yandex.metrica.MetricaEventHandler"
+            android:enabled="true"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="com.yandex.metrica.intent.action.SYNC"/>
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED"/>
+                <action android:name="android.intent.action.PACKAGE_DATA_CLEARED"/>
+                <data android:scheme="package"/>
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER"/>
+            </intent-filter>
+        </receiver>
+
+        <provider
+            android:name="ua.zp.rozklad.app.provider.MetricaContentProvider"
+            android:authorities="ua.zp.rozklad.app.MetricaContentProvider"
+            android:enabled="true"
+            android:exported="true"/>
 
     </application>
 

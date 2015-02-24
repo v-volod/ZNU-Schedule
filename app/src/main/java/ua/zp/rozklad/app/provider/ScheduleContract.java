@@ -72,7 +72,7 @@ public class ScheduleContract {
         String FREE_TRAJECTORY = "free_trajectory";
     }
 
-    public static final String CONTENT_AUTHORITY = "ua.zp.rozklad.app.provider";
+    public static final String CONTENT_AUTHORITY = "ua.zp.rozklad.app.provider.ScheduleProvider";
 
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
