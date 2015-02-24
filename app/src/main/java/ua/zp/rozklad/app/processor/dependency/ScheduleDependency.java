@@ -3,6 +3,8 @@ package ua.zp.rozklad.app.processor.dependency;
 import java.util.HashSet;
 import java.util.Set;
 
+import ua.zp.rozklad.app.rest.resource.ScheduleItem;
+
 /**
  * @author Vojko Vladimir
  */
@@ -70,9 +72,10 @@ public class ScheduleDependency {
 
     @Override
     public String toString() {
-        return "Subjects: " + subjects.size() + "\n" +
-                "AcademicHours: " + academicHours.size() + "\n" +
-                "Lecturers: " + lecturers.size() + "\n" +
-                "Audiences: " + audiences.size() + "\n";
+        return "ScheduleDependency:\n" +
+                "[Subjects: " + subjects.size() + ",\n" +
+                "AcademicHours: " + academicHours.size() + ",\n" +
+                "Lecturers: " + lecturers.size() + ",\n" +
+                "Audiences: " + audiences.size() + "]\n";
     }
 }

@@ -1,6 +1,5 @@
 package ua.zp.rozklad.app.processor;
 
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -11,38 +10,36 @@ import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.rest.resource.Campus;
 
 import static ua.zp.rozklad.app.provider.ScheduleContract.Campus.buildCampusUri;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
 
 /**
  * @author Vojko Vladimir
  */
-public class CampusesProcessor extends Processor<Campus, Void> {
+public class CampusesProcessor extends Processor<Campus> {
 
     public CampusesProcessor(Context context) {
         super(context);
     }
 
     @Override
-    public Void process(ArrayList<Campus> campuses) {
-        ContentResolver resolver = context.getContentResolver();
+    public void process(ArrayList<Campus> campuses) {
         Cursor cursor;
 
         for (Campus campus : campuses) {
-            cursor = resolver.query(buildCampusUri(campus.getId()),
+            cursor = mContentResolver.query(buildCampusUri(campus.getId()),
                     new String[]{ScheduleContract.Campus.UPDATED}, null, null, null);
 
             if (cursor.moveToFirst()) {
                 if (cursor.getLong(0) != campus.getLastUpdate()) {
-                    resolver.update(buildCampusUri(campus.getId()), buildValuesForUpdate(campus),
+                    mContentResolver.update(buildCampusUri(campus.getId()), buildValuesForUpdate(campus),
                             null, null);
                 }
             } else {
-                resolver.insert(ScheduleContract.Campus.CONTENT_URI, buildValuesForInsert(campus));
+                mContentResolver.insert(ScheduleContract.Campus.CONTENT_URI, buildValuesForInsert(campus));
             }
 
             cursor.close();
         }
-
-        return null;
     }
 
     @Override
@@ -64,5 +61,13 @@ public class CampusesProcessor extends Processor<Campus, Void> {
         values.put(ScheduleContract.Campus.LONGITUDE, campus.getLongitude());
 
         return values;
+    }
+
+    public void clean() {
+        mContentResolver.delete(ScheduleContract.Campus.CONTENT_URI,
+                combineSelection(ScheduleContract.Campus._ID + " NOT IN " +
+                        ScheduleContract.Audience.SELECT_DEPENDENT_CAMPUSES),
+                null
+        );
     }
 }

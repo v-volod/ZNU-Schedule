@@ -3,6 +3,8 @@ package ua.zp.rozklad.app.processor.dependency;
 import java.util.HashSet;
 import java.util.Set;
 
+import ua.zp.rozklad.app.rest.resource.Audience;
+
 /**
  * @author Vojko Vladimir
  */
@@ -24,5 +26,9 @@ public class AudienceDependency {
 
     public void addCampus(String campus) {
         campuses.add(campus);
+    }
+
+    public void addAudience(Audience audience) {
+        addCampus(String.valueOf(audience.getCampusId()));
     }
 }

@@ -4,12 +4,13 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SyncResult;
+import android.database.Cursor;
 import android.os.Bundle;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.account.GroupAuthenticator;
@@ -21,6 +22,7 @@ import ua.zp.rozklad.app.processor.LecturersProcessor;
 import ua.zp.rozklad.app.processor.ScheduleProcessor;
 import ua.zp.rozklad.app.processor.SubjectsProcessor;
 import ua.zp.rozklad.app.processor.dependency.AudienceDependency;
+import ua.zp.rozklad.app.processor.dependency.LecturerDependency;
 import ua.zp.rozklad.app.processor.dependency.ScheduleDependency;
 import ua.zp.rozklad.app.rest.GetAcademicHoursMethod;
 import ua.zp.rozklad.app.rest.GetAudiencesMethod;
@@ -44,23 +46,26 @@ import ua.zp.rozklad.app.rest.resource.Subject;
 import ua.zp.rozklad.app.util.CalendarUtils;
 import ua.zp.rozklad.app.util.PreferencesUtils;
 
+import static ua.zp.rozklad.app.provider.ScheduleContract.Schedule;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineArgs;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineProjection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.groupBySelection;
+
 /**
  * @author Vojko Vladimir
  */
 public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
 
-    private ContentResolver resolver;
+    private ScheduleProcessor scheduleProcessor;
+    private LecturersProcessor lecturersProcessor;
+    private SubjectsProcessor subjectsProcessor;
+    private AudiencesProcessor audiencesProcessor;
+    private CampusesProcessor campusesProcessor;
+    private AcademicHoursProcessor academicHoursProcessor;
 
     public ScheduleSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
-
-        resolver = context.getContentResolver();
-    }
-
-    public ScheduleSyncAdapter(Context context, boolean autoInitialize, boolean allowParallelSyncs) {
-        super(context, autoInitialize, allowParallelSyncs);
-
-        resolver = context.getContentResolver();
     }
 
     @Override
@@ -74,44 +79,89 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         currentWeekMethod.prepare(RESTMethod.Filter.NONE);
 
         MethodResponse<CurrentWeek> currentWeekMethodResponse = currentWeekMethod.executeBlocking();
-        if (!canProcess(currentWeekMethodResponse, syncResult) &&
-                !mPrefUtils.getPeriodicity().isValid()) {
-            return;
-        } else {
+        if (canProcess(currentWeekMethodResponse, syncResult)) {
             CurrentWeek currentWeek = currentWeekMethodResponse.getResponse();
             mPrefUtils.savePeriodicity(currentWeek.getWeek(), CalendarUtils.getCurrentWeekOfYear());
+        } else if (!mPrefUtils.getPeriodicity().isValid()) {
+            return;
         }
 
-        GetGroupsMethod method = new GetGroupsMethod();
-        method.prepare(RESTMethod.Filter.BY_ID, groupId);
+        GroupsProcessor groupsProcessor = new GroupsProcessor(getContext());
+        scheduleProcessor = new ScheduleProcessor(getContext());
+        lecturersProcessor = new LecturersProcessor(getContext());
+        subjectsProcessor = new SubjectsProcessor(getContext());
+        audiencesProcessor = new AudiencesProcessor(getContext());
+        campusesProcessor = new CampusesProcessor(getContext());
+        academicHoursProcessor = new AcademicHoursProcessor(getContext());
 
-        MethodResponse<ArrayList<Group>> response = method.executeBlocking();
+        groupsProcessor.clean();
 
-        if (canProcess(response, syncResult)) {
-            ArrayList<Group> groups = response.getResponse();
+        GetGroupsMethod getGroups = new GetGroupsMethod();
+        getGroups.prepare(RESTMethod.Filter.BY_ID, groupId);
 
-            GroupsProcessor processor = new GroupsProcessor(getContext());
-            processor.process(groups);
+        MethodResponse<ArrayList<Group>> groupsResponse = getGroups.executeBlocking();
 
-            for (Group group : groups) {
-                performGroupSync(syncResult, group);
-                /*
-                * Download Schedule of all dependent lecturers of all groups
-                * */
-                GetScheduleMethod getLecturersSchedule = new GetScheduleMethod();
-                getLecturersSchedule.prepare(RESTMethod.Filter.LECTURERS_SCHEDULE_BY_GROUP, String.valueOf(group.getId()));
+        if (canProcess(groupsResponse, syncResult) && groupsResponse.getResponse().size() == 1) {
+            Group group = groupsResponse.getResponse().get(0);
+            App.LOG_I("Sync group " + group);
 
-                MethodResponse<ArrayList<GlobalScheduleItem>> scheduleItemsResponse =
-                        getLecturersSchedule.executeBlocking();
+            ArrayList<Group> groups = groupsProcessor
+                    .resolveDependencies(groupsResponse.getResponse());
 
-                if (canProcess(scheduleItemsResponse, syncResult)) {
-                    processScheduleData(syncResult, scheduleItemsResponse.getResponse());
+            if (groups.size() == 1) {
+                if (performGroupScheduleSync(syncResult, groups.get(0))) {
+                    groupsProcessor.process(groupsResponse.getResponse());
+                    App.LOG_I("Sync group successful");
+                } else {
+                    App.LOG_I("Sync group unsuccessful");
                 }
+            } else {
+                App.LOG_I("Sync group not needed");
+
+                Cursor cursor = getContext().getContentResolver()
+                        .query(Schedule.CONTENT_URI,
+                                combineProjection(Schedule.LECTURER_ID),
+                                combineSelection(Schedule.GROUP_ID + "=?") +
+                                        groupBySelection(Schedule.LECTURER_ID),
+                                combineArgs(groupId),
+                                null);
+
+                if (cursor.moveToFirst()) {
+                    String[] lecturersIds = new String[cursor.getCount()];
+
+                    do {
+                        lecturersIds[cursor.getPosition()] = cursor.getString(0);
+                    } while (cursor.moveToNext());
+
+                    App.LOG_I("Sync lecturers: " + Arrays.toString(lecturersIds));
+
+                    GetLecturersMethod getLecturers = new GetLecturersMethod();
+                    getLecturers.prepare(RESTMethod.Filter.BY_ID_IN, lecturersIds);
+
+                    MethodResponse<ArrayList<Lecturer>> lecturersResponse =
+                            getLecturers.executeBlocking();
+
+                    if (canProcess(lecturersResponse, syncResult)) {
+                        if (performLecturersSync(syncResult, lecturersResponse.getResponse(), true)) {
+                            App.LOG_I("Sync lecturers successful");
+                        }
+                    } else {
+                        App.LOG_I("Sync lecturers unsuccessful");
+                    }
+                }
+
+                cursor.close();
             }
         }
+
+        lecturersProcessor.clean();
+        subjectsProcessor.clean();
+        audiencesProcessor.clean();
+        campusesProcessor.clean();
+        academicHoursProcessor.clean();
     }
 
-    private void performGroupSync(SyncResult syncResult, Group group) {
+    private boolean performGroupScheduleSync(SyncResult syncResult, Group group) {
         GetScheduleMethod method = new GetScheduleMethod();
         method.prepare(RESTMethod.Filter.BY_GROUP_ID, String.valueOf(group.getId()));
 
@@ -119,111 +169,192 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
                 method.executeBlocking();
 
         if (canProcess(scheduleItemsResponse, syncResult)) {
-            processScheduleData(syncResult, scheduleItemsResponse.getResponse());
+            ArrayList<ScheduleItem> scheduleItems = new ArrayList<>();
+
+            for (GlobalScheduleItem item : scheduleItemsResponse.getResponse()) {
+                scheduleItems.addAll(item.getScheduleItems());
+            }
+
+            return performScheduleSync(syncResult, scheduleItems, true);
         }
+
+        return false;
     }
 
-    private void processScheduleData(SyncResult syncResult, ArrayList<GlobalScheduleItem> response) {
-        ArrayList<ScheduleItem> scheduleItems = new ArrayList<>();
+    private boolean performScheduleSync(SyncResult syncResult, ArrayList<ScheduleItem> scheduleItems,
+                                        boolean syncLecturerSchedule) {
+        boolean audiencesSynced = true;
+        boolean subjectsSynced = true;
+        boolean academicHoursSynced = true;
+        boolean lecturersSynced = true;
 
-        for (GlobalScheduleItem item : response) {
-            scheduleItems.addAll(item.getScheduleItems());
+        if (syncLecturerSchedule) {
+            scheduleProcessor.cleanGroupSchedule(scheduleItems);
+        } else {
+            scheduleProcessor.cleanLecturerSchedule(scheduleItems);
         }
 
-        ScheduleProcessor processor = new ScheduleProcessor(getContext());
-        ScheduleDependency dependency = processor.process(scheduleItems);
+        ScheduleDependency dependency = scheduleProcessor.resolveDependencies(scheduleItems);
+
+        App.LOG_I(dependency.toString());
+
+        if (dependency.hasAudiences()) {
+            audiencesSynced = performAudiencesSync(syncResult, dependency.getAudiences());
+        }
 
         if (dependency.hasSubjects()) {
-            performSubjectsSync(syncResult, dependency.getSubjects());
+            subjectsSynced = performSubjectsSync(syncResult, dependency.getSubjects());
         }
 
         if (dependency.hasAcademicHours()) {
-            performAcademicHoursSync(syncResult, dependency.getAcademicHours());
+            academicHoursSynced =
+                    performAcademicHoursSync(syncResult, dependency.getAcademicHours());
         }
 
         if (dependency.hasLecturers()) {
-            performLecturersSync(syncResult, dependency.getLecturers());
+            lecturersSynced = performLecturersSync(syncResult, dependency.getLecturers(),
+                    syncLecturerSchedule);
         }
 
-        if (dependency.hasAudiences()) {
-            performAudiencesSync(syncResult, dependency.getAudiences());
+        if (audiencesSynced && subjectsSynced && academicHoursSynced && lecturersSynced) {
+            scheduleProcessor.process(scheduleItems);
+            return true;
         }
+
+        return false;
     }
 
-    private void performSubjectsSync(SyncResult syncResult, String[] subjectsIds) {
-        GetSubjectsMethod method = new GetSubjectsMethod();
-        method.prepare(RESTMethod.Filter.BY_ID_IN, subjectsIds);
-
-        MethodResponse<ArrayList<Subject>> response = method.executeBlocking();
-
-        if (canProcess(response, syncResult)) {
-            SubjectsProcessor processor = new SubjectsProcessor(getContext());
-
-            processor.process(response.getResponse());
-        }
-    }
-
-    private void performAcademicHoursSync(SyncResult syncResult, String[] academicHoursIds) {
-        GetAcademicHoursMethod method = new GetAcademicHoursMethod();
-        method.prepare(RESTMethod.Filter.BY_ID_IN, academicHoursIds);
-
-        MethodResponse<ArrayList<AcademicHour>> response = method.executeBlocking();
-
-        if (canProcess(response, syncResult)) {
-            AcademicHoursProcessor processor = new AcademicHoursProcessor(getContext());
-
-            processor.process(response.getResponse());
-        }
-    }
-
-    private void performLecturersSync(SyncResult syncResult, String[] lecturersIds) {
-        GetLecturersMethod method = new GetLecturersMethod();
-        method.prepare(RESTMethod.Filter.BY_ID_IN, lecturersIds);
-
-        MethodResponse<ArrayList<Lecturer>> response = method.executeBlocking();
-
-        if (canProcess(response, syncResult)) {
-            LecturersProcessor processor = new LecturersProcessor(getContext());
-
-            processor.process(response.getResponse());
-        }
-    }
-
-    private void performAudiencesSync(SyncResult syncResult, String[] audiencesIds) {
+    private boolean performAudiencesSync(SyncResult syncResult, String[] audiencesIds) {
         GetAudiencesMethod method = new GetAudiencesMethod();
         method.prepare(RESTMethod.Filter.BY_ID_IN, audiencesIds);
 
         MethodResponse<ArrayList<Audience>> response = method.executeBlocking();
 
         if (canProcess(response, syncResult)) {
-            AudiencesProcessor processor = new AudiencesProcessor(getContext());
+            boolean successful = true;
 
-            AudienceDependency dependency = processor.process(response.getResponse());
+            AudienceDependency dependency = audiencesProcessor.resolveDependencies(response.getResponse());
+
+            App.LOG_I(dependency.toString());
 
             if (dependency.hasCampuses()) {
-                performCampusesSync(syncResult, dependency.getCampuses());
+                successful = performCampusesSync(syncResult, dependency.getCampuses());
+            }
+
+            if (successful) {
+                audiencesProcessor.process(response.getResponse());
+                return true;
             }
         }
+
+        return false;
     }
 
-    private void performCampusesSync(SyncResult syncResult, String[] campusesIds) {
+    private boolean performCampusesSync(SyncResult syncResult, String[] campusesIds) {
         GetCampusesMethod method = new GetCampusesMethod();
         method.prepare(RESTMethod.Filter.BY_ID_IN, campusesIds);
 
         MethodResponse<ArrayList<Campus>> response = method.executeBlocking();
 
         if (canProcess(response, syncResult)) {
-            CampusesProcessor processor = new CampusesProcessor(getContext());
-
-            processor.process(response.getResponse());
+            campusesProcessor.process(response.getResponse());
+            return true;
         }
+
+        return false;
+    }
+
+    private boolean performSubjectsSync(SyncResult syncResult, String[] subjectsIds) {
+        GetSubjectsMethod method = new GetSubjectsMethod();
+        method.prepare(RESTMethod.Filter.BY_ID_IN, subjectsIds);
+
+        MethodResponse<ArrayList<Subject>> response = method.executeBlocking();
+
+        if (canProcess(response, syncResult)) {
+            subjectsProcessor.process(response.getResponse());
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean performAcademicHoursSync(SyncResult syncResult, String[] academicHoursIds) {
+        GetAcademicHoursMethod method = new GetAcademicHoursMethod();
+        method.prepare(RESTMethod.Filter.BY_ID_IN, academicHoursIds);
+
+        MethodResponse<ArrayList<AcademicHour>> response = method.executeBlocking();
+
+        if (canProcess(response, syncResult)) {
+            academicHoursProcessor.process(response.getResponse());
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean performLecturersSync(SyncResult syncResult, String[] lecturersIds,
+                                         boolean syncSchedule) {
+        GetLecturersMethod method = new GetLecturersMethod();
+        method.prepare(RESTMethod.Filter.BY_ID_IN, lecturersIds);
+
+        MethodResponse<ArrayList<Lecturer>> response = method.executeBlocking();
+
+        if (canProcess(response, syncResult)) {
+            return performLecturersSync(syncResult, response.getResponse(), syncSchedule);
+        }
+
+        return false;
+    }
+
+    private boolean performLecturersSync(SyncResult syncResult, ArrayList<Lecturer> lecturers,
+                                         boolean syncSchedule) {
+        boolean successful = true;
+
+        if (syncSchedule) {
+            LecturerDependency dependency =
+                    lecturersProcessor.resolveDependencies(lecturers);
+
+            if (dependency.hasLecturers()) {
+                for (String id : dependency.getLecturers()) {
+                    successful &= performLecturerScheduleSync(syncResult, id);
+                }
+            }
+        }
+
+        if (successful) {
+            lecturersProcessor.process(lecturers);
+        }
+
+        return successful;
+    }
+
+    private boolean performLecturerScheduleSync(SyncResult syncResult, String lecturerId) {
+        GetScheduleMethod method = new GetScheduleMethod();
+        method.prepare(RESTMethod.Filter.BY_LECTURER_ID, lecturerId);
+
+        MethodResponse<ArrayList<GlobalScheduleItem>> scheduleItemsResponse =
+                method.executeBlocking();
+
+        if (canProcess(scheduleItemsResponse, syncResult)) {
+            ArrayList<ScheduleItem> scheduleItems = new ArrayList<>();
+
+            for (GlobalScheduleItem item : scheduleItemsResponse.getResponse()) {
+                scheduleItems.addAll(item.getScheduleItems());
+            }
+
+            return performScheduleSync(syncResult, scheduleItems, false);
+        }
+
+        return false;
     }
 
     private boolean canProcess(MethodResponse methodResponse, SyncResult syncResult) {
         if (methodResponse.getResponseCode() == RESTMethod.ResponseCode.OK) {
             return true;
         }
+
         syncResult.stats.numIoExceptions++;
+
         return false;
     }
 }

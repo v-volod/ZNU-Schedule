@@ -1,15 +1,5 @@
 package ua.zp.rozklad.app.rest.resource;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-
-import ua.zp.rozklad.app.rest.RESTMethod;
-
-import static java.lang.Integer.parseInt;
-
 /**
  * @author Vojko Vladimir
  */
@@ -105,5 +95,10 @@ public class ScheduleItem extends Resource {
 
     public long getLastUpdate() {
         return lastUpdate;
+    }
+
+    @Override
+    public String toString() {
+        return "id: " + id + ", groupId: " + groupId + ", lecturerId: " + lecturerId + ", last_update: " + lastUpdate;
     }
 }

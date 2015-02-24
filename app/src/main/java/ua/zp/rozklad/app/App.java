@@ -15,7 +15,7 @@ import ua.zp.rozklad.app.util.PreferencesUtils;
  */
 public class App extends Application {
 
-    public static final String TAG = App.class.getSimpleName();
+    public static final String TAG = "ua.zp.rozklad.app.App";
 
     private static App mInstance;
 
