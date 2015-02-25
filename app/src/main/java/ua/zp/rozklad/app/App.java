@@ -15,7 +15,9 @@ import ua.zp.rozklad.app.util.PreferencesUtils;
  * @author Vojko Vladimir
  */
 public class App extends Application {
-    private static final String METRICA_API_KEY = "34026";
+    private static final String METRICA_API_KEY = "34091";
+    private static final int METRICA_SESSION_TIMEOUT = 60;
+
     public static final String TAG = "ua.zp.rozklad.app.App";
 
     private static App mInstance;
@@ -27,7 +29,10 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         mInstance = this;
-        YandexMetrica.initialize(this, METRICA_API_KEY);
+        if (!BuildConfig.DEBUG) {
+            YandexMetrica.initialize(this, METRICA_API_KEY);
+            YandexMetrica.setSessionTimeout(METRICA_SESSION_TIMEOUT);
+        }
     }
 
     public static synchronized App getInstance() {

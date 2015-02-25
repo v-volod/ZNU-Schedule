@@ -25,7 +25,7 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Column;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.buildScheduleItemUri;
 
-public class ScheduleItemActivity extends ActionBarActivity implements View.OnClickListener {
+public class ScheduleItemActivity extends BaseActivity implements View.OnClickListener {
 
     public static final String ARG_SCHEDULE_ITEM_ID = "SCHEDULE_ITEM_ID";
 

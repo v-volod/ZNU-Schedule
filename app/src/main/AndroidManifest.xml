@@ -25,11 +25,9 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
-
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/maps_api_key" />
@@ -44,17 +42,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ui.LoginActivity"
             android:label="@string/title_activity_login"
             android:screenOrientation="portrait"
             android:theme="@style/LoginScreen" />
-
         <activity
             android:name=".ui.ScheduleItemActivity"
             android:theme="@style/AppTheme.Purple" />
-
         <activity
             android:name=".ui.LecturerScheduleActivity"
             android:theme="@style/NoDrawerTheme" />
@@ -77,7 +72,6 @@
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
-
         <service
             android:name=".sync.ScheduleSyncService"
             android:exported="false">
@@ -96,10 +90,11 @@
             android:enabled="true"
             android:exported="true"
             android:process=":Metrica">
-
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <action android:name="com.yandex.metrica.IMetricaService" />
+
                 <data android:scheme="metrica" />
             </intent-filter>
 
@@ -112,19 +107,17 @@
             android:name="com.yandex.metrica.MetricaEventHandler"
             android:enabled="true"
             android:exported="true">
-
             <intent-filter>
-                <action android:name="com.yandex.metrica.intent.action.SYNC"/>
+                <action android:name="com.yandex.metrica.intent.action.SYNC" />
             </intent-filter>
-
             <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_ADDED"/>
-                <action android:name="android.intent.action.PACKAGE_DATA_CLEARED"/>
-                <data android:scheme="package"/>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_DATA_CLEARED" />
+
+                <data android:scheme="package" />
             </intent-filter>
-
             <intent-filter>
-                <action android:name="com.android.vending.INSTALL_REFERRER"/>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
             </intent-filter>
         </receiver>
 
@@ -132,8 +125,7 @@
             android:name="ua.zp.rozklad.app.provider.MetricaContentProvider"
             android:authorities="ua.zp.rozklad.app.MetricaContentProvider"
             android:enabled="true"
-            android:exported="true"/>
-
+            android:exported="true" />
     </application>
 
 </manifest>

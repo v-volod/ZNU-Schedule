@@ -23,6 +23,7 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 import java.util.ArrayList;
 
 import ua.zp.rozklad.app.App;
+import ua.zp.rozklad.app.BuildConfig;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAuthenticator;
 import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
@@ -33,6 +34,7 @@ import ua.zp.rozklad.app.rest.RESTMethod;
 import ua.zp.rozklad.app.rest.ResponseCallback;
 import ua.zp.rozklad.app.rest.resource.Department;
 import ua.zp.rozklad.app.rest.resource.Group;
+import ua.zp.rozklad.app.util.MetricaUtils;
 
 public class LoginActivity extends AccountAuthenticatorActivity
         implements View.OnClickListener {
@@ -130,6 +132,9 @@ public class LoginActivity extends AccountAuthenticatorActivity
         boolean isAdded = accountManager.addAccountExplicitly(account, null, userData);
 
         if (isAdded) {
+            if (!BuildConfig.DEBUG)
+                MetricaUtils.reportGroupAdd(department, group, subgroup);
+
             final Intent intent = new Intent();
             intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name);
             intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, accountType);

@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
@@ -26,15 +25,17 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.util.ArrayList;
 
+import ua.zp.rozklad.app.BuildConfig;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAccount;
 import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
+import ua.zp.rozklad.app.util.MetricaUtils;
 import ua.zp.rozklad.app.util.UiUtils;
 
 import static java.lang.String.format;
 
 
-public class MainActivity extends ActionBarActivity
+public class MainActivity extends BaseActivity
         implements ScheduleFragment.OnScheduleItemClickListener,
         ScheduleOfWeekFragment.OnPeriodicityChangeListener,
         SubjectsFragment.OnSubjectClickListener,
@@ -231,6 +232,8 @@ public class MainActivity extends ActionBarActivity
         drawerLayout.closeDrawer(Gravity.START);
         AccountManager mAccountManager = AccountManager.get(this);
         if (account != null) {
+            if (!BuildConfig.DEBUG)
+                MetricaUtils.reportGroupChange(account);
             mAccountManager.removeAccount(account.getBaseAccount(), null, new Handler());
             requestLogin();
         }

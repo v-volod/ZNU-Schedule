@@ -13,7 +13,7 @@ import ua.zp.rozklad.app.provider.ScheduleContract.Lecturer;
 
 import static ua.zp.rozklad.app.provider.ScheduleContract.Lecturer.buildLecturerUri;
 
-public class LecturerScheduleActivity extends ActionBarActivity
+public class LecturerScheduleActivity extends BaseActivity
         implements ScheduleOfWeekFragment.OnPeriodicityChangeListener,
         ScheduleFragment.OnScheduleItemClickListener {
 
