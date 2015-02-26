@@ -105,6 +105,7 @@
 
     <!-- Settings -->
     <string name="general_settings">Налаштування</string>
+    <string name="general_settings_summary">Управління налаштуваннями додатку</string>
     <string name="sync_settings_summary">Налаштування синхронізації розкладу</string>
     <string name="sync">Синхронізація</string>
     <string name="sync_auto">Автоматичне синхронування</string>
@@ -112,11 +113,15 @@
     <string name="auto_sync_summary">Синхронізація через певний інтервал часу</string>
     <string name="auto_sync">Автоматична синхронізація</string>
     <string name="auto_sync_interval">Інтервал синхронізації</string>
+    <string name="clear_cache_question">Видалити кеш?</string>
+    <string name="positive_answer">так</string>
+    <string name="clear_cache">Видалити кеш</string>
+    <string name="clear_cache_summary">Вилучає весь кеш додатку</string>
+
 
     <string name="auto_sync_interval_default">72</string>
 
     <string-array name="auto_sync_intervals">
-        <item>Вимкнути</item>
         <item>Кожен день</item>
         <item>Кожні 3 дні</item>
         <item>Раз на тиждень</item>
@@ -124,7 +129,6 @@
     </string-array>
 
     <string-array name="auto_sync_interval_values">
-        <item>0</item>
         <item>24</item>
         <item>@string/auto_sync_interval_default</item>
         <item>168</item>

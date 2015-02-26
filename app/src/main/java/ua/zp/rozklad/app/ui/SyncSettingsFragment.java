@@ -74,7 +74,6 @@ public class SyncSettingsFragment extends PreferenceFragment implements
             final ListPreference interval = (ListPreference) getPreferenceManager()
                     .findPreference(key);
             interval.setSummary(interval.getEntry());
-            // TODO: Translate string
             ContentResolver.addPeriodicSync(
                account, "ua.zp.rozklad.app",
                Bundle.EMPTY, Long.parseLong(interval.getValue()) * DAY_SECONDS

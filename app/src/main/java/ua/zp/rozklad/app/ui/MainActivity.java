@@ -6,7 +6,6 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -29,7 +28,6 @@ import java.util.ArrayList;
 
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAccount;
-import ua.zp.rozklad.app.account.GroupAuthenticator;
 import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
 import ua.zp.rozklad.app.util.UiUtils;
 
@@ -523,7 +521,7 @@ public class MainActivity extends ActionBarActivity
     }
 
     public void onSettingsSelected() {
-        Intent intent = new Intent(this, SyncSettingsActivity.class);
+        Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
     }
 

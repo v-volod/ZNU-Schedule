@@ -60,7 +60,7 @@
             android:theme="@style/NoDrawerTheme" />
 
         <activity
-            android:name=".ui.SyncSettingsActivity"
+            android:name=".ui.SettingsActivity"
             android:configChanges="orientation|keyboard|keyboardHidden|screenSize|screenLayout|uiMode"
             android:label="@string/nav_drawer_item_settings"
             android:screenOrientation="portrait" />

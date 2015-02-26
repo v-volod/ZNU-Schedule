@@ -7,11 +7,11 @@
 
     <PreferenceScreen
         android:key="ua.zp.rozklad.app.KEY_ACCOUNT_SYNC"
-        android:summary="@string/sync_settings_summary"
-        android:title="@string/sync">
+        android:summary="@string/general_settings_summary"
+        android:title="@string/general_settings">
         <intent
             android:action="ua.zp.rozklad.app.ACTION_SYNC_SETTINGS"
-            android:targetClass="ua.zp.rozklad.app.ui.SyncSettingsActivity"
+            android:targetClass="ua.zp.rozklad.app.ui.SettingsActivity"
             android:targetPackage="ua.zp.rozklad.app"/>
     </PreferenceScreen>
 

@@ -11,7 +11,7 @@
             android:summary="@string/auto_sync_summary"
             android:title="@string/auto_sync" />
 
-        <ListPreference
+        <com.afollestad.materialdialogs.prefs.MaterialListPreference
             android:defaultValue="@string/auto_sync_interval_default"
             android:dependency="ua.zp.rozklad.app.KEY_AUTO_SYNC"
             android:entries="@array/auto_sync_intervals"
