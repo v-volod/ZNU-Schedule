@@ -53,6 +53,10 @@
         <activity
             android:name=".ui.LecturerScheduleActivity"
             android:theme="@style/NoDrawerTheme" />
+        <activity
+            android:name=".ui.AboutActivity"
+            android:theme="@style/NoDrawerTheme"
+            android:label="@string/about_app" />
 
         <provider
             android:name=".provider.ScheduleProvider"

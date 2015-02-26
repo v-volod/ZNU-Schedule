@@ -51,7 +51,7 @@ public class MainActivity extends BaseActivity
     private static final int NAV_DRAWER_ITEM_SUBJECTS = 1;
     private static final int NAV_DRAWER_ITEM_LECTURERS = 2;
     private static final int NAV_DRAWER_ITEM_SETTINGS = 3;
-    private static final int NAV_DRAWER_ITEM_INFO_RECALL = 4;
+    private static final int NAV_DRAWER_ITEM_ABOUT = 4;
     private static final int NAV_DRAWER_ITEM_SEPARATOR = -1;
 
     private static final int[] NAV_DRAWER_TITLE_RES_ID = {
@@ -59,7 +59,7 @@ public class MainActivity extends BaseActivity
             R.string.nav_drawer_item_subjects,
             R.string.nav_drawer_item_lecturers,
             R.string.nav_drawer_item_settings,
-            R.string.nav_drawer_item_about_recall
+            R.string.nav_drawer_item_about
     };
 
     private static final int[] NAV_DRAWER_ICON_RES_ID = {
@@ -324,7 +324,7 @@ public class MainActivity extends BaseActivity
         navDrawerItems.add(NAV_DRAWER_ITEM_LECTURERS);
         navDrawerItems.add(NAV_DRAWER_ITEM_SEPARATOR);
         navDrawerItems.add(NAV_DRAWER_ITEM_SETTINGS);
-        navDrawerItems.add(NAV_DRAWER_ITEM_INFO_RECALL);
+        navDrawerItems.add(NAV_DRAWER_ITEM_ABOUT);
         createNavDrawerItems();
 
         onNavDrawerItemClicked(selectedNavDrawerItemId);
@@ -426,10 +426,9 @@ public class MainActivity extends BaseActivity
                 * Start Settings Activity
                 * */
                 return;
-            case NAV_DRAWER_ITEM_INFO_RECALL:
-                /*
-                * Start Info Activity
-                * */
+            case NAV_DRAWER_ITEM_ABOUT:
+                Intent intent = new Intent(this, AboutActivity.class);
+                startActivity(intent);
                 return;
             case NAV_DRAWER_ITEM_SCHEDULE:
                 onScheduleSelected();

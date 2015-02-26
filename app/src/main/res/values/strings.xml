@@ -3,6 +3,7 @@
 
     <string name="app_name">@string/znu_schedule</string>
     <string name="znu_schedule">Розклад ЗНУ</string>
+    <string name="about_app">Про додаток</string>
     <string name="schedule">Розклад</string>
     <string name="action_today">Сьогодні</string>
     <string name="tag_line_text">Завжди актуальний розклад в твоїй кишені</string>
@@ -31,7 +32,7 @@
     <string name="nav_drawer_item_subjects">Предмети</string>
     <string name="nav_drawer_item_lecturers">Викладачі</string>
     <string name="nav_drawer_item_settings">Налаштування</string>
-    <string name="nav_drawer_item_about_recall">Довідка й відгук</string>
+    <string name="nav_drawer_item_about">@string/about_app</string>
     <string name="nav_drawer_open">Відкрити</string>
     <string name="nav_drawer_close">Закрити</string>
 
