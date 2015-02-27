@@ -80,11 +80,10 @@
 
         </ScrollView>
 
-        <View
+        <include
             android:id="@+id/app_bar_shadow"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/toolbar_elevation"
-            android:background="@drawable/toolbar_drop_shadow" />
+            layout="@layout/app_bar_shadow" />
+
     </FrameLayout>
 
 </LinearLayout>
