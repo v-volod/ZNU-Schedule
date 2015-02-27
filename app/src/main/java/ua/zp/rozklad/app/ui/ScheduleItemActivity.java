@@ -2,8 +2,8 @@ package ua.zp.rozklad.app.ui;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -40,6 +40,12 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
         setSupportActionBar(appBar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            findViewById(R.id.app_bar_shadow).setVisibility(View.GONE);
+            getSupportActionBar()
+                    .setElevation(getResources().getDimension(R.dimen.toolbar_elevation));
+        }
 
         Intent intent = getIntent();
 

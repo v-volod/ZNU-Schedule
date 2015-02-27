@@ -7,22 +7,29 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
-    <!--  TODO: style this element-->
-    <TextView
+    <FrameLayout
         android:id="@+id/no_schedule_prompt_text"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:text="@string/no_loaded_schedule"
-        android:textSize="@dimen/text_size_medium_material"
-        android:padding="@dimen/key_line_1" />
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/no_loaded_schedule"
+            android:textSize="@dimen/text_size_medium_material"
+            android:padding="@dimen/key_line_1" />
+
+        <include layout="@layout/app_bar_shadow" />
+
+    </FrameLayout>
 
     <RelativeLayout
         android:id="@+id/schedule_of_week_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
+        android:visibility="visible"
         android:background="@color/white">
 
         <ua.zp.rozklad.app.ui.tabs.SlidingTabLayout
@@ -33,11 +40,21 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent" />
 
-        <android.support.v4.view.ViewPager
-            android:id="@+id/pager"
+        <FrameLayout
+            android:id="@+id/app_bar_shadow"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/tabs" />
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tabs">
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/pager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <include layout="@layout/app_bar_shadow" />
+
+        </FrameLayout>
+
     </RelativeLayout>
 
     <com.melnykov.fab.FloatingActionButton

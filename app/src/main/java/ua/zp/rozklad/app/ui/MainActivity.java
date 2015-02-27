@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Fragment;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
@@ -432,12 +433,15 @@ public class MainActivity extends BaseActivity
                 return;
             case NAV_DRAWER_ITEM_SCHEDULE:
                 onScheduleSelected();
+                hideAppBarShadow();
                 break;
             case NAV_DRAWER_ITEM_SUBJECTS:
                 onSubjectsSelected();
+                showAppBarShadow();
                 break;
             case NAV_DRAWER_ITEM_LECTURERS:
                 onLecturersSelected();
+                showAppBarShadow();
                 break;
         }
         selectedNavDrawerItemId = itemId;
@@ -487,6 +491,7 @@ public class MainActivity extends BaseActivity
         } else {
             reloadSubjects();
         }
+        getFragmentManager().executePendingTransactions();
     }
 
     private void onLecturersSelected() {
@@ -500,6 +505,7 @@ public class MainActivity extends BaseActivity
         } else {
             reloadLecturers();
         }
+        getFragmentManager().executePendingTransactions();
     }
 
     private void reloadSchedule() {
@@ -549,6 +555,24 @@ public class MainActivity extends BaseActivity
     }
 
     private void replaceMainContent(Fragment fragment) {
-        getFragmentManager().beginTransaction().replace(R.id.main_content, fragment).commit();
+        getFragmentManager().beginTransaction().replace(R.id.main_content, fragment)
+                .commit();
+    }
+
+    private void showAppBarShadow() {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            findViewById(R.id.app_bar_shadow).setVisibility(View.GONE);
+            getSupportActionBar()
+                    .setElevation(getResources().getDimension(R.dimen.toolbar_elevation));
+        } else {
+            findViewById(R.id.app_bar_shadow).setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hideAppBarShadow() {
+        findViewById(R.id.app_bar_shadow).setVisibility(View.GONE);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            getSupportActionBar().setElevation(0);
+        }
     }
 }
