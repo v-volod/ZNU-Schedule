@@ -41,6 +41,7 @@ public class ScheduleOfWeekFragment extends Fragment
 
     private static final int CURRENT_APPROXIMATE_DAY = -1;
     private static final int CURRENT_CONVENIENT_DAY = -2;
+    private static final int NEXT_WEEK_EMPTY = -3;
 
     private static final String ARG_SCHEDULE_TYPE = "scheduleType";
     private static final String ARG_TYPE_FILTER_ID = "typeFilterId";
@@ -223,6 +224,7 @@ public class ScheduleOfWeekFragment extends Fragment
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         periodicity = App.getInstance().getPreferencesUtils().getPeriodicity();
+        App.LOG_I("loaded for " + selectedWeekPosition);
         if (data.getCount() > 0) {
             if (scheduleContainer.getVisibility() == View.GONE) {
                 scheduleContainer.setVisibility(View.VISIBLE);
@@ -237,7 +239,12 @@ public class ScheduleOfWeekFragment extends Fragment
                 /*
                 * Find position of the current day.
                 * */
-                int currentDayPosition = mAdapter.findCurrentDayPosition(data, true, true);
+                int currentDayPosition;
+                if (scheduleType == Type.BY_GROUP) {
+                    currentDayPosition = mAdapter.findCurrentDayPosition(data, true, true);
+                } else {
+                    currentDayPosition = mAdapter.findCurrentDayPosition(data, true, false);
+                }
 
                 if (currentDayPosition == DayPagerAdapter.DAY_POSITION_NON_THIS_WEEK) {
                     selectedDayPosition = 0;
@@ -246,17 +253,18 @@ public class ScheduleOfWeekFragment extends Fragment
                 }
 
                 selectedDayPosition = currentDayPosition;
+            } else if (selectedDayPosition == NEXT_WEEK_EMPTY) {
+                selectedDayPosition = mAdapter.findCurrentDayPosition(data, true, false);
             }
 
         } else {
+            selectedDayPosition = NEXT_WEEK_EMPTY;
             if (scheduleContainer.getVisibility() == View.VISIBLE) {
                 scheduleContainer.setVisibility(View.GONE);
             }
         }
 
-        mListener.onPeriodicityChanged(
-                periodicity.getPeriodicity(weeks[selectedWeekPosition])
-        );
+        onPeriodicityChanged(periodicity.getPeriodicity(weeks[selectedWeekPosition]));
         mAdapter.swapCursor(data);
         mTabs.setViewPager(mPager);
         mPager.setCurrentItem(selectedDayPosition, true);
@@ -274,6 +282,7 @@ public class ScheduleOfWeekFragment extends Fragment
     }
 
     public void toggleWeek() {
+        App.LOG_D(selectedWeekPosition + " -> " + abs(selectedWeekPosition - 1));
         selectedWeekPosition = abs(selectedWeekPosition - 1);
         getLoaderManager().restartLoader(scheduleType, null, this);
     }
@@ -329,9 +338,7 @@ public class ScheduleOfWeekFragment extends Fragment
     private View.OnClickListener togglePeriodicityListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            selectedWeekPosition = abs(selectedWeekPosition - 1);
-            getLoaderManager()
-                    .restartLoader(scheduleType, null, ScheduleOfWeekFragment.this);
+            toggleWeek();
         }
     };
 
@@ -354,9 +361,6 @@ public class ScheduleOfWeekFragment extends Fragment
                         .restartLoader(scheduleType, null, this);
             }
         }
-    }
-
-    public void reload(int lecturerId) {
     }
 
     /**
