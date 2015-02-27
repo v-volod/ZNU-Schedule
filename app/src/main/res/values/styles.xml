@@ -12,6 +12,10 @@
         <item name="md_positive_color">?attr/colorPrimary</item>
         <item name="md_neutral_color">?attr/colorPrimary</item>
         <item name="md_negative_color">?attr/colorPrimary</item>
+
+        <item name="toolbarTheme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+        <item name="toolbarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+        <item name="subHeaderTextColor">@color/sub_header_text_color</item>
     </style>
 
     <style name="AppTheme" parent="AppTheme.Base">
@@ -31,6 +35,23 @@
         <item name="colorPrimaryDark">@color/purple_700</item>
         <item name="colorAccent">@color/blue_500</item>
         <item name="colorAccentDark">@color/blue_700</item>
+    </style>
+
+    <!-- White Theme -->
+    <style name="AppTheme.White" parent="AppTheme.Base">
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryDark">@color/grey_400</item>
+        <item name="colorAccent">@color/teal_500</item>
+        <item name="colorAccentDark">@color/teal_700</item>
+
+        <!-- Material Dialog colors -->
+        <item name="md_positive_color">?attr/colorAccent</item>
+        <item name="md_neutral_color">?attr/colorAccent</item>
+        <item name="md_negative_color">?attr/colorAccent</item>
+
+        <item name="toolbarTheme">@style/ThemeOverlay.AppCompat.ActionBar</item>
+        <item name="toolbarPopupTheme">@style/ThemeOverlay.AppCompat.Dark</item>
+        <item name="subHeaderTextColor">?attr/colorAccent</item>
     </style>
 
     <!-- AppTextLogo -->

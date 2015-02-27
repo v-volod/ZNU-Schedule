@@ -9,4 +9,82 @@
         layout="@layout/app_bar"
         android:id="@+id/app_bar" />
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Social -->
+                <include
+                    android:id="@+id/social"
+                    layout="@layout/sub_header" />
+
+                <include
+                    android:id="@+id/join_vk"
+                    layout="@layout/single_line_item" />
+
+                <include layout="@layout/divider" />
+
+                <!-- We -->
+                <include
+                    android:id="@+id/we"
+                    layout="@layout/sub_header" />
+
+                <include
+                    android:id="@+id/vojko_volodymyr"
+                    layout="@layout/two_line_item_left_icon_large" />
+
+                <include
+                    android:id="@+id/ambroskin_maksym"
+                    layout="@layout/two_line_item_left_icon_large" />
+
+                <include
+                    android:id="@+id/klymenko_vadym"
+                    layout="@layout/two_line_item_left_icon_large" />
+
+                <include layout="@layout/divider" />
+
+                <!-- Additionally -->
+                <include
+                    android:id="@+id/additionally"
+                    layout="@layout/sub_header" />
+
+                <include
+                    android:id="@+id/schedule_site"
+                    layout="@layout/single_line_item" />
+
+                <include
+                    android:id="@+id/write_to_us"
+                    layout="@layout/single_line_item" />
+
+                <include
+                    android:id="@+id/rate"
+                    layout="@layout/single_line_item" />
+
+                <include layout="@layout/divider" />
+
+                <!-- Version -->
+                <include
+                    android:id="@+id/version"
+                    layout="@layout/single_line_item" />
+
+            </LinearLayout>
+
+        </ScrollView>
+
+        <View
+            android:id="@+id/app_bar_shadow"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/toolbar_elevation"
+            android:background="@drawable/toolbar_drop_shadow" />
+    </FrameLayout>
+
 </LinearLayout>

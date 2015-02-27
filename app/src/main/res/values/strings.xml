@@ -26,6 +26,36 @@
     <string name="not_specified">Не задано</string>
     <string name="retry">ПОВТОРИТИ</string>
 
+    <!-- About -->
+    <string name="social">Соціальні мережі</string>
+    <string name="join_us_vk">Приєднуйтесь в ВКонтакті</string>
+    <string name="vk_group_url">https://vk.com/</string>
+
+    <string name="we">Ми</string>
+    <string name="vojko_volodymyr">Войко Володимир</string>
+    <string name="vojko_volodymyr_vk_url">https://vk.com/id21269685</string>
+    <string name="vojko_volodymyr_email">vojkovladimir@gmail.com</string>
+
+    <string name="ambroskin_maksym">Амброскін Максим</string>
+    <string name="ambroskin_maksym_vk_url">https://vk.com/id95635253</string>
+
+    <string name="klymenko_vadym">Клименко Вадим</string>
+    <string name="klymenko_vadym_vk_url">https://vk.com/id9843512</string>
+
+    <string name="android_app_dev">Розробник мобільного додатку</string>
+    <string name="website_dev">Розробник веб сайту</string>
+
+    <string name="additionally">Додатково</string>
+    <string name="site_with_schedule">Сайт з розкладом</string>
+    <string name="write_to_us">Написати нам</string>
+    <string name="rate">Оцінити додаток</string>
+    <string name="app_version">Версія додатку</string>
+
+    <string name="write_to_us_subject">@string/znu_schedule</string>
+    <string name="write_to_us_doted">Написати нам&#8230;</string>
+    <string name="no_email_clients">На вашому телефоні немає жодного Email клієнту</string>
+    <!-- About -->
+
     <!-- NavigationDrawer List Items -->
     <string name="nav_drawer_group_qualifier">Група</string>
     <string name="nav_drawer_item_schedule">Розклад</string>
