@@ -39,7 +39,6 @@ import static java.lang.String.format;
 public class MainActivity extends BaseActivity
         implements ScheduleFragment.OnScheduleItemClickListener,
         ScheduleOfWeekFragment.OnPeriodicityChangeListener,
-        SubjectsFragment.OnSubjectClickListener,
         LecturersFragment.OnLecturerClickListener {
 
     private static final int REQUEST_LOGIN = 100;
@@ -535,11 +534,6 @@ public class MainActivity extends BaseActivity
         Intent intent = new Intent(this, ScheduleItemActivity.class);
         intent.putExtra(ScheduleItemActivity.ARG_SCHEDULE_ITEM_ID, scheduleItemId);
         startActivity(intent);
-    }
-
-    @Override
-    public void onSubjectClicked(long subjectId) {
-
     }
 
     @Override
