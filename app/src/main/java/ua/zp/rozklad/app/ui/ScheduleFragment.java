@@ -384,7 +384,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
             switch (viewType) {
                 case TYPE_SECTION: {
                     View view = LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.list_sub_header, parent, false);
+                            .inflate(R.layout.sub_header_with_divider, parent, false);
                     return new SectionViewHolder(view);
                 }
                 case TYPE_ITEM: {

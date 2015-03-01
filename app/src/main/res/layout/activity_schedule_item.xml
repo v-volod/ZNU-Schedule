@@ -12,8 +12,8 @@
         android:layout_height="wrap_content"
         android:minHeight="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
-        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+        app:theme="?attr/toolbarTheme"
+        app:popupTheme="?attr/toolbarPopupTheme">
 
         <TextView
             android:id="@+id/title"
@@ -28,39 +28,48 @@
             android:textColor="@color/white" />
     </android.support.v7.widget.Toolbar>
 
-    <ScrollView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-            <include
-                android:id="@+id/lecturer"
-                layout="@layout/two_line_item_left_icon" />
-
-            <include
-                android:id="@+id/class_type"
-                layout="@layout/two_line_item_left_icon" />
-
-            <include
-                android:id="@+id/location"
-                layout="@layout/two_line_item_left_icon" />
-
-            <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/map"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:name="com.google.android.gms.maps.MapFragment" />
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-            <include
-                android:id="@+id/time"
-                layout="@layout/two_line_item_left_icon" />
-        </LinearLayout>
+                <include
+                    android:id="@+id/lecturer"
+                    layout="@layout/two_line_item_left_icon" />
 
-    </ScrollView>
+                <include
+                    android:id="@+id/class_type"
+                    layout="@layout/two_line_item_left_icon" />
+
+                <include
+                    android:id="@+id/location"
+                    layout="@layout/two_line_item_left_icon" />
+
+                <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/map"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:name="com.google.android.gms.maps.MapFragment" />
+
+                <include
+                    android:id="@+id/time"
+                    layout="@layout/two_line_item_left_icon" />
+            </LinearLayout>
+
+        </ScrollView>
+
+        <include
+            android:id="@+id/app_bar_shadow"
+            layout="@layout/app_bar_shadow" />
+    </FrameLayout>
 
 </LinearLayout>
 

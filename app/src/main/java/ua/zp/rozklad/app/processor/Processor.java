@@ -1,5 +1,6 @@
 package ua.zp.rozklad.app.processor;
 
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 
@@ -8,15 +9,17 @@ import java.util.ArrayList;
 /**
  * @author Vojko Vladimir
  */
-public abstract class Processor<T, D> {
+public abstract class Processor<T> {
 
-    protected Context context;
+    protected Context mContext;
+    protected ContentResolver mContentResolver;
 
     public Processor(Context context) {
-        this.context = context;
+        mContext = context;
+        mContentResolver = context.getContentResolver();
     }
 
-    public abstract D process(ArrayList<T> t);
+    public abstract void process(ArrayList<T> t);
 
     protected abstract ContentValues buildValuesForInsert(T t);
 

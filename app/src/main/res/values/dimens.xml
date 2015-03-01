@@ -111,4 +111,7 @@
     <!-- Tabs -->
     <dimen name="tabs_padding_left">44dp</dimen>
     <dimen name="tabs_padding_right">@dimen/key_line_1</dimen>
+
+    <!-- ToolBar -->
+    <dimen name="toolbar_elevation">3dp</dimen>
 </resources>

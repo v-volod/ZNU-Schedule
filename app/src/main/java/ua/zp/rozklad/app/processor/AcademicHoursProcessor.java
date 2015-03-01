@@ -1,6 +1,5 @@
 package ua.zp.rozklad.app.processor;
 
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -11,34 +10,32 @@ import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.rest.resource.AcademicHour;
 
 import static ua.zp.rozklad.app.provider.ScheduleContract.AcademicHour.buildAcademicHourUri;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
 
 /**
  * @author Vojko Vladimir
  */
-public class AcademicHoursProcessor extends Processor<AcademicHour, Void> {
+public class AcademicHoursProcessor extends Processor<AcademicHour> {
 
     public AcademicHoursProcessor(Context context) {
         super(context);
     }
 
     @Override
-    public Void process(ArrayList<AcademicHour> academicHours) {
-        ContentResolver resolver = context.getContentResolver();
+    public void process(ArrayList<AcademicHour> academicHours) {
         Cursor cursor;
 
         for (AcademicHour academicHour : academicHours) {
-            cursor = resolver.query(buildAcademicHourUri(academicHour.getId()),
+            cursor = mContentResolver.query(buildAcademicHourUri(academicHour.getId()),
                     new String[]{ScheduleContract.AcademicHour._ID}, null, null, null);
 
             if (!cursor.moveToFirst()) {
-                resolver.insert(ScheduleContract.AcademicHour.CONTENT_URI,
+                mContentResolver.insert(ScheduleContract.AcademicHour.CONTENT_URI,
                         buildValuesForInsert(academicHour));
             }
 
             cursor.close();
         }
-
-        return null;
     }
 
     @Override
@@ -59,5 +56,14 @@ public class AcademicHoursProcessor extends Processor<AcademicHour, Void> {
         values.put(ScheduleContract.AcademicHour.END_TIME, academicHour.getEndTime());
 
         return values;
+    }
+
+    public void clean() {
+        mContentResolver.delete(ScheduleContract.AcademicHour.CONTENT_URI,
+                combineSelection(ScheduleContract.AcademicHour._ID + " NOT IN " +
+                                ScheduleContract.FullSchedule.SELECT_DEPENDENT_ACADEMIC_HOURS
+                ),
+                null
+        );
     }
 }

@@ -12,13 +12,9 @@
         android:paddingRight="@dimen/key_line_1"
         android:gravity="center_vertical"
         android:textStyle="bold"
-        android:textColor="@color/sub_header_text_color"
+        android:textColor="?attr/subHeaderTextColor"
         android:textSize="@dimen/text_size_secondary"
         android:text="@string/lorem_sub_header" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_gravity="bottom"
-        android:background="@color/list_item_tint_selection" />
+    <include layout="@layout/divider" />
 </FrameLayout>

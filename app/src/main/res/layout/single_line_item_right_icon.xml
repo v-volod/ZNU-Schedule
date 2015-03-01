@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/single_line_item_tile_height"
+    android:clickable="true"
+    android:background="@drawable/list_item_background">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginLeft="@dimen/key_line_1"
+        android:layout_marginRight="@dimen/key_line_1"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:contentDescription="@string/icon_description_lorem" />
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/key_line_1"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@id/icon"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:text="@string/lorem_ipsum_short"
+        android:textColor="@color/primary_text_default_material_light"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        android:textSize="@dimen/text_size_primary" />
+</RelativeLayout>

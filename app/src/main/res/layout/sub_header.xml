@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/sub_header_tile_height"
+    android:clickable="false"
+    tools:context=".ui.AboutActivity">
+
+    <TextView
+        android:id="@+id/sub_header_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="@dimen/key_line_1"
+        android:paddingRight="@dimen/key_line_1"
+        android:gravity="center_vertical"
+        android:textStyle="bold"
+        android:textColor="?attr/subHeaderTextColor"
+        android:textSize="@dimen/text_size_secondary"
+        android:text="@string/lorem_sub_header" />
+</FrameLayout>

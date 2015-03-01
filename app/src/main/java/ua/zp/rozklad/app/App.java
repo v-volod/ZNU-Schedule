@@ -2,10 +2,12 @@ package ua.zp.rozklad.app;
 
 import android.app.Application;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.yandex.metrica.YandexMetrica;
 
 import ua.zp.rozklad.app.util.PreferencesUtils;
 
@@ -13,8 +15,10 @@ import ua.zp.rozklad.app.util.PreferencesUtils;
  * @author Vojko Vladimir
  */
 public class App extends Application {
+    private static final String METRICA_API_KEY = "34091";
+    private static final int METRICA_SESSION_TIMEOUT = 60;
 
-    public static final String TAG = App.class.getSimpleName();
+    public static final String TAG = "ua.zp.rozklad.app.App";
 
     private static App mInstance;
 
@@ -25,6 +29,10 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         mInstance = this;
+        if (!BuildConfig.DEBUG) {
+            YandexMetrica.initialize(this, METRICA_API_KEY);
+            YandexMetrica.setSessionTimeout(METRICA_SESSION_TIMEOUT);
+        }
     }
 
     public static synchronized App getInstance() {
@@ -58,7 +66,22 @@ public class App extends Application {
         if (mPreferencesUtils == null) {
             mPreferencesUtils = new PreferencesUtils(this);
         }
-
         return mPreferencesUtils;
+    }
+
+    public static void LOG_D(String message) {
+        Log.d(TAG, message);
+    }
+
+    public static void LOG_E(String message) {
+        Log.e(TAG, message);
+    }
+
+    public static void LOG_E(String message, Throwable throwable) {
+        Log.e(TAG, message, throwable);
+    }
+
+    public static void LOG_I(String message) {
+        Log.i(TAG, message);
     }
 }

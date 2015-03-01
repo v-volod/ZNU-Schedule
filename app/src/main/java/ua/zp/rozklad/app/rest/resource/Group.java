@@ -50,4 +50,8 @@ public class Group extends Resource {
         return lastUpdate;
     }
 
+    @Override
+    public String toString() {
+        return "Group[id: " + id +", name: " + name + ", lastUpdate: " + lastUpdate + "]";
+    }
 }

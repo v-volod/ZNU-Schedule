@@ -21,7 +21,7 @@
 
             <include
                 android:id="@+id/sync"
-                layout="@layout/list_sub_header" />
+                layout="@layout/sub_header" />
 
             <include
                 android:id="@+id/auto_sync"

@@ -358,7 +358,7 @@ public class ScheduleProvider extends ContentProvider {
                 break;
             case URI_CODE.SCHEDULE_ID:
                 table = Tables.SCHEDULE;
-                where = Schedule._ID + " = " + uri.getLastPathSegment();
+                where = Schedule.SCHEDULE_ID + " = " + uri.getLastPathSegment();
                 break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri);
@@ -437,7 +437,7 @@ public class ScheduleProvider extends ContentProvider {
                 break;
             case URI_CODE.SCHEDULE_ID:
                 queryBuilder.setTables(Tables.SCHEDULE);
-                queryBuilder.appendWhere(Schedule._ID + " = " + uri.getLastPathSegment());
+                queryBuilder.appendWhere(Schedule.SCHEDULE_ID + " = " + uri.getLastPathSegment());
                 break;
             case URI_CODE.FULL_SCHEDULE:
                 queryBuilder.setTables(FullSchedule.Summary.TABLES);

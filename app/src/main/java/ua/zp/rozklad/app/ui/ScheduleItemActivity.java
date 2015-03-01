@@ -2,8 +2,8 @@ package ua.zp.rozklad.app.ui;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -25,7 +25,7 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Column;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.buildScheduleItemUri;
 
-public class ScheduleItemActivity extends ActionBarActivity implements View.OnClickListener {
+public class ScheduleItemActivity extends BaseActivity implements View.OnClickListener {
 
     public static final String ARG_SCHEDULE_ITEM_ID = "SCHEDULE_ITEM_ID";
 
@@ -40,6 +40,12 @@ public class ScheduleItemActivity extends ActionBarActivity implements View.OnCl
         setSupportActionBar(appBar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            findViewById(R.id.app_bar_shadow).setVisibility(View.GONE);
+            getSupportActionBar()
+                    .setElevation(getResources().getDimension(R.dimen.toolbar_elevation));
+        }
 
         Intent intent = getIntent();
 

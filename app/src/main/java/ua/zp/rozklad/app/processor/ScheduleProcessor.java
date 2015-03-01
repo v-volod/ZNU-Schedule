@@ -1,66 +1,60 @@
 package ua.zp.rozklad.app.processor;
 
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteQueryBuilder;
 
 import java.util.ArrayList;
 
-import ua.zp.rozklad.app.processor.dependency.ResolveDependency;
+import ua.zp.rozklad.app.App;
+import ua.zp.rozklad.app.processor.dependency.ResolveDependencies;
 import ua.zp.rozklad.app.processor.dependency.ScheduleDependency;
-import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.provider.ScheduleContract.Schedule;
 import ua.zp.rozklad.app.rest.resource.ScheduleItem;
 
 import static ua.zp.rozklad.app.provider.ScheduleContract.AcademicHour.buildAcademicHourUri;
-import static ua.zp.rozklad.app.provider.ScheduleContract.Audience.buildAudienceUri;
-import static ua.zp.rozklad.app.provider.ScheduleContract.Lecturer.buildLecturerUri;
-import static ua.zp.rozklad.app.provider.ScheduleContract.Schedule.buildScheduleUri;
-import static ua.zp.rozklad.app.provider.ScheduleContract.Subject.buildSubjectUri;
-import static ua.zp.rozklad.app.provider.ScheduleContract.combineArgs;
-import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
 import static ua.zp.rozklad.app.provider.ScheduleContract.Schedule.Summary.Selection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.Schedule.buildScheduleUri;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combine;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineArgs;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineProjection;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
 
 /**
  * @author Vojko Vladimir
  */
-public class ScheduleProcessor extends Processor<ScheduleItem, ScheduleDependency>
-        implements ResolveDependency<ScheduleDependency, ScheduleItem> {
+public class ScheduleProcessor extends Processor<ScheduleItem>
+        implements ResolveDependencies<ScheduleDependency, ScheduleItem> {
 
     public ScheduleProcessor(Context context) {
         super(context);
     }
 
     @Override
-    public ScheduleDependency process(ArrayList<ScheduleItem> scheduleItems) {
-        ContentResolver resolver = context.getContentResolver();
-        ScheduleDependency dependency = new ScheduleDependency();
-
+    public void process(ArrayList<ScheduleItem> scheduleItems) {
         Cursor cursor;
 
         for (ScheduleItem scheduleItem : scheduleItems) {
-            cursor = resolver
+            cursor = mContentResolver
                     .query(Schedule.CONTENT_URI,
-                            ScheduleContract.combineProjection(Schedule.UPDATED, Schedule._ID),
+                            combineProjection(Schedule.UPDATED, Schedule.SCHEDULE_ID),
                             combineSelection(Selection.SCHEDULE_ID, Selection.GROUP_ID),
                             combineArgs(scheduleItem.getId(), scheduleItem.getGroupId()), null);
 
             if (cursor.moveToFirst()) {
                 if (cursor.getLong(0) != scheduleItem.getLastUpdate()) {
-                    resolver.update(buildScheduleUri(scheduleItem.getId()),
+                    mContentResolver.update(buildScheduleUri(scheduleItem.getId()),
                             buildValuesForUpdate(scheduleItem), null, null);
-                    resolveDependency(dependency, scheduleItem);
+                    App.LOG_D("updated " + scheduleItem + " -> " + cursor.getLong(0));
                 }
             } else {
-                resolver.insert(Schedule.CONTENT_URI, buildValuesForInsert(scheduleItem));
-                resolveDependency(dependency, scheduleItem);
+                mContentResolver.insert(Schedule.CONTENT_URI, buildValuesForInsert(scheduleItem));
+                App.LOG_D("inserted " + scheduleItem);
             }
 
             cursor.close();
         }
-
-        return dependency;
     }
 
     @Override
@@ -91,52 +85,91 @@ public class ScheduleProcessor extends Processor<ScheduleItem, ScheduleDependenc
     }
 
     @Override
-    public void resolveDependency(ScheduleDependency dependency, ScheduleItem scheduleItem) {
+    public ScheduleDependency resolveDependencies(ArrayList<ScheduleItem> scheduleItems) {
+        ScheduleDependency dependency = new ScheduleDependency();
+
         Cursor cursor;
+        for (ScheduleItem scheduleItem : scheduleItems) {
+            cursor = mContentResolver
+                    .query(Schedule.CONTENT_URI,
+                            combineProjection(Schedule.UPDATED, Schedule.SCHEDULE_ID),
+                            combineSelection(Selection.SCHEDULE_ID, Selection.GROUP_ID),
+                            combineArgs(scheduleItem.getId(), scheduleItem.getGroupId()), null);
 
-        /**
-         * Check if the Subject has been loaded.
-         * */
-        cursor = context.getContentResolver()
-                .query(buildSubjectUri(scheduleItem.getSubjectId()), null, null, null, null);
-        if (!cursor.moveToFirst()) {
-            dependency.addSubject(String.valueOf(scheduleItem.getSubjectId()));
+            if (cursor.moveToFirst() && cursor.getLong(0) != scheduleItem.getLastUpdate() ||
+                    !cursor.moveToFirst()) {
+                dependency.addSubject(String.valueOf(scheduleItem.getSubjectId()));
+                if (!hasAcademicHour(scheduleItem.getAcademicHourId())) {
+                    dependency.addAcademicHour(String.valueOf(scheduleItem.getAcademicHourId()));
+                }
+                dependency.addLecturer(String.valueOf(scheduleItem.getLecturerId()));
+                dependency.addAudience(String.valueOf(scheduleItem.getAudienceId()));
+            }
+
+            cursor.close();
+        }
+
+        return dependency;
+    }
+
+    private boolean hasAcademicHour(long id) {
+        Cursor cursor = mContentResolver
+                .query(buildAcademicHourUri(id), null, null, null, null);
+        if (cursor.moveToFirst()) {
+            cursor.close();
+            return true;
         }
 
         cursor.close();
+        return false;
+    }
 
-        /**
-         * Check if the AcademicHour has been loaded.
-         * */
-        cursor = context.getContentResolver()
-                .query(buildAcademicHourUri(scheduleItem.getAcademicHourId()), null, null, null,
-                        null);
-        if (!cursor.moveToFirst()) {
-            dependency.addAcademicHour(String.valueOf(scheduleItem.getAcademicHourId()));
+    public void cleanGroupSchedule(ArrayList<ScheduleItem> scheduleItems) {
+        if (scheduleItems.size() > 0) {
+            mContentResolver.delete(Schedule.CONTENT_URI,
+                    combineSelection(Schedule.GROUP_ID + " IN " + generateGroupIds(scheduleItems),
+                            Schedule.SCHEDULE_ID + " NOT IN " + generateScheduleIds(scheduleItems)
+                    ),
+                    null
+            );
         }
+    }
 
-        cursor.close();
+    public void deleteGroupSchedule(long groupId) {
+        mContentResolver.delete(Schedule.CONTENT_URI, Schedule.GROUP_ID + " = " + groupId, null);
+    }
 
-        /**
-         * Check if the Lecturer has been loaded.
-         * */
-        cursor = context.getContentResolver()
-                .query(buildLecturerUri(scheduleItem.getLecturerId()), null, null, null, null);
-        if (!cursor.moveToFirst()) {
-            dependency.addLecturer(String.valueOf(scheduleItem.getLecturerId()));
+    public void cleanLecturerSchedule(ArrayList<ScheduleItem> scheduleItems) {
+        if (scheduleItems.size() > 0) {
+            mContentResolver.delete(Schedule.CONTENT_URI,
+                    combineSelection(
+                            Schedule.LECTURER_ID + "=" + scheduleItems.get(0).getLecturerId(),
+                            Schedule.SCHEDULE_ID + " NOT IN " + generateScheduleIds(scheduleItems)
+                    ),
+                    null
+            );
         }
+    }
 
-        cursor.close();
-
-        /**
-         * Check if the Audience has been loaded.
-         * */
-        cursor = context.getContentResolver()
-                .query(buildAudienceUri(scheduleItem.getAudienceId()), null, null, null, null);
-        if (!cursor.moveToFirst()) {
-            dependency.addAudience(String.valueOf(scheduleItem.getAudienceId()));
+    private String generateScheduleIds(ArrayList<ScheduleItem> scheduleItems) {
+        String ids = "(";
+        for (int i = 0; i < scheduleItems.size(); i++) {
+            ids += scheduleItems.get(i).getId();
+            if (i < scheduleItems.size() - 1) {
+                ids += ",";
+            }
         }
+        return ids + ")";
+    }
 
-        cursor.close();
+    private String generateGroupIds(ArrayList<ScheduleItem> scheduleItems) {
+        String ids = "(";
+        for (int i = 0; i < scheduleItems.size(); i++) {
+            ids += scheduleItems.get(i).getGroupId();
+            if (i < scheduleItems.size() - 1) {
+                ids += ",";
+            }
+        }
+        return ids + ")";
     }
 }

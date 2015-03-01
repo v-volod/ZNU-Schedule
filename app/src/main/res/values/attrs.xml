@@ -21,5 +21,8 @@
 
     <declare-styleable name="Theme">
         <attr name="colorAccentDark" format="reference|color" />
+        <attr name="toolbarTheme" format="reference" />
+        <attr name="toolbarPopupTheme" format="reference" />
+        <attr name="subHeaderTextColor" format="reference|color" />
     </declare-styleable>
 </resources>

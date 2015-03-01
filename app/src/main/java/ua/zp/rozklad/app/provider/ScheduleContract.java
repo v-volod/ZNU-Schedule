@@ -72,7 +72,7 @@ public class ScheduleContract {
         String FREE_TRAJECTORY = "free_trajectory";
     }
 
-    public static final String CONTENT_AUTHORITY = "ua.zp.rozklad.app.provider";
+    public static final String CONTENT_AUTHORITY = "ua.zp.rozklad.app.provider.ScheduleProvider";
 
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
@@ -88,6 +88,8 @@ public class ScheduleContract {
     private static final String PATH_FULL_SUBJECT = "full_subject";
     private static final String PATH_FULL_LECTURER = "full_lecturer";
 
+    private static final String FROM = " FROM ";
+    private static final String SELECT = "SELECT ";
     private static final String INNER_JOIN = " INNER JOIN ";
     private static final String ON = " ON ";
     private static final String AND = " AND ";
@@ -222,8 +224,8 @@ public class ScheduleContract {
         /**
          * Build {@link Uri} for requested academic hour.
          */
-        public static Uri buildAcademicHourUri(int subjectId) {
-            return CONTENT_URI.buildUpon().appendPath(String.valueOf(subjectId)).build();
+        public static Uri buildAcademicHourUri(long subjectId) {
+            return buildItemUri(CONTENT_URI, subjectId);
         }
     }
 
@@ -282,6 +284,11 @@ public class ScheduleContract {
                 int UPDATED = 3;
             }
         }
+
+        public static final String SELECT_DEPENDENT_CAMPUSES = "(" + SELECT +
+                Tables.CAMPUS + "." + Campus._ID + FROM + Tables.CAMPUS +
+                INNER_JOIN + Tables.AUDIENCE + ON +
+                Tables.CAMPUS + "." + Campus._ID + EQ + Tables.AUDIENCE + "." + CAMPUS_ID + ")";
 
         /**
          * Build {@link Uri} for requested audience.
@@ -342,8 +349,8 @@ public class ScheduleContract {
         /**
          * Build {@link Uri} for requested schedule.
          */
-        public static Uri buildScheduleUri(int scheduleId) {
-            return CONTENT_URI.buildUpon().appendPath(String.valueOf(scheduleId)).build();
+        public static Uri buildScheduleUri(long scheduleId) {
+            return buildItemUri(CONTENT_URI, scheduleId);
         }
     }
 
@@ -478,6 +485,25 @@ public class ScheduleContract {
             }
         }
 
+        public static final String SELECT_DEPENDENT_ACADEMIC_HOURS = "(" + SELECT +
+                ACADEMIC_HOUR_ID + FROM + Tables.ACADEMIC_HOUR +
+                INNER_JOIN + Tables.SCHEDULE + ON + ACADEMIC_HOUR_ID +
+                EQ + SCHEDULE_ACADEMIC_HOUR_ID + ")";
+
+        public static final String SELECT_DEPENDENT_AUDIENCES = "(" + SELECT +
+                AUDIENCE_ID + FROM + Tables.AUDIENCE +
+                INNER_JOIN + Tables.SCHEDULE + ON + AUDIENCE_ID +
+                EQ + SCHEDULE_AUDIENCE_ID + ")";
+
+        public static final String SELECT_DEPENDENT_LECTURERS = "(" + SELECT +
+                LECTURER_ID + FROM + Tables.LECTURER +
+                INNER_JOIN + Tables.SCHEDULE + ON + LECTURER_ID +
+                EQ + SCHEDULE_LECTURER_ID + ")";
+
+        public static final String SELECT_DEPENDENT_SUBJECTS = "(" + SELECT +
+                SUBJECT_ID + FROM + Tables.SUBJECT +
+                INNER_JOIN + Tables.SCHEDULE + ON + SUBJECT_ID +
+                EQ + SCHEDULE_SUBJECT_ID + ")";
         /**
          * Build {@link Uri} for requested schedule item.
          */
@@ -566,7 +592,7 @@ public class ScheduleContract {
         return ")" + GROUP_BY + "(" + combine(",", args);
     }
 
-    private static String combine(String combiner, String... args) {
+    public static String combine(String combiner, String... args) {
         if (args.length > 0) {
             StringBuilder builder = new StringBuilder(args[0]);
 

@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Fragment;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
@@ -26,18 +27,19 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.util.ArrayList;
 
+import ua.zp.rozklad.app.BuildConfig;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAccount;
 import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
+import ua.zp.rozklad.app.util.MetricaUtils;
 import ua.zp.rozklad.app.util.UiUtils;
 
 import static java.lang.String.format;
 
 
-public class MainActivity extends ActionBarActivity
+public class MainActivity extends BaseActivity
         implements ScheduleFragment.OnScheduleItemClickListener,
         ScheduleOfWeekFragment.OnPeriodicityChangeListener,
-        SubjectsFragment.OnSubjectClickListener,
         LecturersFragment.OnLecturerClickListener {
 
     private static final int REQUEST_LOGIN = 100;
@@ -50,7 +52,7 @@ public class MainActivity extends ActionBarActivity
     private static final int NAV_DRAWER_ITEM_SUBJECTS = 1;
     private static final int NAV_DRAWER_ITEM_LECTURERS = 2;
     private static final int NAV_DRAWER_ITEM_SETTINGS = 3;
-    private static final int NAV_DRAWER_ITEM_INFO_RECALL = 4;
+    private static final int NAV_DRAWER_ITEM_ABOUT = 4;
     private static final int NAV_DRAWER_ITEM_SEPARATOR = -1;
 
     private static final int[] NAV_DRAWER_TITLE_RES_ID = {
@@ -58,7 +60,7 @@ public class MainActivity extends ActionBarActivity
             R.string.nav_drawer_item_subjects,
             R.string.nav_drawer_item_lecturers,
             R.string.nav_drawer_item_settings,
-            R.string.nav_drawer_item_about_recall
+            R.string.nav_drawer_item_about
     };
 
     private static final int[] NAV_DRAWER_ICON_RES_ID = {
@@ -231,6 +233,8 @@ public class MainActivity extends ActionBarActivity
         drawerLayout.closeDrawer(Gravity.START);
         AccountManager mAccountManager = AccountManager.get(this);
         if (account != null) {
+            if (!BuildConfig.DEBUG)
+                MetricaUtils.reportGroupChange(account);
             mAccountManager.removeAccount(account.getBaseAccount(), null, new Handler());
             requestLogin();
         }
@@ -321,7 +325,7 @@ public class MainActivity extends ActionBarActivity
         navDrawerItems.add(NAV_DRAWER_ITEM_LECTURERS);
         navDrawerItems.add(NAV_DRAWER_ITEM_SEPARATOR);
         navDrawerItems.add(NAV_DRAWER_ITEM_SETTINGS);
-        navDrawerItems.add(NAV_DRAWER_ITEM_INFO_RECALL);
+        navDrawerItems.add(NAV_DRAWER_ITEM_ABOUT);
         createNavDrawerItems();
 
         onNavDrawerItemClicked(selectedNavDrawerItemId);
@@ -423,19 +427,22 @@ public class MainActivity extends ActionBarActivity
                 startActivity(intent);
             }
             return;
-            case NAV_DRAWER_ITEM_INFO_RECALL:
-                /*
-                * Start Info Activity
-                * */
-                return;
+            case NAV_DRAWER_ITEM_ABOUT: {
+                Intent intent = new Intent(this, AboutActivity.class);
+                startActivity(intent);
+            }
+            return;
             case NAV_DRAWER_ITEM_SCHEDULE:
                 onScheduleSelected();
+                hideAppBarShadow();
                 break;
             case NAV_DRAWER_ITEM_SUBJECTS:
                 onSubjectsSelected();
+                showAppBarShadow();
                 break;
             case NAV_DRAWER_ITEM_LECTURERS:
                 onLecturersSelected();
+                showAppBarShadow();
                 break;
         }
         selectedNavDrawerItemId = itemId;
@@ -485,6 +492,7 @@ public class MainActivity extends ActionBarActivity
         } else {
             reloadSubjects();
         }
+        getFragmentManager().executePendingTransactions();
     }
 
     private void onLecturersSelected() {
@@ -498,6 +506,7 @@ public class MainActivity extends ActionBarActivity
         } else {
             reloadLecturers();
         }
+        getFragmentManager().executePendingTransactions();
     }
 
     private void reloadSchedule() {
@@ -530,11 +539,6 @@ public class MainActivity extends ActionBarActivity
     }
 
     @Override
-    public void onSubjectClicked(long subjectId) {
-
-    }
-
-    @Override
     public void onLecturerClicked(long lecturerId) {
         Intent intent = new Intent(this, LecturerScheduleActivity.class);
         intent.putExtra(LecturerScheduleActivity.ARG_LECTURER_ID, lecturerId);
@@ -547,6 +551,24 @@ public class MainActivity extends ActionBarActivity
     }
 
     private void replaceMainContent(Fragment fragment) {
-        getFragmentManager().beginTransaction().replace(R.id.main_content, fragment).commit();
+        getFragmentManager().beginTransaction().replace(R.id.main_content, fragment)
+                .commit();
+    }
+
+    private void showAppBarShadow() {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            findViewById(R.id.app_bar_shadow).setVisibility(View.GONE);
+            getSupportActionBar()
+                    .setElevation(getResources().getDimension(R.dimen.toolbar_elevation));
+        } else {
+            findViewById(R.id.app_bar_shadow).setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hideAppBarShadow() {
+        findViewById(R.id.app_bar_shadow).setVisibility(View.GONE);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            getSupportActionBar().setElevation(0);
+        }
     }
 }

@@ -29,8 +29,6 @@ public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCa
     private static final String ARG_GROUP_ID = "groupId";
     private static final String ARG_SUBGROUP = "subgroup";
 
-    private OnSubjectClickListener mListener;
-
     private int groupId;
     private int subgroup;
 
@@ -60,17 +58,6 @@ public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnSubjectClickListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnSubjectClickListener");
-        }
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_subjects, container, false);
@@ -87,12 +74,6 @@ public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCa
         mRecyclerView.setAdapter(mAdapter);
 
         getLoaderManager().initLoader(0, null, this);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
     }
 
     @Override
@@ -119,12 +100,6 @@ public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCa
         mAdapter.swapCursor(null);
     }
 
-    public void onSubjectClicked(long subjectId) {
-        if (mListener != null) {
-            mListener.onSubjectClicked(subjectId);
-        }
-    }
-
     public void reload(int groupId, int subgroup) {
         this.groupId = groupId;
         this.subgroup = subgroup;
@@ -133,16 +108,6 @@ public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCa
             getArguments().putInt(ARG_SUBGROUP, subgroup);
             getLoaderManager().restartLoader(0, null, this);
         }
-    }
-
-    /**
-     * Interface definition for a callback to be invoked when a subject is clicked.
-     */
-    public interface OnSubjectClickListener {
-        /**
-         * @param subjectId id of the row of the subject table in the database.
-         */
-        public void onSubjectClicked(long subjectId);
     }
 
     public static class SubjectVH extends RecyclerView.ViewHolder {
@@ -167,8 +132,7 @@ public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCa
         }
     }
 
-    private class SubjectsAdapter extends CursorRecyclerViewAdapter<SubjectVH>
-            implements View.OnClickListener {
+    private class SubjectsAdapter extends CursorRecyclerViewAdapter<SubjectVH> {
 
         public SubjectsAdapter(Context context, Cursor cursor) {
             super(context, cursor);
@@ -183,13 +147,8 @@ public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCa
         public SubjectVH onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater
                     .from(getActivity()).inflate(R.layout.two_line_item, parent, false);
-            view.setOnClickListener(this);
+            view.setClickable(false);
             return new SubjectVH(view);
-        }
-
-        @Override
-        public void onClick(View v) {
-            onSubjectClicked(getItemId(mRecyclerView.getChildPosition(v)));
         }
     }
 }

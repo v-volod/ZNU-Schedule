@@ -4,7 +4,6 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
@@ -13,7 +12,7 @@ import ua.zp.rozklad.app.provider.ScheduleContract.Lecturer;
 
 import static ua.zp.rozklad.app.provider.ScheduleContract.Lecturer.buildLecturerUri;
 
-public class LecturerScheduleActivity extends ActionBarActivity
+public class LecturerScheduleActivity extends BaseActivity
         implements ScheduleOfWeekFragment.OnPeriodicityChangeListener,
         ScheduleFragment.OnScheduleItemClickListener {
 
@@ -47,11 +46,15 @@ public class LecturerScheduleActivity extends ActionBarActivity
 
         cursor.close();
 
-        Fragment fragment = ScheduleOfWeekFragment.newInstance(lecturerId);
-        getFragmentManager()
-                .beginTransaction()
-                .add(R.id.container, fragment)
-                .commit();
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.container);
+
+        if (fragment == null) {
+            fragment = ScheduleOfWeekFragment.newInstance(lecturerId);
+            getFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.container, fragment)
+                    .commit();
+        }
     }
 
     @Override

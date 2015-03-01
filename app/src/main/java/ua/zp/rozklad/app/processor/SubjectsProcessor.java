@@ -1,6 +1,5 @@
 package ua.zp.rozklad.app.processor;
 
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -11,40 +10,37 @@ import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.rest.resource.Subject;
 
 import static ua.zp.rozklad.app.provider.ScheduleContract.Subject.buildSubjectUri;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
 
 /**
  * @author Vojko Vladimir
  */
-public class SubjectsProcessor extends Processor<Subject, Void> {
+public class SubjectsProcessor extends Processor<Subject> {
 
     public SubjectsProcessor(Context context) {
         super(context);
     }
 
     @Override
-    public Void process(ArrayList<Subject> subjects) {
-        ContentResolver resolver = context.getContentResolver();
-
+    public void process(ArrayList<Subject> subjects) {
         Cursor cursor;
 
         for (Subject subject : subjects) {
-            cursor = resolver.query(buildSubjectUri(subject.getId()),
+            cursor = mContentResolver.query(buildSubjectUri(subject.getId()),
                     new String[]{ScheduleContract.Subject.UPDATED}, null, null, null);
 
             if (cursor.moveToFirst()) {
                 if (cursor.getLong(0) != subject.getLastUpdate()) {
-                    resolver.update(buildSubjectUri(subject.getId()), buildValuesForUpdate(subject),
-                            null, null);
+                    mContentResolver.update(buildSubjectUri(subject.getId()),
+                            buildValuesForUpdate(subject), null, null);
                 }
             } else {
-                resolver.insert(ScheduleContract.Subject.CONTENT_URI,
+                mContentResolver.insert(ScheduleContract.Subject.CONTENT_URI,
                         buildValuesForInsert(subject));
             }
 
             cursor.close();
         }
-
-        return null;
     }
 
     @Override
@@ -64,5 +60,14 @@ public class SubjectsProcessor extends Processor<Subject, Void> {
         values.put(ScheduleContract.Subject.UPDATED, subject.getLastUpdate());
 
         return values;
+    }
+
+    public void clean() {
+        mContentResolver.delete(ScheduleContract.Subject.CONTENT_URI,
+                combineSelection(ScheduleContract.Subject._ID + " NOT IN " +
+                                ScheduleContract.FullSchedule.SELECT_DEPENDENT_SUBJECTS
+                ),
+                null
+        );
     }
 }

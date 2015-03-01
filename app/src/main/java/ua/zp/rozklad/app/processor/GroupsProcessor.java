@@ -1,13 +1,16 @@
 package ua.zp.rozklad.app.processor;
 
-import android.content.ContentResolver;
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
 import java.util.ArrayList;
 
-import ua.zp.rozklad.app.processor.dependency.ResolveDependency;
+import ua.zp.rozklad.app.account.GroupAuthenticator;
+import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
+import ua.zp.rozklad.app.processor.dependency.ResolveDependencies;
 import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.rest.resource.Group;
 
@@ -16,33 +19,31 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.Group.buildGroupUri;
 /**
  * @author Vojko Vladimir
  */
-public class GroupsProcessor extends Processor<Group, Void> {
+public class GroupsProcessor extends Processor<Group>
+        implements ResolveDependencies<ArrayList<Group>, Group> {
 
     public GroupsProcessor(Context context) {
         super(context);
     }
 
     @Override
-    public Void process(ArrayList<Group> groups) {
-        ContentResolver resolver = context.getContentResolver();
+    public void process(ArrayList<Group> groups) {
         Cursor cursor;
 
         for (Group group : groups) {
-            cursor = resolver.query(buildGroupUri(group.getId()),
+            cursor = mContentResolver.query(buildGroupUri(group.getId()),
                     new String[]{ScheduleContract.Group.UPDATED}, null, null, null);
 
             if (cursor.moveToFirst()) {
-                resolver.update(
+                mContentResolver.update(
                         buildGroupUri(group.getId()), buildValuesForUpdate(group), null, null
                 );
             } else {
-                resolver.insert(ScheduleContract.Group.CONTENT_URI, buildValuesForInsert(group));
+                mContentResolver.insert(ScheduleContract.Group.CONTENT_URI, buildValuesForInsert(group));
             }
 
             cursor.close();
         }
-
-        return null;
     }
 
     @Override
@@ -65,5 +66,47 @@ public class GroupsProcessor extends Processor<Group, Void> {
         values.put(ScheduleContract.Group.UPDATED, group.getLastUpdate());
 
         return values;
+    }
+
+    @Override
+    public ArrayList<Group> resolveDependencies(ArrayList<Group> groups) {
+        ArrayList<Group> dependencies = new ArrayList<>();
+
+        Cursor cursor;
+        for (Group group : groups) {
+            cursor = mContentResolver.query(buildGroupUri(group.getId()),
+                    new String[]{ScheduleContract.Group.UPDATED}, null, null, null);
+
+            if (cursor.moveToFirst() && cursor.getLong(0) != group.getLastUpdate() ||
+                    !cursor.moveToFirst()) {
+                dependencies.add(group);
+            }
+
+            cursor.close();
+        }
+
+        return dependencies;
+    }
+
+    public void clean() {
+        AccountManager manager = AccountManager.get(mContext);
+        GroupAuthenticatorHelper helper = new GroupAuthenticatorHelper(mContext);
+
+        Account[] accounts = helper.getAccounts();
+        String ids = "";
+        String id;
+
+        for (int i = 0; i < accounts.length; i++) {
+            id = manager.getUserData(accounts[i], GroupAuthenticator.KEY_GROUP_ID);
+            if (id != null) {
+                if (!ids.isEmpty() && i > 0 && i < accounts.length - 1) {
+                    ids += ",";
+                }
+                ids += id;
+            }
+        }
+
+        mContentResolver.delete(ScheduleContract.Group.CONTENT_URI,
+                ScheduleContract.Group._ID + " NOT IN (" + ids + ")", null);
     }
 }
