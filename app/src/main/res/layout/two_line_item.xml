@@ -15,7 +15,7 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:text="@string/lorem_ipsum_short"
-        android:textColor="@color/primary_text_default_material_light"
+        android:textColor="@color/primary_text_color_light"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
         android:textSize="@dimen/text_size_primary" />
 
@@ -27,6 +27,6 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:text="@string/lorem_ipsum_short"
-        android:textColor="@color/secondary_text_default_material_light"
+        android:textColor="@color/secondary_text_color_light"
         android:textSize="14sp" />
 </RelativeLayout>
