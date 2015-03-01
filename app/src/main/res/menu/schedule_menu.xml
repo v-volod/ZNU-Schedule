@@ -10,5 +10,15 @@
         android:title="@string/action_today"
         app:showAsAction="ifRoom" />
 
-    <!--TODO: add reload schedule-->
+    <item
+        android:id="@+id/action_sync_schedule"
+        android:icon="@drawable/ic_refresh_white_24dp"
+        android:title="@string/action_sync_schedule"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_change_subgroup"
+        android:title="@string/action_change_subgroup"
+        android:visible="false"
+        app:showAsAction="never" />
 </menu>

@@ -3,6 +3,7 @@ package ua.zp.rozklad.app.ui;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Fragment;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,6 +28,7 @@ import ua.zp.rozklad.app.BuildConfig;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.account.GroupAccount;
 import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
+import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.util.MetricaUtils;
 import ua.zp.rozklad.app.util.UiUtils;
 
@@ -213,6 +215,11 @@ public class MainActivity extends ActionBarActivity
                     return true;
                 }
                 return false;
+            case R.id.action_sync_schedule:
+                ContentResolver.requestSync(
+                        account.getBaseAccount(), ScheduleContract.CONTENT_AUTHORITY, Bundle.EMPTY
+                );
+                return  true;
             case R.id.action_change_subgroup:
                 changeSubgroup();
                 return true;
