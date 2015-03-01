@@ -11,6 +11,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -93,7 +95,9 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
             MapFragment mMapFragment = (MapFragment) getFragmentManager()
                     .findFragmentById(R.id.map);
 
-            if (latitude == -1.0f && longitude == -1.0f) {
+            int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+
+            if (latitude == -1.0f && longitude == -1.0f || status != ConnectionResult.SUCCESS) {
                 getFragmentManager()
                         .beginTransaction()
                         .hide(mMapFragment)
