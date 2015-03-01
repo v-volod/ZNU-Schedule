@@ -63,7 +63,8 @@
             android:name=".ui.SettingsActivity"
             android:configChanges="orientation|keyboard|keyboardHidden|screenSize|screenLayout|uiMode"
             android:label="@string/nav_drawer_item_settings"
-            android:screenOrientation="portrait" />
+            android:launchMode="singleInstance"
+            android:theme="@style/NoDrawerTheme" />
 
         <provider
             android:name=".provider.ScheduleProvider"

@@ -418,9 +418,11 @@ public class MainActivity extends ActionBarActivity
 
     private void onNavDrawerItemClicked(int itemId) {
         switch (itemId) {
-            case NAV_DRAWER_ITEM_SETTINGS:
-                onSettingsSelected();
-                return;
+            case NAV_DRAWER_ITEM_SETTINGS: {
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+            }
+            return;
             case NAV_DRAWER_ITEM_INFO_RECALL:
                 /*
                 * Start Info Activity
@@ -518,11 +520,6 @@ public class MainActivity extends ActionBarActivity
         if (fragment != null && fragment instanceof LecturersFragment) {
             ((LecturersFragment) fragment).reload(account.getGroupId(), account.getSubgroup());
         }
-    }
-
-    public void onSettingsSelected() {
-        Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
     }
 
     @Override

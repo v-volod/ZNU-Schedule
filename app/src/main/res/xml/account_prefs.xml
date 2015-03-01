@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-                  android:persistent="true">
+    android:persistent="true">
 
-    <PreferenceCategory
-        android:title="@string/general_settings"/>
+    <PreferenceCategory android:title="@string/general_settings" />
 
     <PreferenceScreen
         android:key="ua.zp.rozklad.app.KEY_ACCOUNT_SYNC"
-        android:summary="@string/general_settings_summary"
-        android:title="@string/general_settings">
+        android:title="@string/app_settings">
         <intent
-            android:action="ua.zp.rozklad.app.ACTION_SYNC_SETTINGS"
             android:targetClass="ua.zp.rozklad.app.ui.SettingsActivity"
-            android:targetPackage="ua.zp.rozklad.app"/>
+            android:targetPackage="ua.zp.rozklad.app" />
     </PreferenceScreen>
 
 </PreferenceScreen>
