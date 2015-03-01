@@ -57,6 +57,7 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.groupBySelection;
  */
 public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
 
+    private GroupsProcessor groupsProcessor;
     private ScheduleProcessor scheduleProcessor;
     private LecturersProcessor lecturersProcessor;
     private SubjectsProcessor subjectsProcessor;
@@ -86,7 +87,7 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
             return;
         }
 
-        GroupsProcessor groupsProcessor = new GroupsProcessor(getContext());
+        groupsProcessor = new GroupsProcessor(getContext());
         scheduleProcessor = new ScheduleProcessor(getContext());
         lecturersProcessor = new LecturersProcessor(getContext());
         subjectsProcessor = new SubjectsProcessor(getContext());
@@ -216,12 +217,27 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
                     syncLecturerSchedule);
         }
 
+        if (dependency.hasGroups()) {
+            performGroupsSync(syncResult, dependency.getGroups());
+        }
+
         if (audiencesSynced && subjectsSynced && academicHoursSynced && lecturersSynced) {
             scheduleProcessor.process(scheduleItems);
             return true;
         }
 
         return false;
+    }
+
+    private void performGroupsSync(SyncResult syncResult, String[] groups) {
+        GetGroupsMethod getGroups = new GetGroupsMethod();
+        getGroups.prepare(RESTMethod.Filter.BY_ID_IN, groups);
+
+        MethodResponse<ArrayList<Group>> groupsResponse = getGroups.executeBlocking();
+
+        if (canProcess(groupsResponse, syncResult)) {
+            groupsProcessor.process(groupsResponse.getResponse());
+        }
     }
 
     private boolean performAudiencesSync(SyncResult syncResult, String[] audiencesIds) {

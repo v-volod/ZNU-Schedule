@@ -425,6 +425,11 @@ public class ScheduleContract {
         public static final String LECTURER_NAME =
                 Tables.LECTURER + "." + LecturerColumns.LECTURER_NAME;
 
+        public static final String GROUP_ID =
+                Tables.GROUP + "." + BaseColumns._ID;
+        public static final String GROUP_NAME =
+                Tables.GROUP + "." + GroupColumns.GROUP_NAME;
+
         public static final String MAX_END_TIME = "max(" + ACADEMIC_HOUR_END_TIME + ")";
 
         public static interface Summary {
@@ -435,6 +440,7 @@ public class ScheduleContract {
                     INNER_JOIN + Tables.ACADEMIC_HOUR +
                     ON + ACADEMIC_HOUR_ID + EQ + SCHEDULE_ACADEMIC_HOUR_ID +
                     INNER_JOIN + Tables.LECTURER + ON + LECTURER_ID + EQ + SCHEDULE_LECTURER_ID;
+
 
             String[] PROJECTION = {
                     _ID,
@@ -449,7 +455,14 @@ public class ScheduleContract {
                     CAMPUS_NAME,
                     AUDIENCE_NUMBER,
                     CAMPUS_LATITUDE,
-                    CAMPUS_LONGITUDE
+                    CAMPUS_LONGITUDE,
+                    "COALESCE((" + SELECT + buildGroupConcatSelection(GROUP_NAME) +
+                            FROM + Tables.GROUP +
+                            INNER_JOIN + Tables.SCHEDULE + " AS sch " +
+                            ON + GROUP_ID + EQ + "sch." + ScheduleColumns.GROUP_ID +
+                            " WHERE " + SCHEDULE_ID + EQ + "sch." + ScheduleColumns.SCHEDULE_ID +
+                            GROUP_BY + "(" + "sch." + ScheduleColumns.SCHEDULE_ID + ")),'')",
+                    SCHEDULE_ID
             };
 
             interface Selection {
@@ -482,6 +495,8 @@ public class ScheduleContract {
                 int AUDIENCE_NUMBER = 10;
                 int CAMPUS_LATITUDE = 11;
                 int CAMPUS_LONGITUDE = 12;
+                int GROUPS = 13;
+                int SCHEDULE_ID = 14;
             }
         }
 
@@ -504,6 +519,7 @@ public class ScheduleContract {
                 SUBJECT_ID + FROM + Tables.SUBJECT +
                 INNER_JOIN + Tables.SCHEDULE + ON + SUBJECT_ID +
                 EQ + SCHEDULE_SUBJECT_ID + ")";
+
         /**
          * Build {@link Uri} for requested schedule item.
          */

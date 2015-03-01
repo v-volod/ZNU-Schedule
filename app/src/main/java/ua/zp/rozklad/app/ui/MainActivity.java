@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Fragment;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,6 +34,7 @@ import ua.zp.rozklad.app.util.MetricaUtils;
 import ua.zp.rozklad.app.util.UiUtils;
 
 import static java.lang.String.format;
+import static ua.zp.rozklad.app.provider.ScheduleContract.Group.buildGroupUri;
 
 
 public class MainActivity extends ActionBarActivity
@@ -241,6 +243,9 @@ public class MainActivity extends ActionBarActivity
             if (!BuildConfig.DEBUG)
                 MetricaUtils.reportGroupChange(account);
             mAccountManager.removeAccount(account.getBaseAccount(), null, new Handler());
+            ContentValues values = new ContentValues();
+            values.put(ScheduleContract.Group.UPDATED, 0);
+            getContentResolver().update(buildGroupUri(account.getGroupId()), values, null, null);
             requestLogin();
         }
     }
