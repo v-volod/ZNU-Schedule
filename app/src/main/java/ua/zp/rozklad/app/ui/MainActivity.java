@@ -80,6 +80,7 @@ public class MainActivity extends ActionBarActivity
     private int selectedNavDrawerItemId;
     private ActionBarDrawerToggle drawerToggle;
     private ArrayList<Integer> navDrawerItems = new ArrayList<>();
+    private View appBarShadow;
     private DrawerLayout drawerLayout;
     private View[] navDrawerItemViews = null;
     private View.OnClickListener changeGroupClickListener = new View.OnClickListener() {
@@ -116,8 +117,9 @@ public class MainActivity extends ActionBarActivity
 
         appBar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(appBar);
-
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        appBarShadow = findViewById(R.id.app_bar_shadow);
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerLayout.setStatusBarBackground(
@@ -434,15 +436,12 @@ public class MainActivity extends ActionBarActivity
             return;
             case NAV_DRAWER_ITEM_SCHEDULE:
                 onScheduleSelected();
-                hideAppBarShadow();
                 break;
             case NAV_DRAWER_ITEM_SUBJECTS:
                 onSubjectsSelected();
-                showAppBarShadow();
                 break;
             case NAV_DRAWER_ITEM_LECTURERS:
                 onLecturersSelected();
-                showAppBarShadow();
                 break;
         }
         selectedNavDrawerItemId = itemId;
@@ -467,23 +466,21 @@ public class MainActivity extends ActionBarActivity
     private void onScheduleSelected() {
         getSupportActionBar().setTitle(R.string.schedule);
         getSupportActionBar().setSubtitle(0);
+        hideAppBarShadow();
 
         Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
-        if (fragment != null) {
-            if (fragment instanceof ScheduleOfWeekFragment) {
-                if (((ScheduleOfWeekFragment) fragment).getScheduleType()
-                        == ScheduleOfWeekFragment.Type.BY_GROUP) {
-                    return;
-                }
-            }
+        if (fragment == null || !(fragment instanceof ScheduleOfWeekFragment)) {
+            replaceMainContent(ScheduleOfWeekFragment
+                    .newInstance(account.getGroupId(), account.getSubgroup()));
+        } else {
+            reloadSchedule();
         }
-        replaceMainContent(ScheduleOfWeekFragment
-                .newInstance(account.getGroupId(), account.getSubgroup()));
     }
 
     private void onSubjectsSelected() {
         getSupportActionBar().setTitle(R.string.nav_drawer_item_subjects);
         getSupportActionBar().setSubtitle(0);
+        showAppBarShadow();
 
         Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
         if (fragment == null || !(fragment instanceof SubjectsFragment)) {
@@ -492,12 +489,12 @@ public class MainActivity extends ActionBarActivity
         } else {
             reloadSubjects();
         }
-        getFragmentManager().executePendingTransactions();
     }
 
     private void onLecturersSelected() {
         getSupportActionBar().setTitle(R.string.nav_drawer_item_lecturers);
         getSupportActionBar().setSubtitle(0);
+        showAppBarShadow();
 
         Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
         if (fragment == null || !(fragment instanceof LecturersFragment)) {
@@ -506,7 +503,6 @@ public class MainActivity extends ActionBarActivity
         } else {
             reloadLecturers();
         }
-        getFragmentManager().executePendingTransactions();
     }
 
     private void reloadSchedule() {
@@ -557,16 +553,20 @@ public class MainActivity extends ActionBarActivity
 
     private void showAppBarShadow() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-            findViewById(R.id.app_bar_shadow).setVisibility(View.GONE);
+            appBarShadow.setVisibility(View.INVISIBLE);
             getSupportActionBar()
                     .setElevation(getResources().getDimension(R.dimen.toolbar_elevation));
         } else {
-            findViewById(R.id.app_bar_shadow).setVisibility(View.VISIBLE);
+            if (appBarShadow.getVisibility() == View.INVISIBLE) {
+                appBarShadow.setVisibility(View.VISIBLE);
+            }
         }
     }
 
     private void hideAppBarShadow() {
-        findViewById(R.id.app_bar_shadow).setVisibility(View.GONE);
+        if (appBarShadow.getVisibility() == View.VISIBLE) {
+            appBarShadow.setVisibility(View.INVISIBLE);
+        }
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
             getSupportActionBar().setElevation(0);
         }
