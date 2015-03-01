@@ -54,6 +54,19 @@
         <item name="subHeaderTextColor">?attr/colorAccent</item>
     </style>
 
+    <!-- Grey Theme -->
+    <style name="AppTheme.BlueGrey" parent="NoDrawerTheme">
+        <item name="colorPrimary">@color/blue_grey_500</item>
+        <item name="colorPrimaryDark">@color/blue_grey_700</item>
+
+        <!-- Material Dialog colors -->
+        <item name="md_positive_color">?attr/colorAccent</item>
+        <item name="md_neutral_color">?attr/colorAccent</item>
+        <item name="md_negative_color">?attr/colorAccent</item>
+
+        <item name="subHeaderTextColor">@color/grey_700</item>
+    </style>
+
     <!-- AppTextLogo -->
     <style name="AppTextLogo">
         <item name="android:textSize">@dimen/app_text_logo_text_size</item>

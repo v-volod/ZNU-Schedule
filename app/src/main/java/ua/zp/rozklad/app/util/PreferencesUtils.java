@@ -3,6 +3,7 @@ package ua.zp.rozklad.app.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.model.Periodicity;
 
 /**
@@ -15,6 +16,10 @@ public class PreferencesUtils {
     private static final String PERIODICITY = "periodicity";
     private static final String WEEK_OF_YEAR = "week_of_year";
     private static final String ACTIVE_ACCOUNT_NAME = "active_account_name";
+
+    public static final String KEY_AUTO_SYNC = "key_auto_sync";
+    public static final String KEY_AUTO_SYNC_INTERVAL = "key_auto_sync_interval";
+    public static final long HOUR_IN_SECONDS = 86400;
 
     private Context mContext;
 
@@ -58,5 +63,37 @@ public class PreferencesUtils {
                 .edit()
                 .remove(ACTIVE_ACCOUNT_NAME)
                 .apply();
+    }
+
+    public SharedPreferences getSchedulePreferences() {
+        return mContext.getSharedPreferences(SCHEDULE_SETTINGS, Context.MODE_PRIVATE);
+    }
+
+    public void setAutoSync(boolean state) {
+        getSchedulePreferences().edit()
+                .putBoolean(KEY_AUTO_SYNC, state)
+                .apply();
+    }
+
+    public void setAutoSyncInterval(int value) {
+        getSchedulePreferences().edit()
+                .putInt(KEY_AUTO_SYNC_INTERVAL, value)
+                .apply();
+    }
+
+    public boolean getAutoSync() {
+        return getSchedulePreferences().getBoolean(KEY_AUTO_SYNC, true);
+    }
+
+    public int getAutoSyncInterval(SharedPreferences preferences) {
+        return preferences.getInt(KEY_AUTO_SYNC_INTERVAL,
+                mContext.getResources().getInteger(R.integer.auto_sync_interval_default)
+        );
+    }
+
+    public int getAutoSyncInterval() {
+        return getSchedulePreferences().getInt(KEY_AUTO_SYNC_INTERVAL,
+                mContext.getResources().getInteger(R.integer.auto_sync_interval_default)
+        );
     }
 }

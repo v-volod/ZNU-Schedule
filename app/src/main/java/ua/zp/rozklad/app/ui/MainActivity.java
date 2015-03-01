@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
@@ -36,7 +37,7 @@ import ua.zp.rozklad.app.util.UiUtils;
 import static java.lang.String.format;
 
 
-public class MainActivity extends BaseActivity
+public class MainActivity extends ActionBarActivity
         implements ScheduleFragment.OnScheduleItemClickListener,
         ScheduleOfWeekFragment.OnPeriodicityChangeListener,
         LecturersFragment.OnLecturerClickListener {
@@ -421,15 +422,16 @@ public class MainActivity extends BaseActivity
 
     private void onNavDrawerItemClicked(int itemId) {
         switch (itemId) {
-            case NAV_DRAWER_ITEM_SETTINGS:
-                /*
-                * Start Settings Activity
-                * */
-                return;
-            case NAV_DRAWER_ITEM_ABOUT:
+            case NAV_DRAWER_ITEM_SETTINGS: {
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+            }
+            return;
+            case NAV_DRAWER_ITEM_ABOUT: {
                 Intent intent = new Intent(this, AboutActivity.class);
                 startActivity(intent);
-                return;
+            }
+            return;
             case NAV_DRAWER_ITEM_SCHEDULE:
                 onScheduleSelected();
                 hideAppBarShadow();

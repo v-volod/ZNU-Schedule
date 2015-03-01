@@ -134,6 +134,35 @@
         <item>Екзамен</item>
     </string-array>
 
+    <!-- Settings -->
+    <string name="general_settings">Основні налаштування</string>
+    <string name="app_settings">Налаштування додатку</string>
+    <string name="sync">Синхронізація</string>
+    <string name="auto_sync">Автоматична синхронізація</string>
+    <string name="auto_sync_summary">Синхронізація через певний інтервал часу</string>
+    <string name="auto_sync_interval">Інтервал синхронізації</string>
+    <string name="clear_cache">Видалити кеш</string>
+    <string name="clear_cache_summary">Вилучає весь кеш додатку</string>
+    <string name="clear_cache_question">Видалити кеш?</string>
+    <string name="clear_cache_description">Увесь кеш розкладу буде видалено</string>
+    <string name="clear">Видалити</string>
+
+    <integer name="auto_sync_interval_default">1</integer>
+
+    <string-array name="auto_sync_intervals">
+        <item>Кожну годину</item>
+        <item>Кожні 3 години</item>
+        <item>Раз на день</item>
+        <item>Раз на 3 дні</item>
+    </string-array>
+
+    <integer-array name="auto_sync_intervals_values">
+        <item>@integer/auto_sync_interval_default</item>
+        <item>3</item>
+        <item>24</item>
+        <item>72</item>
+    </integer-array>
+
     <string name="maps_api_key">AIzaSyAYjzB1ic2B4s52v2E7kZPW1v9btZa_NDQ</string>
 
 </resources>

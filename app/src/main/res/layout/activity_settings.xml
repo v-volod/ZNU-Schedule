@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="ua.zp.rozklad.app.ui.SettingsActivity">
+
+    <include
+        android:id="@+id/app_bar"
+        layout="@layout/app_bar" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/sync"
+                layout="@layout/sub_header" />
+
+            <include
+                android:id="@+id/auto_sync"
+                layout="@layout/two_line_item_right_checkbox" />
+
+            <include
+                android:id="@+id/auto_sync_interval"
+                layout="@layout/two_line_item" />
+
+            <include
+                android:id="@+id/clear_cache"
+                layout="@layout/two_line_item" />
+
+        </LinearLayout>
+
+        <include
+            android:id="@+id/app_bar_shadow"
+            layout="@layout/app_bar_shadow" />
+
+    </FrameLayout>
+
+</LinearLayout>
