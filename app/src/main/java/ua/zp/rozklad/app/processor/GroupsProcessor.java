@@ -106,7 +106,9 @@ public class GroupsProcessor extends Processor<Group>
             }
         }
 
-        mContentResolver.delete(ScheduleContract.Group.CONTENT_URI,
+        ContentValues values = new ContentValues();
+        values.put(ScheduleContract.Schedule.UPDATED, 0);
+        mContentResolver.update(ScheduleContract.Group.CONTENT_URI, values,
                 ScheduleContract.Group._ID + " NOT IN (" + ids + ")", null);
     }
 }
