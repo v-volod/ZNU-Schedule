@@ -37,6 +37,10 @@
 
         </LinearLayout>
 
+        <include
+            android:id="@+id/app_bar_shadow"
+            layout="@layout/app_bar_shadow" />
+
     </FrameLayout>
 
 </LinearLayout>

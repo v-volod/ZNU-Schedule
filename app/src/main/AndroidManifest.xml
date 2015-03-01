@@ -70,7 +70,7 @@
             android:configChanges="orientation|keyboard|keyboardHidden|screenSize|screenLayout|uiMode"
             android:label="@string/nav_drawer_item_settings"
             android:launchMode="singleInstance"
-            android:theme="@style/NoDrawerTheme" />
+            android:theme="@style/AppTheme.BlueGrey" />
 
         <provider
             android:name=".provider.ScheduleProvider"

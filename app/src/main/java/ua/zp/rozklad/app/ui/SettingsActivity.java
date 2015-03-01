@@ -3,6 +3,7 @@ package ua.zp.rozklad.app.ui;
 import android.accounts.Account;
 import android.content.ContentResolver;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -43,6 +44,12 @@ public class SettingsActivity extends ActionBarActivity implements View.OnClickL
 
         setSupportActionBar((Toolbar) findViewById(R.id.app_bar));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            findViewById(R.id.app_bar_shadow).setVisibility(View.GONE);
+            getSupportActionBar()
+                    .setElevation(getResources().getDimension(R.dimen.toolbar_elevation));
+        }
 
         GroupAuthenticatorHelper mHelper = new GroupAuthenticatorHelper(this);
         GroupAccount groupAccount = mHelper.getActiveAccount();

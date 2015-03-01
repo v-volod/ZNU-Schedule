@@ -15,6 +15,7 @@
     <color name="blue_700">#1976d2</color>
 
     <color name="blue_grey_500">#607d8b</color>
+    <color name="blue_grey_700">#455a64</color>
 
     <color name="purple_500">#9c27b0</color>
     <color name="purple_700">#7b1fa2</color>
@@ -33,6 +34,8 @@
     <color name="teal_700">#00796b</color>
 
     <color name="grey_400">#bdbdbd</color>
+    <color name="grey_500">#9e9e9e</color>
+    <color name="grey_700">#616161</color>
 
     <color name="black">#000</color>
 
