@@ -28,7 +28,7 @@ dependencies {
     compile 'com.google.protobuf:protobuf-java:2.5.0'
     compile 'com.yandex.android:mobmetricalib:1.60'
     compile 'com.mcxiaoke.volley:library:1.0.10'
-    compile 'com.afollestad:material-dialogs:0.6.3.1'
+    compile 'com.afollestad:material-dialogs:0.6.3.3'
     compile 'com.melnykov:floatingactionbutton:1.1.0'
     compile 'com.pnikosis:materialish-progress:1.4'
 }

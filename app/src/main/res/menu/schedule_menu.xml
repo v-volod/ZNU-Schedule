@@ -9,4 +9,6 @@
         android:icon="@drawable/ic_today_white_24dp"
         android:title="@string/action_today"
         app:showAsAction="ifRoom" />
+
+    <!--TODO: add reload schedule-->
 </menu>

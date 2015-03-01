@@ -8,7 +8,7 @@
     <style name="NoDrawerTheme" parent="AppTheme.Base"/>
 
     <!-- Login Screen Style -->
-    <style name="LoginScreen" parent="AppTheme.Base">
+    <style name="LoginScreen" parent="LoginScreen.Base">
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
     </style>

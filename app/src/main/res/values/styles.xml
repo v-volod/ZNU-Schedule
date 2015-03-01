@@ -8,11 +8,6 @@
         <item name="colorAccentDark">@color/yellow_700</item>
         <item name="android:windowBackground">@color/white</item>
 
-        <!-- Material Dialog colors -->
-        <item name="md_positive_color">?attr/colorPrimary</item>
-        <item name="md_neutral_color">?attr/colorPrimary</item>
-        <item name="md_negative_color">?attr/colorPrimary</item>
-
         <item name="toolbarTheme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
         <item name="toolbarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
         <item name="subHeaderTextColor">@color/sub_header_text_color</item>
@@ -24,10 +19,14 @@
     </style>
 
     <!-- Login Screen Style -->
-    <style name="LoginScreen" parent="AppTheme.Base"/>
+    <style name="LoginScreen.Base" parent="AppTheme">
+        <item name="colorAccent">@color/teal_500</item>
+    </style>
+
+    <style name="LoginScreen" parent="LoginScreen.Base" />
 
     <!-- NoDrawer Theme -->
-    <style name="NoDrawerTheme" parent="AppTheme"/>
+    <style name="NoDrawerTheme" parent="AppTheme" />
 
     <!-- Purple Theme -->
     <style name="AppTheme.Purple" parent="AppTheme.Base">
@@ -44,11 +43,6 @@
         <item name="colorAccent">@color/teal_500</item>
         <item name="colorAccentDark">@color/teal_700</item>
 
-        <!-- Material Dialog colors -->
-        <item name="md_positive_color">?attr/colorAccent</item>
-        <item name="md_neutral_color">?attr/colorAccent</item>
-        <item name="md_negative_color">?attr/colorAccent</item>
-
         <item name="toolbarTheme">@style/ThemeOverlay.AppCompat.ActionBar</item>
         <item name="toolbarPopupTheme">@style/ThemeOverlay.AppCompat.Dark</item>
         <item name="subHeaderTextColor">?attr/colorAccent</item>
@@ -58,11 +52,6 @@
     <style name="AppTheme.BlueGrey" parent="NoDrawerTheme">
         <item name="colorPrimary">@color/blue_grey_500</item>
         <item name="colorPrimaryDark">@color/blue_grey_700</item>
-
-        <!-- Material Dialog colors -->
-        <item name="md_positive_color">?attr/colorAccent</item>
-        <item name="md_neutral_color">?attr/colorAccent</item>
-        <item name="md_negative_color">?attr/colorAccent</item>
 
         <item name="subHeaderTextColor">@color/grey_700</item>
     </style>

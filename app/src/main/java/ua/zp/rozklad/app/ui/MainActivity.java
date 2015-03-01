@@ -16,11 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -40,7 +36,7 @@ import static java.lang.String.format;
 public class MainActivity extends ActionBarActivity
         implements ScheduleFragment.OnScheduleItemClickListener,
         ScheduleOfWeekFragment.OnPeriodicityChangeListener,
-        LecturersFragment.OnLecturerClickListener {
+        LecturersFragment.OnLecturerClickListener, MaterialDialog.ListCallback {
 
     private static final int REQUEST_LOGIN = 100;
 
@@ -248,33 +244,23 @@ public class MainActivity extends ActionBarActivity
             subgroups[i] = String.format(getString(R.string.subgroup_format_1), i + 1);
         }
 
-        ListAdapter subgroupsAdapter =
-                new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, subgroups);
-
-        final MaterialDialog changeSubgroupDialog = new MaterialDialog.Builder(this)
+        new MaterialDialog.Builder(this)
                 .title(R.string.choose_subgroup_hint)
-                .adapter(subgroupsAdapter)
+                .items(subgroups)
+                .itemsCallbackSingleChoice(account.getSubgroup() - 1, this)
                 .negativeText(R.string.cancel)
-                .build();
-        ListView list = changeSubgroupDialog.getListView();
+                .show();
+    }
 
-        if (null != list) {
-            list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    changeSubgroupDialog.dismiss();
-                    int subgroup = position + 1;
-                    if (subgroup != account.getSubgroup()) {
-                        account.setSubgroup(subgroup);
-                        mGroupAuthenticatorHelper.setSubgroup(account);
-                        setUpNavDrawerAccountInfo();
-                        reloadContentFragment();
-                    }
-                }
-            });
+    @Override
+    public void onSelection(MaterialDialog dialog, View v, int position, CharSequence cs) {
+        int subgroup = position + 1;
+        if (subgroup != account.getSubgroup()) {
+            account.setSubgroup(subgroup);
+            mGroupAuthenticatorHelper.setSubgroup(account);
+            setUpNavDrawerAccountInfo();
+            reloadContentFragment();
         }
-
-        changeSubgroupDialog.show();
     }
 
     private void reloadContentFragment() {

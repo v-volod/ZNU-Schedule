@@ -4,13 +4,13 @@ import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -35,6 +35,7 @@ import ua.zp.rozklad.app.rest.ResponseCallback;
 import ua.zp.rozklad.app.rest.resource.Department;
 import ua.zp.rozklad.app.rest.resource.Group;
 import ua.zp.rozklad.app.util.MetricaUtils;
+import ua.zp.rozklad.app.util.PreferencesUtils;
 
 public class LoginActivity extends AccountAuthenticatorActivity
         implements View.OnClickListener {
@@ -148,10 +149,7 @@ public class LoginActivity extends AccountAuthenticatorActivity
                     account,
                     ScheduleContract.CONTENT_AUTHORITY,
                     Bundle.EMPTY,
-                    /*
-                    * TODO: store interval in preferences. 1 hour def val.
-                    * */
-                    60L * 60L
+                    PreferencesUtils.HOUR_IN_SECONDS
             );
 
             setAccountAuthenticatorResult(intent.getExtras());
@@ -188,6 +186,10 @@ public class LoginActivity extends AccountAuthenticatorActivity
         }
         retryButton.setVisibility(View.VISIBLE);
         Toast.makeText(this, errorTextResId, Toast.LENGTH_SHORT).show();
+    }
+
+    private Context getContext() {
+        return this;
     }
 
     public class DepartmentAdapter extends BaseAdapter
@@ -344,7 +346,7 @@ public class LoginActivity extends AccountAuthenticatorActivity
     }
 
     public class GroupAdapter extends BaseAdapter
-            implements ResponseCallback<ArrayList<Group>>, View.OnClickListener {
+            implements ResponseCallback<ArrayList<Group>>, View.OnClickListener, MaterialDialog.ListCallback {
         public static final String KEY_DEPARTMENT_ID = "DEPARTMENT_ID";
         public static final String KEY_SELECTED_GROUP = "SELECTED_GROUP";
         public static final String KEY_SELECTED_SUBGROUP = "SELECTED_SUBGROUP";
@@ -359,7 +361,6 @@ public class LoginActivity extends AccountAuthenticatorActivity
         private GetGroupsMethod method;
 
         private MaterialDialog chooseGroupDialog;
-        private MaterialDialog chooseSubgroupDialog;
         private TextView subgroupName;
         private TextView groupName;
         private View groupChooserView;
@@ -373,19 +374,11 @@ public class LoginActivity extends AccountAuthenticatorActivity
             }
         };
 
-        private AdapterView.OnItemClickListener selectSubgroup = new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectSubgroup(position);
-                chooseSubgroupDialog.dismiss();
-            }
-        };
-
         public GroupAdapter() {
             groups = new ArrayList<>();
             method = new GetGroupsMethod();
 
-            chooseGroupDialog = new MaterialDialog.Builder(LoginActivity.this)
+            chooseGroupDialog = new MaterialDialog.Builder(getContext())
                     .title(R.string.choose_group_hint)
                     .adapter(this)
                     .negativeText(R.string.cancel)
@@ -492,27 +485,19 @@ public class LoginActivity extends AccountAuthenticatorActivity
                         subgroups[i] = String.format(getString(R.string.subgroup_format_1), i + 1);
                     }
 
-                    chooseSubgroupDialog = new MaterialDialog.Builder(LoginActivity.this)
+                    new MaterialDialog.Builder(getContext())
                             .title(R.string.choose_subgroup_hint)
-                            .adapter(
-                                    new ArrayAdapter<>(
-                                            LoginActivity.this,
-                                            android.R.layout.simple_spinner_dropdown_item,
-                                            subgroups
-                                    )
-                            )
+                            .items(subgroups)
+                            .itemsCallbackSingleChoice(selectedSubgroup, this)
                             .negativeText(R.string.cancel)
-                            .build();
-
-                    ListView list = chooseSubgroupDialog.getListView();
-
-                    if (null != list) {
-                        list.setOnItemClickListener(selectSubgroup);
-                    }
-
-                    chooseSubgroupDialog.show();
+                            .show();
                     break;
             }
+        }
+
+        @Override
+        public void onSelection(MaterialDialog dialog, View v, int position, CharSequence cs) {
+            selectSubgroup(position);
         }
 
         public void hide() {
@@ -591,6 +576,7 @@ public class LoginActivity extends AccountAuthenticatorActivity
                 selectSubgroup(savedInstanceState.getInt(KEY_SELECTED_SUBGROUP, -1));
             }
         }
+
     }
 
     public void showProgressWheel() {
