@@ -10,13 +10,19 @@ import ua.zp.rozklad.app.rest.RESTMethod;
  */
 public class CurrentWeek extends Resource {
 
-    private String week;
+    private int week;
+    private int weekOfYear;
 
     public CurrentWeek(JSONObject json) throws JSONException {
-        week = json.getString(RESTMethod.Key.WEEK);
+        week = json.getInt(RESTMethod.Key.TIMETABLE_WEEK);
+        weekOfYear = json.getInt(RESTMethod.Key.WEEK_OF_YEAR);
     }
 
     public int getWeek() {
-        return Integer.parseInt(week);
+        return week;
+    }
+
+    public int getWeekOfYear() {
+        return weekOfYear;
     }
 }

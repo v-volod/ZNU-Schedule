@@ -19,7 +19,7 @@ public class PreferencesUtils {
 
     public static final String KEY_AUTO_SYNC = "key_auto_sync";
     public static final String KEY_AUTO_SYNC_INTERVAL = "key_auto_sync_interval";
-    public static final long HOUR_IN_SECONDS = 86400;
+    public static final long HOUR_IN_SECONDS = 3600;
 
     private Context mContext;
 

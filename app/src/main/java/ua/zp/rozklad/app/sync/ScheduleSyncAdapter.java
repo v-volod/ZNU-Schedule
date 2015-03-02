@@ -82,7 +82,7 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         MethodResponse<CurrentWeek> currentWeekMethodResponse = currentWeekMethod.executeBlocking();
         if (canProcess(currentWeekMethodResponse, syncResult)) {
             CurrentWeek currentWeek = currentWeekMethodResponse.getResponse();
-            mPrefUtils.savePeriodicity(currentWeek.getWeek(), CalendarUtils.getCurrentWeekOfYear());
+            mPrefUtils.savePeriodicity(currentWeek.getWeek(), currentWeek.getWeekOfYear());
         } else if (!mPrefUtils.getPeriodicity().isValid()) {
             return;
         }
