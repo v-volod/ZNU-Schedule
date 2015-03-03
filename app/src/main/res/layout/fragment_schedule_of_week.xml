@@ -18,6 +18,7 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:text="@string/no_loaded_schedule"
+            android:textAppearance="@style/TextAppearance.AppCompat.Caption"
             android:textSize="@dimen/text_size_medium_material"
             android:padding="@dimen/key_line_1" />
 

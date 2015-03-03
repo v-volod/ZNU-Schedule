@@ -72,7 +72,7 @@ public class LecturersFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_subjects, container, false);
+        View view = inflater.inflate(R.layout.fragment_lecturers, container, false);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -110,11 +110,17 @@ public class LecturersFragment extends Fragment implements LoaderManager.LoaderC
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (data.getCount() > 0) {
+            mRecyclerView.setVisibility(View.VISIBLE);
+        } else {
+            mRecyclerView.setVisibility(View.INVISIBLE);
+        }
         mAdapter.swapCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        mRecyclerView.setVisibility(View.INVISIBLE);
         mAdapter.swapCursor(null);
     }
 

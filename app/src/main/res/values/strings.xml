@@ -23,7 +23,9 @@
     <string name="can_not_create_account">Помилка, не можливо створити обліковий запис</string>
     <string name="one_account_allowed">Тільки один обліковий запис дозволено</string>
     <string name="error_already_has_account">Помилка! Ви вже маєте обліковий запис</string>
-    <string name="no_loaded_schedule">Розклад ще не завантажено, або відсутній</string>
+    <string name="no_loaded_schedule">Розклад на цей тиждень ще не завантажено, або відсутній</string>
+    <string name="lecturers_list_is_empty">Список викладачів ще не завантажено або відсутній</string>
+    <string name="subjects_list_is_empty">Список предметів ще не завантажено або відсутній</string>
     <string name="not_specified">Не задано</string>
     <string name="retry">ПОВТОРИТИ</string>
 

@@ -92,11 +92,17 @@ public class SubjectsFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (data.getCount() > 0) {
+            mRecyclerView.setVisibility(View.VISIBLE);
+        } else {
+            mRecyclerView.setVisibility(View.INVISIBLE);
+        }
         mAdapter.swapCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        mRecyclerView.setVisibility(View.INVISIBLE);
         mAdapter.swapCursor(null);
     }
 
