@@ -178,4 +178,9 @@ public class AboutActivity extends BaseActivity implements View.OnClickListener 
             break;
         }
     }
+
+    @Override
+    protected void onAccountDeleted() {
+        MainActivity.startClearTask(this);
+    }
 }

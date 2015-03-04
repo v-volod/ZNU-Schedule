@@ -2,6 +2,7 @@ package ua.zp.rozklad.app.ui;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -9,7 +10,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
@@ -24,10 +24,9 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.util.ArrayList;
 
+import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.BuildConfig;
 import ua.zp.rozklad.app.R;
-import ua.zp.rozklad.app.account.GroupAccount;
-import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
 import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.util.MetricaUtils;
 import ua.zp.rozklad.app.util.UiUtils;
@@ -36,12 +35,10 @@ import static java.lang.String.format;
 import static ua.zp.rozklad.app.provider.ScheduleContract.Group.buildGroupUri;
 
 
-public class MainActivity extends ActionBarActivity
+public class MainActivity extends BaseActivity
         implements ScheduleFragment.OnScheduleItemClickListener,
-        ScheduleOfWeekFragment.OnPeriodicityChangeListener, ScheduleOfWeekFragment.RetrieveAccount,
+        ScheduleOfWeekFragment.OnPeriodicityChangeListener,
         LecturersFragment.OnLecturerClickListener, MaterialDialog.ListCallback {
-
-    private static final int REQUEST_LOGIN = 100;
 
     public static interface EXTRA_KEY {
         String SELECTED_NAV_DRAWER_ITEM_ID = "SELECTED_NAV_DRAWER_ITEM_ID";
@@ -81,11 +78,13 @@ public class MainActivity extends ActionBarActivity
     private ArrayList<Integer> navDrawerItems = new ArrayList<>();
     private View appBarShadow;
     private DrawerLayout drawerLayout;
+    private TextView groupName;
+    private TextView departmentName;
     private View[] navDrawerItemViews = null;
     private View.OnClickListener changeGroupClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (account != null) {
+            if (getAccount() != null) {
                 new MaterialDialog.Builder(MainActivity.this)
                         .content(R.string.change_group_question)
                         .positiveText(R.string.change_group)
@@ -103,16 +102,11 @@ public class MainActivity extends ActionBarActivity
 
     private Toolbar appBar;
 
-    private GroupAccount account;
-    private boolean isLoginRequested = false;
-    private GroupAuthenticatorHelper mGroupAuthenticatorHelper;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        App.LOG_D("MainActivity onCreate");
         setContentView(R.layout.activity_main);
-
-        mGroupAuthenticatorHelper = new GroupAuthenticatorHelper(this);
 
         appBar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(appBar);
@@ -125,69 +119,31 @@ public class MainActivity extends ActionBarActivity
                 UiUtils.getThemeAttribute(this, R.attr.colorPrimaryDark).resourceId
         );
 
+        groupName = (TextView) drawerLayout.findViewById(R.id.group_name_text);
+        departmentName = (TextView) drawerLayout.findViewById(R.id.department_name_text);
+
         selectedNavDrawerItemId = NAV_DRAWER_ITEM_SCHEDULE;
+
         if (savedInstanceState != null) {
             selectedNavDrawerItemId = savedInstanceState
                     .getInt(EXTRA_KEY.SELECTED_NAV_DRAWER_ITEM_ID, NAV_DRAWER_ITEM_SCHEDULE);
         }
-
-        if (getAccount()) {
-            setUpNavDrawer();
-        }
     }
 
-    private boolean getAccount() {
-        if (!mGroupAuthenticatorHelper.hasAccount()) {
-            requestLogin();
-            return false;
-        } else {
-            account = mGroupAuthenticatorHelper.getActiveAccount();
-            if (account == null) {
-                Account[] accounts = mGroupAuthenticatorHelper.getAccounts();
-                if (accounts.length > 0) {
-                    account = new GroupAccount(AccountManager.get(this), accounts[0]);
-                } else {
-                    requestLogin();
-                    return false;
-                }
-            }
-        }
-        return true;
+    @Override
+    protected void onAccountChanged() {
+        setUpNavDrawer();
+    }
+
+    @Override
+    protected void onAccountAuthenticated() {
+        setUpNavDrawer();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(EXTRA_KEY.SELECTED_NAV_DRAWER_ITEM_ID, selectedNavDrawerItemId);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (!isLoginRequested && !mGroupAuthenticatorHelper.hasAccount()) {
-            requestLogin();
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_LOGIN) {
-            switch (resultCode) {
-                case LoginActivity.RESULT_CANCELED:
-                    finish();
-                    break;
-                case LoginActivity.RESULT_OK:
-                    if (getAccount()) {
-                        setUpNavDrawer();
-                        reloadContentFragment();
-                        isLoginRequested = false;
-                    }
-                    break;
-                default:
-                    super.onActivityResult(requestCode, resultCode, data);
-            }
-        }
     }
 
     @Override
@@ -199,7 +155,7 @@ public class MainActivity extends ActionBarActivity
         }
         getMenuInflater().inflate(R.menu.default_menu, menu);
 
-        if (account != null && account.getSubgroupCount() > 0) {
+        if (getAccount() != null && getAccount().getSubgroupCount() > 0) {
             menu.findItem(R.id.action_change_subgroup).setVisible(true);
         }
 
@@ -231,36 +187,31 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
-    private void requestLogin() {
-        isLoginRequested = true;
-        final Intent intent = new Intent(this, LoginActivity.class);
-        startActivityForResult(intent, REQUEST_LOGIN);
-    }
-
     private void changeGroup() {
         drawerLayout.closeDrawer(Gravity.START);
         AccountManager mAccountManager = AccountManager.get(this);
-        if (account != null) {
+        if (getAccount() != null) {
             if (!BuildConfig.DEBUG)
-                MetricaUtils.reportGroupChange(account);
-            mAccountManager.removeAccount(account.getBaseAccount(), null, new Handler());
+                MetricaUtils.reportGroupChange(getAccount());
+            mAccountManager.removeAccount(getAccount().getBaseAccount(), null, new Handler());
             ContentValues values = new ContentValues();
             values.put(ScheduleContract.Group.UPDATED, 0);
-            getContentResolver().update(buildGroupUri(account.getGroupId()), values, null, null);
+            getContentResolver()
+                    .update(buildGroupUri(getAccount().getGroupId()), values, null, null);
             requestLogin();
         }
     }
 
     private void changeSubgroup() {
-        String[] subgroups = new String[account.getSubgroupCount()];
-        for (int i = 0; i < account.getSubgroupCount(); i++) {
+        String[] subgroups = new String[getAccount().getSubgroupCount()];
+        for (int i = 0; i < getAccount().getSubgroupCount(); i++) {
             subgroups[i] = String.format(getString(R.string.subgroup_format_1), i + 1);
         }
 
         new MaterialDialog.Builder(this)
                 .title(R.string.choose_subgroup_hint)
                 .items(subgroups)
-                .itemsCallbackSingleChoice(account.getSubgroup() - 1, this)
+                .itemsCallbackSingleChoice(getAccount().getSubgroup() - 1, this)
                 .negativeText(R.string.cancel)
                 .show();
     }
@@ -268,9 +219,9 @@ public class MainActivity extends ActionBarActivity
     @Override
     public void onSelection(MaterialDialog dialog, View v, int position, CharSequence cs) {
         int subgroup = position + 1;
-        if (subgroup != account.getSubgroup()) {
-            account.setSubgroup(subgroup);
-            mGroupAuthenticatorHelper.setSubgroup(account);
+        if (subgroup != getAccount().getSubgroup()) {
+            getAccount().setSubgroup(subgroup);
+            getGroupAuthenticatorHelper().setSubgroup(getAccount());
             setUpNavDrawerAccountInfo();
             reloadContentFragment();
         }
@@ -333,15 +284,14 @@ public class MainActivity extends ActionBarActivity
     }
 
     private void setUpNavDrawerAccountInfo() {
-        String groupName = getString(R.string.nav_drawer_group_qualifier) + " " +
-                account.getGroupName() + ((account.getSubgroupCount() > 0) ?
-                format(getString(R.string.subgroup_format_2), account.getSubgroup()) : "");
-        String departmentName = account.getDepartmentName();
+        String groupNameText = getString(R.string.group) + " " + getAccount().getGroupName();
+        if (getAccount().getSubgroupCount() > 0) {
+            groupNameText +=
+                    format(getString(R.string.subgroup_format_2), getAccount().getSubgroup());
+        }
 
-        ((TextView) drawerLayout.findViewById(R.id.group_name_text))
-                .setText(groupName);
-        ((TextView) drawerLayout.findViewById(R.id.department_name_text))
-                .setText(departmentName);
+        groupName.setText(groupNameText);
+        departmentName.setText(getAccount().getDepartmentName());
     }
 
     private void createNavDrawerItems() {
@@ -443,7 +393,6 @@ public class MainActivity extends ActionBarActivity
                 onLecturersSelected();
                 break;
         }
-        selectedNavDrawerItemId = itemId;
         setSelectedNavDrawerItem(itemId);
         if (drawerLayout.isShown()) {
             drawerLayout.closeDrawer(Gravity.START);
@@ -452,6 +401,7 @@ public class MainActivity extends ActionBarActivity
     }
 
     private void setSelectedNavDrawerItem(int itemId) {
+        selectedNavDrawerItemId = itemId;
         if (navDrawerItemViews != null) {
             for (int i = 0; i < navDrawerItemViews.length; i++) {
                 if (i < navDrawerItems.size()) {
@@ -469,8 +419,7 @@ public class MainActivity extends ActionBarActivity
 
         Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
         if (fragment == null || !(fragment instanceof ScheduleOfWeekFragment)) {
-            replaceMainContent(ScheduleOfWeekFragment
-                    .newInstance(account.getGroupId(), account.getSubgroup()));
+            replaceMainContent(ScheduleOfWeekFragment.newInstance(getAccount()));
         } else {
             reloadSchedule();
         }
@@ -483,8 +432,7 @@ public class MainActivity extends ActionBarActivity
 
         Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
         if (fragment == null || !(fragment instanceof SubjectsFragment)) {
-            replaceMainContent(SubjectsFragment
-                    .newInstance(account.getGroupId(), account.getSubgroup()));
+            replaceMainContent(SubjectsFragment.newInstance(getAccount()));
         } else {
             reloadSubjects();
         }
@@ -497,8 +445,7 @@ public class MainActivity extends ActionBarActivity
 
         Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
         if (fragment == null || !(fragment instanceof LecturersFragment)) {
-            replaceMainContent(LecturersFragment
-                    .newInstance(account.getGroupId(), account.getSubgroup()));
+            replaceMainContent(LecturersFragment.newInstance(getAccount()));
         } else {
             reloadLecturers();
         }
@@ -507,22 +454,21 @@ public class MainActivity extends ActionBarActivity
     private void reloadSchedule() {
         Fragment scheduleOfWeek = getFragmentManager().findFragmentById(R.id.main_content);
         if (scheduleOfWeek != null && scheduleOfWeek instanceof ScheduleOfWeekFragment) {
-            ((ScheduleOfWeekFragment) scheduleOfWeek)
-                    .reload(account.getGroupId(), account.getSubgroup());
+            ((ScheduleOfWeekFragment) scheduleOfWeek).reload(getAccount());
         }
     }
 
     private void reloadSubjects() {
         Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
         if (fragment != null && fragment instanceof SubjectsFragment) {
-            ((SubjectsFragment) fragment).reload(account.getGroupId(), account.getSubgroup());
+            ((SubjectsFragment) fragment).reload(getAccount());
         }
     }
 
     private void reloadLecturers() {
         Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
         if (fragment != null && fragment instanceof LecturersFragment) {
-            ((LecturersFragment) fragment).reload(account.getGroupId(), account.getSubgroup());
+            ((LecturersFragment) fragment).reload(getAccount());
         }
     }
 
@@ -571,8 +517,9 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
-    @Override
-    public Account retrieveAccount() {
-        return account.getBaseAccount();
+    public static void startClearTask(Activity clientActivity) {
+        Intent intent = new Intent(clientActivity, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        clientActivity.startActivity(intent);
     }
 }

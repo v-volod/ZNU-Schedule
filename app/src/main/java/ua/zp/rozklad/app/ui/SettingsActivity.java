@@ -23,7 +23,7 @@ import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
 import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.util.PreferencesUtils;
 
-public class SettingsActivity extends ActionBarActivity implements View.OnClickListener,
+public class SettingsActivity extends BaseActivity implements View.OnClickListener,
         CompoundButton.OnCheckedChangeListener, SharedPreferences.OnSharedPreferenceChangeListener,
         MaterialDialog.ListCallback {
 
@@ -231,5 +231,10 @@ public class SettingsActivity extends ActionBarActivity implements View.OnClickL
         int value = intervalsValues[which];
         syncIntervalText.setText(findInterval(value));
         preferencesUtils.setAutoSyncInterval(value);
+    }
+
+    @Override
+    protected void onAccountDeleted() {
+        MainActivity.startClearTask(this);
     }
 }

@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import ua.zp.rozklad.app.R;
+import ua.zp.rozklad.app.account.GroupAccount;
 import ua.zp.rozklad.app.adapter.CursorRecyclerViewAdapter;
 import ua.zp.rozklad.app.provider.ScheduleContract.FullLecturer;
 import ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary;
@@ -36,11 +37,11 @@ public class LecturersFragment extends Fragment implements LoaderManager.LoaderC
     private RecyclerView mRecyclerView;
     private LecturersAdapter mAdapter;
 
-    public static LecturersFragment newInstance(int groupId, int subgroup) {
+    public static LecturersFragment newInstance(GroupAccount groupAccount) {
         LecturersFragment fragment = new LecturersFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_GROUP_ID, groupId);
-        args.putInt(ARG_SUBGROUP, subgroup);
+        args.putInt(ARG_GROUP_ID, groupAccount.getGroupId());
+        args.putInt(ARG_SUBGROUP, groupAccount.getSubgroup());
         fragment.setArguments(args);
         return fragment;
     }
@@ -124,9 +125,9 @@ public class LecturersFragment extends Fragment implements LoaderManager.LoaderC
         mAdapter.swapCursor(null);
     }
 
-    public void reload(int groupId, int subgroup) {
-        this.groupId = groupId;
-        this.subgroup = subgroup;
+    public void reload(GroupAccount groupAccount) {
+        groupId = groupAccount.getGroupId();
+        subgroup = groupAccount.getSubgroup();
         if (getArguments() != null) {
             getArguments().putInt(ARG_GROUP_ID, groupId);
             getArguments().putInt(ARG_SUBGROUP, subgroup);

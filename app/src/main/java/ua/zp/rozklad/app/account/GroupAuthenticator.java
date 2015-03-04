@@ -27,7 +27,6 @@ public class GroupAuthenticator extends AbstractAccountAuthenticator {
     public static final String KEY_SUBGROUP = "KEY_SUBGROUP";
     public static final String KEY_SUBGROUP_COUNT = "KEY_SUBGROUP_COUNT";
     public static final String KEY_DEPARTMENT_NAME = "KEY_DEPARTMENT_NAME";
-    public static final String KEY_ACCOUNT_EXTRA = "account_key";
 
     public static final int ERROR_CODE_ONE_ACCOUNT_ALLOWED = 101;
 

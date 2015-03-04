@@ -26,6 +26,7 @@ import com.melnykov.fab.FloatingActionButton;
 
 import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.R;
+import ua.zp.rozklad.app.account.GroupAccount;
 import ua.zp.rozklad.app.adapter.CursorFragmentStatePagerAdapter;
 import ua.zp.rozklad.app.model.Periodicity;
 import ua.zp.rozklad.app.provider.ScheduleContract;
@@ -83,7 +84,6 @@ public class ScheduleOfWeekFragment extends Fragment
     private static final int[] weeks = new int[2];
 
     private OnPeriodicityChangeListener mListener;
-    private RetrieveAccount mRetrieveAccount;
 
     private DayPagerAdapter mAdapter;
     private ViewPager mPager;
@@ -95,12 +95,12 @@ public class ScheduleOfWeekFragment extends Fragment
 
     private Handler mHandler = new Handler();
 
-    public static ScheduleOfWeekFragment newInstance(long groupId, int subgroupId) {
+    public static ScheduleOfWeekFragment newInstance(GroupAccount groupAccount) {
         ScheduleOfWeekFragment fragment = new ScheduleOfWeekFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_SCHEDULE_TYPE, Type.BY_GROUP);
-        args.putLong(ARG_TYPE_FILTER_ID, groupId);
-        args.putInt(ARG_SUBGROUP_ID, subgroupId);
+        args.putLong(ARG_TYPE_FILTER_ID, groupAccount.getGroupId());
+        args.putInt(ARG_SUBGROUP_ID, groupAccount.getSubgroup());
         fragment.setArguments(args);
         return fragment;
     }
@@ -128,12 +128,6 @@ public class ScheduleOfWeekFragment extends Fragment
                     + " must implement OnPeriodicityChangeListener");
         }
 
-        try {
-            mRetrieveAccount = (RetrieveAccount) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement RetrieveAccount");
-        }
         isAttached = true;
     }
 
@@ -313,7 +307,6 @@ public class ScheduleOfWeekFragment extends Fragment
     }
 
     public void toggleWeek() {
-        App.LOG_D(selectedWeekPosition + " -> " + abs(selectedWeekPosition - 1));
         selectedWeekPosition = abs(selectedWeekPosition - 1);
         getLoaderManager().restartLoader(scheduleType, null, this);
     }
@@ -377,13 +370,13 @@ public class ScheduleOfWeekFragment extends Fragment
         return scheduleType;
     }
 
-    public void reload(int groupId, int subgroupId) {
-        if (this.typeFilterId != groupId || this.subgroupId != subgroupId) {
-            this.typeFilterId = groupId;
-            this.subgroupId = subgroupId;
+    public void reload(GroupAccount groupAccount) {
+        if (typeFilterId != groupAccount.getGroupId() || subgroupId != groupAccount.getSubgroup()) {
+            typeFilterId = groupAccount.getGroupId();
+            subgroupId = groupAccount.getSubgroup();
             Bundle args = getArguments();
             if (args != null) {
-                args.putInt(ARG_TYPE_FILTER_ID, groupId);
+                args.putLong(ARG_TYPE_FILTER_ID, typeFilterId);
                 args.putInt(ARG_SUBGROUP_ID, subgroupId);
             }
             if (isAttached) {
@@ -403,15 +396,19 @@ public class ScheduleOfWeekFragment extends Fragment
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    boolean isSyncPending = ContentResolver.isSyncPending(
-                            mRetrieveAccount.retrieveAccount(), ScheduleContract.CONTENT_AUTHORITY
-                    );
+                    GroupAccount groupAccount = App.getInstance()
+                            .getGroupAuthenticatorHelper().getActiveAccount();
+                    if (groupAccount != null) {
+                        boolean isSyncPending =
+                                ContentResolver.isSyncPending(
+                                        groupAccount.getBaseAccount(),
+                                        ScheduleContract.CONTENT_AUTHORITY
+                                );
 
-                    if (App.getInstance().isManualSyncActive() ||
-                            isSyncPending && App.getInstance().isManualSyncRequested()) {
-                        showRefreshView();
-                    } else {
-                        hideRefreshView();
+                        if (App.getInstance().isManualSyncActive() ||
+                                isSyncPending && App.getInstance().isManualSyncRequested()) {
+                            showRefreshView();
+                        }
                     }
                 }
             }, 1000);
@@ -423,6 +420,7 @@ public class ScheduleOfWeekFragment extends Fragment
         super.onPause();
         if (scheduleType == Type.BY_GROUP) {
             getActivity().unregisterReceiver(mSyncBroadcastReceiver);
+            hideRefreshView();
         }
     }
 
@@ -435,22 +433,26 @@ public class ScheduleOfWeekFragment extends Fragment
     }
 
     public void performSync() {
-        Account account = mRetrieveAccount.retrieveAccount();
+        GroupAccount groupAccount = App.getInstance().getGroupAuthenticatorHelper().getActiveAccount();
 
-        Bundle bundle = new Bundle();
-        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        if (groupAccount != null) {
+            Account account = groupAccount.getBaseAccount();
 
-        boolean isSyncActive =
-                ContentResolver.isSyncPending(account, ScheduleContract.CONTENT_AUTHORITY);
-        boolean isSyncPending =
-                ContentResolver.isSyncActive(account, ScheduleContract.CONTENT_AUTHORITY);
-        if (!isSyncActive && !isSyncPending) {
-            ContentResolver.requestSync(account, ScheduleContract.CONTENT_AUTHORITY, bundle);
+            boolean isSyncActive =
+                    ContentResolver.isSyncPending(account, ScheduleContract.CONTENT_AUTHORITY);
+            boolean isSyncPending =
+                    ContentResolver.isSyncActive(account, ScheduleContract.CONTENT_AUTHORITY);
+            if (!isSyncActive && !isSyncPending) {
+                Bundle bundle = new Bundle();
+                bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+                bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+
+                ContentResolver.requestSync(account, ScheduleContract.CONTENT_AUTHORITY, bundle);
+            }
+
+            mSwipeRefreshLayout.setRefreshing(true);
+            App.getInstance().setManualSyncRequested(true);
         }
-
-        mSwipeRefreshLayout.setRefreshing(true);
-        App.getInstance().setManualSyncRequested(true);
     }
 
     @Override
@@ -483,10 +485,6 @@ public class ScheduleOfWeekFragment extends Fragment
          * @param periodicity id of the row of the schedule table in the database.
          */
         public void onPeriodicityChanged(int periodicity);
-    }
-
-    public interface RetrieveAccount {
-        public Account retrieveAccount();
     }
 
     private class DayPagerAdapter extends CursorFragmentStatePagerAdapter {

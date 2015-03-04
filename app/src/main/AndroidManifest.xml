@@ -64,8 +64,7 @@
 
         <activity
             android:name=".ui.MainActivity"
-            android:label="@string/znu_schedule"
-            android:launchMode="singleTop">
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -98,7 +97,7 @@
             android:name=".ui.SettingsActivity"
             android:configChanges="orientation|keyboard|keyboardHidden|screenSize|screenLayout|uiMode"
             android:label="@string/nav_drawer_item_settings"
-            android:launchMode="singleInstance"
+            android:launchMode="singleTask"
             android:theme="@style/AppTheme.BlueGrey" />
 
         <provider

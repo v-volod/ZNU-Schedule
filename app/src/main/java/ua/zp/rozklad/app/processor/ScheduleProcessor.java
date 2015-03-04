@@ -47,11 +47,9 @@ public class ScheduleProcessor extends Processor<ScheduleItem>
                 if (cursor.getLong(0) != scheduleItem.getLastUpdate()) {
                     mContentResolver.update(buildScheduleUri(scheduleItem.getId()),
                             buildValuesForUpdate(scheduleItem), null, null);
-                    App.LOG_D("updated " + scheduleItem + " -> " + cursor.getLong(0));
                 }
             } else {
                 mContentResolver.insert(Schedule.CONTENT_URI, buildValuesForInsert(scheduleItem));
-                App.LOG_D("inserted " + scheduleItem);
             }
 
             cursor.close();

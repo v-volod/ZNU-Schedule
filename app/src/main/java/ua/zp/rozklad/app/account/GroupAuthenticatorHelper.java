@@ -31,7 +31,7 @@ public class GroupAuthenticatorHelper {
 
     /**
      * Get active Group account.
-     * @return active Group account or or null if no one account exists.
+     * @return active Group account or null if no one account exists.
      * */
     @Nullable
     public GroupAccount getActiveAccount() {

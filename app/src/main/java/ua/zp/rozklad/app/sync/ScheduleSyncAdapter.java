@@ -126,22 +126,14 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         MethodResponse<ArrayList<Group>> groupsResponse = getGroups.executeBlocking();
 
         if (canProcess(groupsResponse, syncResult) && groupsResponse.getResponse().size() == 1) {
-            Group group = groupsResponse.getResponse().get(0);
-            App.LOG_I("Sync group " + group);
-
             ArrayList<Group> groups = groupsProcessor
                     .resolveDependencies(groupsResponse.getResponse());
 
             if (groups.size() == 1) {
                 if (performGroupScheduleSync(syncResult, groups.get(0))) {
                     groupsProcessor.process(groupsResponse.getResponse());
-                    App.LOG_I("Sync group successful");
-                } else {
-                    App.LOG_I("Sync group unsuccessful");
                 }
             } else {
-                App.LOG_I("Sync group not needed");
-
                 Cursor cursor = getContext().getContentResolver()
                         .query(Schedule.CONTENT_URI,
                                 combineProjection(Schedule.LECTURER_ID),
@@ -157,8 +149,6 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
                         lecturersIds[cursor.getPosition()] = cursor.getString(0);
                     } while (cursor.moveToNext());
 
-                    App.LOG_I("Sync lecturers: " + Arrays.toString(lecturersIds));
-
                     GetLecturersMethod getLecturers = new GetLecturersMethod();
                     getLecturers.prepare(RESTMethod.Filter.BY_ID_IN, lecturersIds);
 
@@ -166,11 +156,7 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
                             getLecturers.executeBlocking();
 
                     if (canProcess(lecturersResponse, syncResult)) {
-                        if (performLecturersSync(syncResult, lecturersResponse.getResponse(), true)) {
-                            App.LOG_I("Sync lecturers successful");
-                        }
-                    } else {
-                        App.LOG_I("Sync lecturers unsuccessful");
+                        performLecturersSync(syncResult, lecturersResponse.getResponse(), true);
                     }
                 }
 
@@ -226,8 +212,6 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
 
         ScheduleDependency dependency = scheduleProcessor.resolveDependencies(scheduleItems);
 
-        App.LOG_I(dependency.toString());
-
         if (dependency.hasAudiences()) {
             audiencesSynced = performAudiencesSync(syncResult, dependency.getAudiences());
         }
@@ -279,8 +263,6 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
             boolean successful = true;
 
             AudienceDependency dependency = audiencesProcessor.resolveDependencies(response.getResponse());
-
-            App.LOG_I(dependency.toString());
 
             if (dependency.hasCampuses()) {
                 successful = performCampusesSync(syncResult, dependency.getCampuses());

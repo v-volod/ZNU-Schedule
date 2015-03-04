@@ -21,8 +21,8 @@ import ua.zp.rozklad.app.provider.ScheduleContract.SyncColumns;
 public class ScheduleDatabase extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "schedule.db";
-    private static final int DEBUG_VERSION = 1;
-    private static final int CUR_DATABASE_VERSION = DEBUG_VERSION;
+    private static final int VERSION_1_APP_VERSION_CODE_1 = 1;
+    private static final int CURRENT_DATABASE_VERSION = VERSION_1_APP_VERSION_CODE_1;
 
     interface Tables {
         String DEPARTMENT = "department";
@@ -36,7 +36,7 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
     }
 
     public ScheduleDatabase(Context context) {
-        super(context, DATABASE_NAME, null, CUR_DATABASE_VERSION);
+        super(context, DATABASE_NAME, null, CURRENT_DATABASE_VERSION);
     }
 
     @Override
