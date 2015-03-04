@@ -3,7 +3,6 @@ package ua.zp.rozklad.app.ui;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Fragment;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Build;
@@ -39,7 +38,7 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.Group.buildGroupUri;
 
 public class MainActivity extends ActionBarActivity
         implements ScheduleFragment.OnScheduleItemClickListener,
-        ScheduleOfWeekFragment.OnPeriodicityChangeListener,
+        ScheduleOfWeekFragment.OnPeriodicityChangeListener, ScheduleOfWeekFragment.RetrieveAccount,
         LecturersFragment.OnLecturerClickListener, MaterialDialog.ListCallback {
 
     private static final int REQUEST_LOGIN = 100;
@@ -217,11 +216,13 @@ public class MainActivity extends ActionBarActivity
                     return true;
                 }
                 return false;
-            case R.id.action_sync_schedule:
-                ContentResolver.requestSync(
-                        account.getBaseAccount(), ScheduleContract.CONTENT_AUTHORITY, Bundle.EMPTY
-                );
-                return  true;
+            case R.id.action_sync_schedule: {
+                Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
+                if (fragment != null && (fragment instanceof ScheduleOfWeekFragment)) {
+                    ((ScheduleOfWeekFragment) fragment).performSync();
+                }
+            }
+            return true;
             case R.id.action_change_subgroup:
                 changeSubgroup();
                 return true;
@@ -568,5 +569,10 @@ public class MainActivity extends ActionBarActivity
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
             getSupportActionBar().setElevation(0);
         }
+    }
+
+    @Override
+    public Account retrieveAccount() {
+        return account.getBaseAccount();
     }
 }

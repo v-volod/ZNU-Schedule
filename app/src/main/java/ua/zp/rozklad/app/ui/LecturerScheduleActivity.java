@@ -1,5 +1,6 @@
 package ua.zp.rozklad.app.ui;
 
+import android.accounts.Account;
 import android.app.Fragment;
 import android.content.Intent;
 import android.database.Cursor;
@@ -14,6 +15,7 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.Lecturer.buildLecturer
 
 public class LecturerScheduleActivity extends BaseActivity
         implements ScheduleOfWeekFragment.OnPeriodicityChangeListener,
+        ScheduleOfWeekFragment.RetrieveAccount,
         ScheduleFragment.OnScheduleItemClickListener {
 
     public static final String ARG_LECTURER_ID = "LECTURER_ID";
@@ -78,5 +80,10 @@ public class LecturerScheduleActivity extends BaseActivity
         Intent intent = new Intent(this, ScheduleItemActivity.class);
         intent.putExtra(ScheduleItemActivity.ARG_SCHEDULE_ITEM_ID, scheduleItemId);
         startActivity(intent);
+    }
+
+    @Override
+    public Account retrieveAccount() {
+        return null;
     }
 }

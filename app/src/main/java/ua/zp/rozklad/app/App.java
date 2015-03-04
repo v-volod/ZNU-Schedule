@@ -25,6 +25,12 @@ public class App extends Application {
     private RequestQueue mRequestQueue;
     private PreferencesUtils mPreferencesUtils;
 
+    private final Object MANUAL_SYNC_ACTIVE_LOCK = new Object();
+    private boolean isManualSyncActive = false;
+
+    private final Object MANUAL_SYNC_REQUESTED_LOCK = new Object();
+    private boolean isManualSyncRequested = false;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -67,6 +73,31 @@ public class App extends Application {
             mPreferencesUtils = new PreferencesUtils(this);
         }
         return mPreferencesUtils;
+    }
+
+    public boolean isManualSyncActive() {
+        synchronized (MANUAL_SYNC_REQUESTED_LOCK) {
+            return isManualSyncActive;
+        }
+    }
+
+    public void setManualSyncActive(boolean isActive) {
+        synchronized (MANUAL_SYNC_REQUESTED_LOCK) {
+            isManualSyncActive = isActive;
+        }
+        setManualSyncRequested(false);
+    }
+
+    public boolean isManualSyncRequested() {
+        synchronized (MANUAL_SYNC_REQUESTED_LOCK) {
+            return isManualSyncRequested;
+        }
+    }
+
+    public void setManualSyncRequested(boolean isRequested) {
+        synchronized (MANUAL_SYNC_REQUESTED_LOCK) {
+            isManualSyncRequested = isRequested;
+        }
     }
 
     public static void LOG_D(String message) {

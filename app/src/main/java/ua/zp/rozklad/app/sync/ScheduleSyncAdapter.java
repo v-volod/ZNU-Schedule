@@ -4,7 +4,9 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -43,7 +45,6 @@ import ua.zp.rozklad.app.rest.resource.Group;
 import ua.zp.rozklad.app.rest.resource.Lecturer;
 import ua.zp.rozklad.app.rest.resource.ScheduleItem;
 import ua.zp.rozklad.app.rest.resource.Subject;
-import ua.zp.rozklad.app.util.CalendarUtils;
 import ua.zp.rozklad.app.util.PreferencesUtils;
 
 import static ua.zp.rozklad.app.provider.ScheduleContract.Schedule;
@@ -56,6 +57,15 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.groupBySelection;
  * @author Vojko Vladimir
  */
 public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
+
+    public static final String ACTION_SYNC_STATUS = App.TAG + ".ACTION_SYNC_STATUS";
+    public static final String EXTRA_SYNC_STATUS = "SYNC_STATUS";
+    public interface SyncStatus {
+        int START = 0;
+        int FINISHED = 1;
+        int ABORTED_WITH_ERROR = 2;
+    }
+    private static final Intent SYNC_STATUS_BROADCAST = new Intent(ACTION_SYNC_STATUS);
 
     private GroupsProcessor groupsProcessor;
     private ScheduleProcessor scheduleProcessor;
@@ -72,6 +82,14 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
                               ContentProviderClient provider, SyncResult syncResult) {
+        boolean isSyncRequestManual = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL);
+
+        if (isSyncRequestManual) {
+            App.getInstance().setManualSyncActive(true);
+            SYNC_STATUS_BROADCAST.putExtra(EXTRA_SYNC_STATUS, SyncStatus.START);
+            getContext().sendBroadcast(SYNC_STATUS_BROADCAST);
+        }
+
         PreferencesUtils mPrefUtils = App.getInstance().getPreferencesUtils();
         AccountManager manager = AccountManager.get(getContext());
         String groupId = manager.getUserData(account, GroupAuthenticator.KEY_GROUP_ID);
@@ -84,6 +102,11 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
             CurrentWeek currentWeek = currentWeekMethodResponse.getResponse();
             mPrefUtils.savePeriodicity(currentWeek.getWeek(), currentWeek.getWeekOfYear());
         } else if (!mPrefUtils.getPeriodicity().isValid()) {
+            if (isSyncRequestManual) {
+                App.getInstance().setManualSyncActive(false);
+                SYNC_STATUS_BROADCAST.putExtra(EXTRA_SYNC_STATUS, SyncStatus.ABORTED_WITH_ERROR);
+                getContext().sendBroadcast(SYNC_STATUS_BROADCAST);
+            }
             return;
         }
 
@@ -160,6 +183,12 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         audiencesProcessor.clean();
         campusesProcessor.clean();
         academicHoursProcessor.clean();
+
+        if (isSyncRequestManual) {
+            App.getInstance().setManualSyncActive(false);
+            SYNC_STATUS_BROADCAST.putExtra(EXTRA_SYNC_STATUS, SyncStatus.FINISHED);
+            getContext().sendBroadcast(SYNC_STATUS_BROADCAST);
+        }
     }
 
     private boolean performGroupScheduleSync(SyncResult syncResult, Group group) {
