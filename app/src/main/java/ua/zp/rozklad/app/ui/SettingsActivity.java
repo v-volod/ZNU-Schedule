@@ -5,7 +5,6 @@ import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -67,7 +66,7 @@ public class SettingsActivity extends BaseActivity implements View.OnClickListen
         /*
         * SetUp UI
         * */
-        ((TextView) findViewById(R.id.sync).findViewById(R.id.sub_header_text))
+        ((TextView) findViewById(R.id.sync).findViewById(R.id.text))
                 .setText(R.string.sync);
 
         View autoSync = findViewById(R.id.auto_sync);

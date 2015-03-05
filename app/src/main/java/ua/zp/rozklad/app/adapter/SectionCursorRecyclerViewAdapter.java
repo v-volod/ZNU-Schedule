@@ -5,6 +5,9 @@ import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 
 import java.util.HashMap;
+import java.util.Set;
+
+import ua.zp.rozklad.app.App;
 
 /**
  * @author Vojko Vladimir
@@ -14,9 +17,12 @@ public abstract class SectionCursorRecyclerViewAdapter<S>
     protected static final int TYPE_SECTION = 0;
     protected static final int TYPE_ITEM = 1;
 
-    private HashMap<Integer, S> sections;
+    private HashMap<Integer, S> mSections;
 
-    public SectionCursorRecyclerViewAdapter(Context context, Cursor cursor) {
+    /*
+    * Unusable yet. Continue development...
+    * */
+    private SectionCursorRecyclerViewAdapter(Context context, Cursor cursor) {
         super(context, cursor);
     }
 
@@ -61,16 +67,16 @@ public abstract class SectionCursorRecyclerViewAdapter<S>
     }
 
     protected S getSectionItem(int position) {
-        return sections.get(position);
+        return mSections.get(position);
     }
 
     private boolean isSection(int position) {
-        return sections != null && sections.containsKey(position);
+        return mSections != null && mSections.containsKey(position);
     }
 
     private int getSectionItemCount() {
-        if (sections != null) {
-            return sections.size();
+        if (mSections != null) {
+            return mSections.size();
         }
         return 0;
     }
@@ -81,13 +87,76 @@ public abstract class SectionCursorRecyclerViewAdapter<S>
 
     @Override
     public Cursor swapCursor(Cursor newCursor) {
+        Cursor oldCursor = super.swapCursor(newCursor);
+
         if (newCursor == null) {
-            sections = null;
+            for (int position : mSections.keySet()) {
+                notifyItemRemoved(position);
+            }
+            mSections = null;
         } else {
-            sections = createSections(newCursor);
+            HashMap<Integer, S> oldSections = mSections;
+            mSections = createSections(newCursor);
+
+            if (oldSections == null || oldSections.size() == 0) {
+                for (int position : mSections.keySet()) {
+                    notifyItemInserted(position);
+                }
+            } else {
+                Set<Integer> set = oldSections.keySet();
+                if (set.retainAll(mSections.keySet())) {
+                    for (int position : set) {
+                        notifyItemChanged(position);
+                    }
+                }
+
+                set = oldSections.keySet();
+                if (set.removeAll(mSections.keySet())) {
+                    for (int position : set) {
+                        notifyItemRemoved(position);
+                    }
+                }
+
+                set = mSections.keySet();
+                if (set.removeAll(oldSections.keySet())) {
+                    for (int position : set) {
+                        notifyItemInserted(position);
+                    }
+                }
+            }
+
+            App.LOG_D("Sections swaped");
         }
-        return super.swapCursor(newCursor);
+
+        return oldCursor;
     }
 
     protected abstract HashMap<Integer, S> createSections(Cursor cursor);
+//
+//    @Override
+//    protected void onItemChanged(int position) {
+//        super.onItemChanged(getSectionsBeforeCount(position) + position);
+//    }
+//
+//    @Override
+//    protected void onItemInserted(int position) {
+//        super.onItemInserted(getSectionsBeforeCount(position) + position);
+//    }
+//
+//    @Override
+//    protected void onItemRemoved(int position) {
+//        super.onItemRemoved(getSectionsBeforeCount(position) + position);
+//    }
+//
+//    protected int getSectionsBeforeCount(int position) {
+//        int count = 0;
+//
+//        for (int i = 0; i < position; i++) {
+//            if (isSection(i)) {
+//                count++;
+//            }
+//        }
+//
+//        return count;
+//    }
 }

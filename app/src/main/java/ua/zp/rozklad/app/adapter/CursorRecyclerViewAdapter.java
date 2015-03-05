@@ -21,10 +21,13 @@ import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.support.v7.widget.RecyclerView;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 /**
  * Created by skyfishjy on 10/31/14.
+ * Updated by vojkovladimir 05/02/15.
  */
-
 public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHolder>
         extends RecyclerView.Adapter<VH> {
 
@@ -107,24 +110,53 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
         if (newCursor == mCursor) {
             return null;
         }
+
         final Cursor oldCursor = mCursor;
+
         if (oldCursor != null && mDataSetObserver != null) {
             oldCursor.unregisterDataSetObserver(mDataSetObserver);
         }
+
         mCursor = newCursor;
-        if (mCursor != null) {
+
+        if (mCursor == null) {
+            mRowIdColumn = -1;
+            mDataValid = false;
+            notifyDataSetChanged();
+            //There is no notifyDataSetInvalidated() method in RecyclerView.Adapter
+        } else {
             if (mDataSetObserver != null) {
                 mCursor.registerDataSetObserver(mDataSetObserver);
             }
             mRowIdColumn = newCursor.getColumnIndexOrThrow("_id");
             mDataValid = true;
-            notifyDataSetChanged();
-        } else {
-            mRowIdColumn = -1;
-            mDataValid = false;
-            notifyDataSetChanged();
-            //There is no notifyDataSetInvalidated() method in RecyclerView.Adapter
+
+            if (oldCursor == null || oldCursor.getCount() == 0) {
+                for (int i = 0; i < mCursor.getCount(); i++) {
+                    notifyItemInserted(i);
+                }
+            } else if (mCursor.getCount() == 0) {
+                notifyDataSetChanged();
+            } else {
+                int min = min(oldCursor.getCount(), mCursor.getCount());
+                int max = max(oldCursor.getCount(), mCursor.getCount());
+
+                for (int i = 0; i < min; i++) {
+                    notifyItemChanged(i);
+                }
+
+                boolean isGrown = oldCursor.getCount() < mCursor.getCount();
+
+                for (int i = min; i < max; i++) {
+                    if (isGrown) {
+                        notifyItemInserted(i);
+                    } else {
+                        notifyItemRemoved(i);
+                    }
+                }
+            }
         }
+
         return oldCursor;
     }
 

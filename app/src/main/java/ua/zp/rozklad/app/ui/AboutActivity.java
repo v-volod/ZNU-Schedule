@@ -36,7 +36,7 @@ public class AboutActivity extends BaseActivity implements View.OnClickListener 
         /*
         * Social
         * */
-        ((TextView) findViewById(R.id.social).findViewById(R.id.sub_header_text))
+        ((TextView) findViewById(R.id.social).findViewById(R.id.text))
                 .setText(R.string.social);
 
         TextView joinUsVk = (TextView) findViewById(R.id.join_vk);
@@ -47,7 +47,7 @@ public class AboutActivity extends BaseActivity implements View.OnClickListener 
         /*
         * We
         * */
-        ((TextView) findViewById(R.id.we).findViewById(R.id.sub_header_text))
+        ((TextView) findViewById(R.id.we).findViewById(R.id.text))
                 .setText(R.string.we);
 
         View vojkoVolodymyr = findViewById(R.id.vojko_volodymyr);
@@ -80,7 +80,7 @@ public class AboutActivity extends BaseActivity implements View.OnClickListener 
         /*
         * Additionally
         * */
-        ((TextView) findViewById(R.id.additionally).findViewById(R.id.sub_header_text))
+        ((TextView) findViewById(R.id.additionally).findViewById(R.id.text))
                 .setText(R.string.additionally);
 
         TextView scheduleSite = (TextView) findViewById(R.id.schedule_site);
