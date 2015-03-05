@@ -21,18 +21,18 @@
     <string name="numerator">чисельник</string>
     <string name="denominator">знаменник</string>
     <string name="day_off">Сьогодні вихідний</string>
-    <string name="can_not_create_account">Помилка, не можливо створити обліковий запис</string>
-    <string name="one_account_allowed">Тільки один обліковий запис дозволено</string>
+    <string name="can_not_create_account">Помилка, неможливо створити обліковий запис</string>
+    <string name="one_account_allowed">Дозволено тільки один обліковий запис</string>
     <string name="error_already_has_account">Помилка! Ви вже маєте обліковий запис</string>
     <string name="no_loaded_schedule">Розклад на цей тиждень ще не завантажено, або відсутній</string>
-    <string name="lecturers_list_is_empty">Список викладачів ще не завантажено або відсутній</string>
-    <string name="subjects_list_is_empty">Список предметів ще не завантажено або відсутній</string>
+    <string name="lecturers_list_is_empty">Список викладачів ще не завантажено, або відсутній</string>
+    <string name="subjects_list_is_empty">Список предметів ще не завантажено, або відсутній</string>
     <string name="not_specified">Не задано</string>
     <string name="retry">ПОВТОРИТИ</string>
 
     <!-- About -->
     <string name="social">Соціальні мережі</string>
-    <string name="join_us_vk">Приєднуйтесь в ВКонтакті</string>
+    <string name="join_us_vk">Наша сторінка Вконтакті</string>
     <string name="vk_group_url">https://vk.com/public88668237</string>
 
     <string name="we">Ми</string>
@@ -77,7 +77,7 @@
 
     <!-- REST Methods Errors -->
     <string name="no_connection_error">Немає інтернет з’єднання</string>
-    <string name="time_out_error">Таймаут вичерпано, спробуйте пізніше</string>
+    <string name="time_out_error">Тайм-аут вичерпано, спробуйте пізніше</string>
     <string name="server_error">Помилка серверу</string>
     <string name="unknown_error">Невідома помилка</string>
     <string name="network_error">Проблеми з інтернет з’єднанням</string>
@@ -148,7 +148,7 @@
     <string name="clear_cache">Видалити кеш</string>
     <string name="clear_cache_summary">Вилучає весь кеш додатку</string>
     <string name="clear_cache_question">Видалити кеш?</string>
-    <string name="clear_cache_description">Увесь кеш розкладу буде видалено</string>
+    <string name="clear_cache_description">Весь кеш розкладу буде видалено</string>
     <string name="clear">Видалити</string>
 
     <integer name="auto_sync_interval_default">1</integer>
