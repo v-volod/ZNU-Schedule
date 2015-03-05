@@ -9,6 +9,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.yandex.metrica.YandexMetrica;
 
+import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
 import ua.zp.rozklad.app.util.PreferencesUtils;
 
 /**
@@ -24,6 +25,13 @@ public class App extends Application {
 
     private RequestQueue mRequestQueue;
     private PreferencesUtils mPreferencesUtils;
+    private GroupAuthenticatorHelper mGroupAuthenticatorHelper;
+
+    private final Object MANUAL_SYNC_ACTIVE_LOCK = new Object();
+    private boolean isManualSyncActive = false;
+
+    private final Object MANUAL_SYNC_REQUESTED_LOCK = new Object();
+    private boolean isManualSyncRequested = false;
 
     @Override
     public void onCreate() {
@@ -66,7 +74,41 @@ public class App extends Application {
         if (mPreferencesUtils == null) {
             mPreferencesUtils = new PreferencesUtils(this);
         }
+
         return mPreferencesUtils;
+    }
+
+    public GroupAuthenticatorHelper getGroupAuthenticatorHelper() {
+        if (mGroupAuthenticatorHelper == null) {
+            mGroupAuthenticatorHelper = new GroupAuthenticatorHelper(this);
+        }
+
+        return mGroupAuthenticatorHelper;
+    }
+
+    public boolean isManualSyncActive() {
+        synchronized (MANUAL_SYNC_ACTIVE_LOCK) {
+            return isManualSyncActive;
+        }
+    }
+
+    public void setManualSyncActive(boolean isActive) {
+        synchronized (MANUAL_SYNC_ACTIVE_LOCK) {
+            isManualSyncActive = isActive;
+        }
+        setManualSyncRequested(false);
+    }
+
+    public boolean isManualSyncRequested() {
+        synchronized (MANUAL_SYNC_REQUESTED_LOCK) {
+            return isManualSyncRequested;
+        }
+    }
+
+    public void setManualSyncRequested(boolean isRequested) {
+        synchronized (MANUAL_SYNC_REQUESTED_LOCK) {
+            isManualSyncRequested = isRequested;
+        }
     }
 
     public static void LOG_D(String message) {

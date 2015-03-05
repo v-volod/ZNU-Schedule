@@ -1,14 +1,22 @@
 package ua.zp.rozklad.app.ui;
 
+import android.accounts.Account;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.LoaderManager;
+import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,8 +26,11 @@ import com.melnykov.fab.FloatingActionButton;
 
 import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.R;
+import ua.zp.rozklad.app.account.GroupAccount;
 import ua.zp.rozklad.app.adapter.CursorFragmentStatePagerAdapter;
 import ua.zp.rozklad.app.model.Periodicity;
+import ua.zp.rozklad.app.provider.ScheduleContract;
+import ua.zp.rozklad.app.sync.ScheduleSyncAdapter;
 import ua.zp.rozklad.app.ui.tabs.SlidingTabLayout;
 import ua.zp.rozklad.app.util.UiUtils;
 
@@ -37,7 +48,7 @@ import static ua.zp.rozklad.app.util.CalendarUtils.getCurrentWeekOfYear;
 import static ua.zp.rozklad.app.util.CalendarUtils.getStartOfWeekMillis;
 
 public class ScheduleOfWeekFragment extends Fragment
-        implements LoaderManager.LoaderCallbacks<Cursor> {
+        implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
 
     private static final int CURRENT_APPROXIMATE_DAY = -1;
     private static final int CURRENT_CONVENIENT_DAY = -2;
@@ -54,6 +65,13 @@ public class ScheduleOfWeekFragment extends Fragment
         int BY_LECTURER = 1;
     }
 
+    private static final int[] REFRESH_VIEW_COLOR_RES = {
+            R.color.red_500, R.color.blue_500, R.color.green_500, R.color.yellow_600
+    };
+
+    private static final IntentFilter SYNC_RECEIVER_INTENT_FILTER =
+            new IntentFilter(ScheduleSyncAdapter.ACTION_SYNC_STATUS);
+
     private Periodicity periodicity;
 
     private int selectedDayPosition;
@@ -68,19 +86,21 @@ public class ScheduleOfWeekFragment extends Fragment
     private OnPeriodicityChangeListener mListener;
 
     private DayPagerAdapter mAdapter;
-    private View scheduleContainer;
     private ViewPager mPager;
     private SlidingTabLayout mTabs;
     private FloatingActionButton mFab;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private boolean isAttached = false;
 
-    public static ScheduleOfWeekFragment newInstance(long groupId, int subgroupId) {
+    private Handler mHandler = new Handler();
+
+    public static ScheduleOfWeekFragment newInstance(GroupAccount groupAccount) {
         ScheduleOfWeekFragment fragment = new ScheduleOfWeekFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_SCHEDULE_TYPE, Type.BY_GROUP);
-        args.putLong(ARG_TYPE_FILTER_ID, groupId);
-        args.putInt(ARG_SUBGROUP_ID, subgroupId);
+        args.putLong(ARG_TYPE_FILTER_ID, groupAccount.getGroupId());
+        args.putInt(ARG_SUBGROUP_ID, groupAccount.getSubgroup());
         fragment.setArguments(args);
         return fragment;
     }
@@ -107,6 +127,7 @@ public class ScheduleOfWeekFragment extends Fragment
             throw new ClassCastException(activity.toString()
                     + " must implement OnPeriodicityChangeListener");
         }
+
         isAttached = true;
     }
 
@@ -164,7 +185,12 @@ public class ScheduleOfWeekFragment extends Fragment
         mFab = (FloatingActionButton) view.findViewById(R.id.fab);
         mFab.setOnClickListener(togglePeriodicityListener);
 
-        scheduleContainer = view.findViewById(R.id.schedule_of_week_container);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mSwipeRefreshLayout.setColorSchemeResources(REFRESH_VIEW_COLOR_RES);
+        if (scheduleType == Type.BY_LECTURER) {
+            mSwipeRefreshLayout.setEnabled(false);
+        }
 
         return view;
     }
@@ -224,10 +250,9 @@ public class ScheduleOfWeekFragment extends Fragment
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         periodicity = App.getInstance().getPreferencesUtils().getPeriodicity();
-        App.LOG_I("loaded for " + selectedWeekPosition);
         if (data.getCount() > 0) {
-            if (scheduleContainer.getVisibility() == View.GONE) {
-                scheduleContainer.setVisibility(View.VISIBLE);
+            if (mPager.getVisibility() == View.GONE) {
+                mPager.setVisibility(View.VISIBLE);
             }
 
             /*
@@ -259,8 +284,8 @@ public class ScheduleOfWeekFragment extends Fragment
 
         } else {
             selectedDayPosition = NEXT_WEEK_EMPTY;
-            if (scheduleContainer.getVisibility() == View.VISIBLE) {
-                scheduleContainer.setVisibility(View.GONE);
+            if (mPager.getVisibility() == View.VISIBLE) {
+                mPager.setVisibility(View.GONE);
             }
         }
 
@@ -272,8 +297,8 @@ public class ScheduleOfWeekFragment extends Fragment
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        if (scheduleContainer.getVisibility() == View.VISIBLE) {
-            scheduleContainer.setVisibility(View.GONE);
+        if (mPager.getVisibility() == View.VISIBLE) {
+            mPager.setVisibility(View.GONE);
         }
         if (getActivity() != null && !getActivity().isFinishing() && !isRemoving()) {
             mAdapter.swapCursor(null);
@@ -282,7 +307,6 @@ public class ScheduleOfWeekFragment extends Fragment
     }
 
     public void toggleWeek() {
-        App.LOG_D(selectedWeekPosition + " -> " + abs(selectedWeekPosition - 1));
         selectedWeekPosition = abs(selectedWeekPosition - 1);
         getLoaderManager().restartLoader(scheduleType, null, this);
     }
@@ -346,13 +370,13 @@ public class ScheduleOfWeekFragment extends Fragment
         return scheduleType;
     }
 
-    public void reload(int groupId, int subgroupId) {
-        if (this.typeFilterId != groupId || this.subgroupId != subgroupId) {
-            this.typeFilterId = groupId;
-            this.subgroupId = subgroupId;
+    public void reload(GroupAccount groupAccount) {
+        if (typeFilterId != groupAccount.getGroupId() || subgroupId != groupAccount.getSubgroup()) {
+            typeFilterId = groupAccount.getGroupId();
+            subgroupId = groupAccount.getSubgroup();
             Bundle args = getArguments();
             if (args != null) {
-                args.putInt(ARG_TYPE_FILTER_ID, groupId);
+                args.putLong(ARG_TYPE_FILTER_ID, typeFilterId);
                 args.putInt(ARG_SUBGROUP_ID, subgroupId);
             }
             if (isAttached) {
@@ -362,6 +386,96 @@ public class ScheduleOfWeekFragment extends Fragment
             }
         }
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (scheduleType == Type.BY_GROUP) {
+            getActivity().registerReceiver(mSyncBroadcastReceiver, SYNC_RECEIVER_INTENT_FILTER);
+
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    GroupAccount groupAccount = App.getInstance()
+                            .getGroupAuthenticatorHelper().getActiveAccount();
+                    if (groupAccount != null) {
+                        boolean isSyncPending =
+                                ContentResolver.isSyncPending(
+                                        groupAccount.getBaseAccount(),
+                                        ScheduleContract.CONTENT_AUTHORITY
+                                );
+
+                        if (App.getInstance().isManualSyncActive() ||
+                                isSyncPending && App.getInstance().isManualSyncRequested()) {
+                            showRefreshView();
+                        }
+                    }
+                }
+            }, 1000);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (scheduleType == Type.BY_GROUP) {
+            getActivity().unregisterReceiver(mSyncBroadcastReceiver);
+            hideRefreshView();
+        }
+    }
+
+    private void showRefreshView() {
+        mSwipeRefreshLayout.setRefreshing(true);
+    }
+
+    private void hideRefreshView() {
+        mSwipeRefreshLayout.setRefreshing(false);
+    }
+
+    public void performSync() {
+        GroupAccount groupAccount = App.getInstance().getGroupAuthenticatorHelper().getActiveAccount();
+
+        if (groupAccount != null) {
+            Account account = groupAccount.getBaseAccount();
+
+            boolean isSyncActive =
+                    ContentResolver.isSyncPending(account, ScheduleContract.CONTENT_AUTHORITY);
+            boolean isSyncPending =
+                    ContentResolver.isSyncActive(account, ScheduleContract.CONTENT_AUTHORITY);
+            if (!isSyncActive && !isSyncPending) {
+                Bundle bundle = new Bundle();
+                bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+                bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+
+                ContentResolver.requestSync(account, ScheduleContract.CONTENT_AUTHORITY, bundle);
+            }
+
+            mSwipeRefreshLayout.setRefreshing(true);
+            App.getInstance().setManualSyncRequested(true);
+        }
+    }
+
+    @Override
+    public void onRefresh() {
+        performSync();
+    }
+
+    private final BroadcastReceiver mSyncBroadcastReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int syncState = intent.getIntExtra(ScheduleSyncAdapter.EXTRA_SYNC_STATUS, -1);
+            switch (syncState) {
+                case ScheduleSyncAdapter.SyncStatus.START:
+                    // Noop
+                    break;
+                case ScheduleSyncAdapter.SyncStatus.ABORTED_WITH_ERROR:
+                case ScheduleSyncAdapter.SyncStatus.FINISHED:
+                    hideRefreshView();
+                    break;
+            }
+        }
+    };
 
     /**
      * Interface definition for a callback to be invoked when a periodicity changed.

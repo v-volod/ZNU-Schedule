@@ -14,6 +14,7 @@ import ua.zp.rozklad.app.provider.ScheduleContract.Schedule;
 import ua.zp.rozklad.app.rest.resource.ScheduleItem;
 
 import static ua.zp.rozklad.app.provider.ScheduleContract.AcademicHour.buildAcademicHourUri;
+import static ua.zp.rozklad.app.provider.ScheduleContract.Group.buildGroupUri;
 import static ua.zp.rozklad.app.provider.ScheduleContract.Schedule.Summary.Selection;
 import static ua.zp.rozklad.app.provider.ScheduleContract.Schedule.buildScheduleUri;
 import static ua.zp.rozklad.app.provider.ScheduleContract.combine;
@@ -46,11 +47,9 @@ public class ScheduleProcessor extends Processor<ScheduleItem>
                 if (cursor.getLong(0) != scheduleItem.getLastUpdate()) {
                     mContentResolver.update(buildScheduleUri(scheduleItem.getId()),
                             buildValuesForUpdate(scheduleItem), null, null);
-                    App.LOG_D("updated " + scheduleItem + " -> " + cursor.getLong(0));
                 }
             } else {
                 mContentResolver.insert(Schedule.CONTENT_URI, buildValuesForInsert(scheduleItem));
-                App.LOG_D("inserted " + scheduleItem);
             }
 
             cursor.close();
@@ -106,10 +105,26 @@ public class ScheduleProcessor extends Processor<ScheduleItem>
                 dependency.addAudience(String.valueOf(scheduleItem.getAudienceId()));
             }
 
+            if (!hasGroup(scheduleItem.getGroupId())) {
+                dependency.addGroup(String.valueOf(scheduleItem.getGroupId()));
+            }
+
             cursor.close();
         }
 
         return dependency;
+    }
+
+    private boolean hasGroup(long id) {
+        Cursor cursor = mContentResolver
+                .query(buildGroupUri(id), null, null, null, null);
+        if (cursor.moveToFirst()) {
+            cursor.close();
+            return true;
+        }
+
+        cursor.close();
+        return false;
     }
 
     private boolean hasAcademicHour(long id) {

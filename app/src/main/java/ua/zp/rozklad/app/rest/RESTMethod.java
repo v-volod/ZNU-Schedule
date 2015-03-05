@@ -89,7 +89,8 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
         String COURSE = "course";
         String GROUP = "group";
         String FREE_TRAJECTORY = "free_trajectory";
-        String WEEK = "week";
+        String TIMETABLE_WEEK = "timetable_week";
+        String WEEK_OF_YEAR = "year_week";
         String LATITUDE = "latitude";
         String LONGITUDE = "longitude";
     }

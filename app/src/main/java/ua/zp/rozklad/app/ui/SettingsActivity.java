@@ -5,7 +5,6 @@ import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -23,7 +22,7 @@ import ua.zp.rozklad.app.account.GroupAuthenticatorHelper;
 import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.util.PreferencesUtils;
 
-public class SettingsActivity extends ActionBarActivity implements View.OnClickListener,
+public class SettingsActivity extends BaseActivity implements View.OnClickListener,
         CompoundButton.OnCheckedChangeListener, SharedPreferences.OnSharedPreferenceChangeListener,
         MaterialDialog.ListCallback {
 
@@ -67,7 +66,7 @@ public class SettingsActivity extends ActionBarActivity implements View.OnClickL
         /*
         * SetUp UI
         * */
-        ((TextView) findViewById(R.id.sync).findViewById(R.id.sub_header_text))
+        ((TextView) findViewById(R.id.sync).findViewById(R.id.text))
                 .setText(R.string.sync);
 
         View autoSync = findViewById(R.id.auto_sync);
@@ -231,5 +230,10 @@ public class SettingsActivity extends ActionBarActivity implements View.OnClickL
         int value = intervalsValues[which];
         syncIntervalText.setText(findInterval(value));
         preferencesUtils.setAutoSyncInterval(value);
+    }
+
+    @Override
+    protected void onAccountDeleted() {
+        MainActivity.startClearTask(this);
     }
 }

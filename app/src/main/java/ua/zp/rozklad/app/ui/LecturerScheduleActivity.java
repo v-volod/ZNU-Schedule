@@ -79,4 +79,14 @@ public class LecturerScheduleActivity extends BaseActivity
         intent.putExtra(ScheduleItemActivity.ARG_SCHEDULE_ITEM_ID, scheduleItemId);
         startActivity(intent);
     }
+
+    @Override
+    protected void onAccountDeleted() {
+        MainActivity.startClearTask(this);
+    }
+
+    @Override
+    protected void onAccountChanged() {
+        MainActivity.startClearTask(this);
+    }
 }

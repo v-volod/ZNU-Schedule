@@ -8,6 +8,7 @@ import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import ua.zp.rozklad.app.R;
+import ua.zp.rozklad.app.account.GroupAccount;
 import ua.zp.rozklad.app.adapter.CursorRecyclerViewAdapter;
 import ua.zp.rozklad.app.provider.ScheduleContract.FullLecturer;
 import ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary;
@@ -36,11 +38,11 @@ public class LecturersFragment extends Fragment implements LoaderManager.LoaderC
     private RecyclerView mRecyclerView;
     private LecturersAdapter mAdapter;
 
-    public static LecturersFragment newInstance(int groupId, int subgroup) {
+    public static LecturersFragment newInstance(GroupAccount groupAccount) {
         LecturersFragment fragment = new LecturersFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_GROUP_ID, groupId);
-        args.putInt(ARG_SUBGROUP, subgroup);
+        args.putInt(ARG_GROUP_ID, groupAccount.getGroupId());
+        args.putInt(ARG_SUBGROUP, groupAccount.getSubgroup());
         fragment.setArguments(args);
         return fragment;
     }
@@ -72,10 +74,13 @@ public class LecturersFragment extends Fragment implements LoaderManager.LoaderC
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_subjects, container, false);
+        View view = inflater.inflate(R.layout.fragment_lecturers, container, false);
+
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+
         return view;
     }
 
@@ -110,17 +115,23 @@ public class LecturersFragment extends Fragment implements LoaderManager.LoaderC
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (data.getCount() > 0) {
+            mRecyclerView.setVisibility(View.VISIBLE);
+        } else {
+            mRecyclerView.setVisibility(View.INVISIBLE);
+        }
         mAdapter.swapCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        mRecyclerView.setVisibility(View.INVISIBLE);
         mAdapter.swapCursor(null);
     }
 
-    public void reload(int groupId, int subgroup) {
-        this.groupId = groupId;
-        this.subgroup = subgroup;
+    public void reload(GroupAccount groupAccount) {
+        groupId = groupAccount.getGroupId();
+        subgroup = groupAccount.getSubgroup();
         if (getArguments() != null) {
             getArguments().putInt(ARG_GROUP_ID, groupId);
             getArguments().putInt(ARG_SUBGROUP, subgroup);

@@ -5,7 +5,7 @@
     android:clickable="false">
 
     <TextView
-        android:id="@+id/sub_header_text"
+        android:id="@+id/text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingLeft="@dimen/key_line_1"

@@ -2,6 +2,7 @@ package ua.zp.rozklad.app.account;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.text.TextUtils;
 
 import static java.lang.Integer.parseInt;
 
@@ -52,5 +53,15 @@ public class GroupAccount {
 
     public void setSubgroup(int subgroup) {
         this.subgroup = subgroup;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof GroupAccount) {
+            GroupAccount compared = (GroupAccount) obj;
+            return account.name.equals(compared.getBaseAccount().name);
+        }
+
+        return false;
     }
 }

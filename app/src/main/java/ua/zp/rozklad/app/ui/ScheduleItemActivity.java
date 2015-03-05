@@ -171,4 +171,14 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
                 break;
         }
     }
+
+    @Override
+    protected void onAccountDeleted() {
+        MainActivity.startClearTask(this);
+    }
+
+    @Override
+    protected void onAccountChanged() {
+        MainActivity.startClearTask(this);
+    }
 }

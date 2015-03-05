@@ -4,7 +4,9 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SyncResult;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -43,7 +45,6 @@ import ua.zp.rozklad.app.rest.resource.Group;
 import ua.zp.rozklad.app.rest.resource.Lecturer;
 import ua.zp.rozklad.app.rest.resource.ScheduleItem;
 import ua.zp.rozklad.app.rest.resource.Subject;
-import ua.zp.rozklad.app.util.CalendarUtils;
 import ua.zp.rozklad.app.util.PreferencesUtils;
 
 import static ua.zp.rozklad.app.provider.ScheduleContract.Schedule;
@@ -57,6 +58,16 @@ import static ua.zp.rozklad.app.provider.ScheduleContract.groupBySelection;
  */
 public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
 
+    public static final String ACTION_SYNC_STATUS = App.TAG + ".ACTION_SYNC_STATUS";
+    public static final String EXTRA_SYNC_STATUS = "SYNC_STATUS";
+    public interface SyncStatus {
+        int START = 0;
+        int FINISHED = 1;
+        int ABORTED_WITH_ERROR = 2;
+    }
+    private static final Intent SYNC_STATUS_BROADCAST = new Intent(ACTION_SYNC_STATUS);
+
+    private GroupsProcessor groupsProcessor;
     private ScheduleProcessor scheduleProcessor;
     private LecturersProcessor lecturersProcessor;
     private SubjectsProcessor subjectsProcessor;
@@ -71,6 +82,14 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
                               ContentProviderClient provider, SyncResult syncResult) {
+        boolean isSyncRequestManual = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL);
+
+        if (isSyncRequestManual) {
+            App.getInstance().setManualSyncActive(true);
+            SYNC_STATUS_BROADCAST.putExtra(EXTRA_SYNC_STATUS, SyncStatus.START);
+            getContext().sendBroadcast(SYNC_STATUS_BROADCAST);
+        }
+
         PreferencesUtils mPrefUtils = App.getInstance().getPreferencesUtils();
         AccountManager manager = AccountManager.get(getContext());
         String groupId = manager.getUserData(account, GroupAuthenticator.KEY_GROUP_ID);
@@ -81,12 +100,17 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         MethodResponse<CurrentWeek> currentWeekMethodResponse = currentWeekMethod.executeBlocking();
         if (canProcess(currentWeekMethodResponse, syncResult)) {
             CurrentWeek currentWeek = currentWeekMethodResponse.getResponse();
-            mPrefUtils.savePeriodicity(currentWeek.getWeek(), CalendarUtils.getCurrentWeekOfYear());
+            mPrefUtils.savePeriodicity(currentWeek.getWeek(), currentWeek.getWeekOfYear());
         } else if (!mPrefUtils.getPeriodicity().isValid()) {
+            if (isSyncRequestManual) {
+                App.getInstance().setManualSyncActive(false);
+                SYNC_STATUS_BROADCAST.putExtra(EXTRA_SYNC_STATUS, SyncStatus.ABORTED_WITH_ERROR);
+                getContext().sendBroadcast(SYNC_STATUS_BROADCAST);
+            }
             return;
         }
 
-        GroupsProcessor groupsProcessor = new GroupsProcessor(getContext());
+        groupsProcessor = new GroupsProcessor(getContext());
         scheduleProcessor = new ScheduleProcessor(getContext());
         lecturersProcessor = new LecturersProcessor(getContext());
         subjectsProcessor = new SubjectsProcessor(getContext());
@@ -102,22 +126,14 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         MethodResponse<ArrayList<Group>> groupsResponse = getGroups.executeBlocking();
 
         if (canProcess(groupsResponse, syncResult) && groupsResponse.getResponse().size() == 1) {
-            Group group = groupsResponse.getResponse().get(0);
-            App.LOG_I("Sync group " + group);
-
             ArrayList<Group> groups = groupsProcessor
                     .resolveDependencies(groupsResponse.getResponse());
 
             if (groups.size() == 1) {
                 if (performGroupScheduleSync(syncResult, groups.get(0))) {
                     groupsProcessor.process(groupsResponse.getResponse());
-                    App.LOG_I("Sync group successful");
-                } else {
-                    App.LOG_I("Sync group unsuccessful");
                 }
             } else {
-                App.LOG_I("Sync group not needed");
-
                 Cursor cursor = getContext().getContentResolver()
                         .query(Schedule.CONTENT_URI,
                                 combineProjection(Schedule.LECTURER_ID),
@@ -133,8 +149,6 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
                         lecturersIds[cursor.getPosition()] = cursor.getString(0);
                     } while (cursor.moveToNext());
 
-                    App.LOG_I("Sync lecturers: " + Arrays.toString(lecturersIds));
-
                     GetLecturersMethod getLecturers = new GetLecturersMethod();
                     getLecturers.prepare(RESTMethod.Filter.BY_ID_IN, lecturersIds);
 
@@ -142,11 +156,7 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
                             getLecturers.executeBlocking();
 
                     if (canProcess(lecturersResponse, syncResult)) {
-                        if (performLecturersSync(syncResult, lecturersResponse.getResponse(), true)) {
-                            App.LOG_I("Sync lecturers successful");
-                        }
-                    } else {
-                        App.LOG_I("Sync lecturers unsuccessful");
+                        performLecturersSync(syncResult, lecturersResponse.getResponse(), true);
                     }
                 }
 
@@ -159,6 +169,12 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         audiencesProcessor.clean();
         campusesProcessor.clean();
         academicHoursProcessor.clean();
+
+        if (isSyncRequestManual) {
+            App.getInstance().setManualSyncActive(false);
+            SYNC_STATUS_BROADCAST.putExtra(EXTRA_SYNC_STATUS, SyncStatus.FINISHED);
+            getContext().sendBroadcast(SYNC_STATUS_BROADCAST);
+        }
     }
 
     private boolean performGroupScheduleSync(SyncResult syncResult, Group group) {
@@ -196,8 +212,6 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
 
         ScheduleDependency dependency = scheduleProcessor.resolveDependencies(scheduleItems);
 
-        App.LOG_I(dependency.toString());
-
         if (dependency.hasAudiences()) {
             audiencesSynced = performAudiencesSync(syncResult, dependency.getAudiences());
         }
@@ -216,12 +230,27 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
                     syncLecturerSchedule);
         }
 
+        if (dependency.hasGroups()) {
+            performGroupsSync(syncResult, dependency.getGroups());
+        }
+
         if (audiencesSynced && subjectsSynced && academicHoursSynced && lecturersSynced) {
             scheduleProcessor.process(scheduleItems);
             return true;
         }
 
         return false;
+    }
+
+    private void performGroupsSync(SyncResult syncResult, String[] groups) {
+        GetGroupsMethod getGroups = new GetGroupsMethod();
+        getGroups.prepare(RESTMethod.Filter.BY_ID_IN, groups);
+
+        MethodResponse<ArrayList<Group>> groupsResponse = getGroups.executeBlocking();
+
+        if (canProcess(groupsResponse, syncResult)) {
+            groupsProcessor.process(groupsResponse.getResponse());
+        }
     }
 
     private boolean performAudiencesSync(SyncResult syncResult, String[] audiencesIds) {
@@ -234,8 +263,6 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
             boolean successful = true;
 
             AudienceDependency dependency = audiencesProcessor.resolveDependencies(response.getResponse());
-
-            App.LOG_I(dependency.toString());
 
             if (dependency.hasCampuses()) {
                 successful = performCampusesSync(syncResult, dependency.getCampuses());

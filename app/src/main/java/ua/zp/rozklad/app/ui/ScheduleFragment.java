@@ -6,11 +6,14 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +22,9 @@ import android.widget.TextView;
 import com.melnykov.fab.FloatingActionButton;
 
 import java.util.Calendar;
-import java.util.HashMap;
 
 import ua.zp.rozklad.app.R;
-import ua.zp.rozklad.app.adapter.SectionCursorRecyclerViewAdapter;
-import ua.zp.rozklad.app.model.ScheduleItem;
+import ua.zp.rozklad.app.adapter.CursorRecyclerViewAdapter;
 import ua.zp.rozklad.app.util.CalendarUtils;
 
 import static java.lang.String.valueOf;
@@ -53,8 +54,6 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     private static final String ARG_PERIODICITY = "periodicity";
     private static final String ARG_IS_TODAY = "isToday";
 
-    private static final String DATE_FORMAT = "%2d %s";
-
     public static interface Type {
         int BY_GROUP = 0;
         int BY_LECTURER = 1;
@@ -67,20 +66,17 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     private long typeFilterId;
     private int periodicity;
     private int dayOfWeek;
-
     private int subgroupId;
 
     private OnScheduleItemClickListener mListener;
 
+    private TextView mDateTextView;
     private RecyclerView mRecyclerView;
     private ScheduleItemAdapter mAdapter;
 
     private boolean isAttached = false;
-//    private Runnable runReload
-
     private boolean isViewCreated = false;
     private Runnable runFab;
-
     private Handler handler = new Handler();
 
     public static ScheduleFragment newInstance(int position, boolean isToday, long groupId,
@@ -154,17 +150,23 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mRecyclerView =
-                (RecyclerView) inflater.inflate(R.layout.fragment_schedule, container, false);
+        View view = inflater.inflate(R.layout.fragment_schedule, container, false);
+
+        mDateTextView = (TextView) view.findViewById(R.id.date)
+                .findViewById(R.id.text);
+        setUpDateText();
+
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
         if (runFab != null) {
             handler.post(runFab);
         }
         isViewCreated = true;
 
-        return mRecyclerView;
+        return view;
     }
 
     @Override
@@ -226,6 +228,7 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mAdapter.swapCursor(data);
+        setUpDateText();
     }
 
     @Override
@@ -279,6 +282,22 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         }
     }
 
+    private void setUpDateText() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(CalendarUtils.addDays(startOfWeek, dayOfWeek));
+
+        mDateTextView.setText(
+                calendar.get(Calendar.DAY_OF_MONTH) + " " +
+                        getResources().getStringArray(R.array.months)[calendar.get(Calendar.MONTH)]
+        );
+
+        mDateTextView.setTextColor(
+                (isToday) ?
+                        getResources().getColor(R.color.blue_500) :
+                        getResources().getColor(R.color.sub_header_text_color)
+        );
+    }
+
     /**
      * Interface definition for a callback to be invoked when a schedule item is clicked.
      */
@@ -289,56 +308,68 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
         public void onScheduleItemClicked(long scheduleItemId);
     }
 
-    public static class SectionViewHolder extends RecyclerView.ViewHolder {
-
-        TextView text;
-
-        public SectionViewHolder(View itemView) {
-            super(itemView);
-            text = (TextView) itemView.findViewById(R.id.sub_header_text);
-        }
-
-        public void update(String section, int color) {
-            text.setTextColor(color);
-            text.setText(section);
-        }
-
-    }
-
     public static class ItemViewHolder extends RecyclerView.ViewHolder {
 
         public View status;
-        public TextView subject;
-        public TextView info;
-        public TextView startTime;
-        public TextView endTime;
+        public TextView subjectText;
+        public TextView infoText;
+        public TextView startTimeText;
+        public TextView endTimeText;
 
         public ItemViewHolder(View view) {
             super(view);
             status = view.findViewById(R.id.status);
-            subject = (TextView) view.findViewById(R.id.subject);
-            info = (TextView) view.findViewById(R.id.info);
-            startTime = (TextView) view.findViewById(R.id.start_time);
-            endTime = (TextView) view.findViewById(R.id.end_time);
+            subjectText = (TextView) view.findViewById(R.id.subject);
+            infoText = (TextView) view.findViewById(R.id.info);
+            startTimeText = (TextView) view.findViewById(R.id.start_time);
+            endTimeText = (TextView) view.findViewById(R.id.end_time);
         }
 
-        public void update(boolean isToday, ScheduleItem item) {
-            if (isToday && item.isNow()) {
+        public void update(boolean isToday, Cursor cursor, Resources res, int scheduleType) {
+            long startTime = cursor.getLong(Summary.Column.ACADEMIC_HOUR_STAT_TIME);
+            long endTime = cursor.getInt(Summary.Column.ACADEMIC_HOUR_END_TIME);
+            subjectText.setText(cursor.getString(Summary.Column.SUBJECT_NAME));
+
+            if (isToday && inRange(startTime, endTime)) {
                 status.setVisibility(View.VISIBLE);
             } else {
                 status.setVisibility(View.GONE);
             }
-            subject.setText(item.getSubject());
-            info.setText(item.getInfo());
-            startTime.setText(item.getStartTime());
-            endTime.setText(item.getEndTime());
+
+            String lecturerOrGroups = (scheduleType == Type.BY_GROUP) ?
+                    cursor.getString(Summary.Column.LECTURER_NAME) :
+                    cursor.getString(Summary.Column.GROUPS);
+            String audience = cursor.getString(Summary.Column.AUDIENCE_NUMBER);
+            String campus = cursor.getString(Summary.Column.CAMPUS_NAME);
+            String location = audience +
+                    ((TextUtils.isEmpty(campus)) ? "" :
+                            (TextUtils.isEmpty(audience) ? "(" : " (") + campus + ")");
+            int type = cursor.getInt(Summary.Column.CLASS_TYPE);
+
+            String info = lecturerOrGroups + "\n" +
+                    ((TextUtils.isEmpty(location)) ? "" : location) +
+                    ((type == 0) ? "" :
+                            ((TextUtils.isEmpty(location) ? "" : ", ") +
+                                    res.getStringArray(R.array.class_type)[type]));
+
+            infoText.setText(info);
+
+            startTimeText.setText(CalendarUtils.makeTime(startTime));
+            endTimeText.setText(CalendarUtils.makeTime(endTime));
+        }
+
+        private boolean inRange(long startAt, long endAt) {
+            Calendar calendarNow = Calendar.getInstance();
+            long timeNow = calendarNow.get(Calendar.AM_PM) * CalendarUtils.HALF_DAY_TIME_STAMP
+                    + calendarNow.get(Calendar.HOUR) * CalendarUtils.HOUR_TIME_STAMP +
+                    calendarNow.get(Calendar.MINUTE) * CalendarUtils.MINUTE_TIME_STAMP;
+            return timeNow >= startAt && timeNow <= endAt;
         }
     }
 
-    public class ScheduleItemAdapter extends SectionCursorRecyclerViewAdapter<String>
-            implements View.OnClickListener {
 
-        private final String[] MONTHS = getResources().getStringArray(R.array.months);
+    public class ScheduleItemAdapter extends CursorRecyclerViewAdapter
+            implements View.OnClickListener {
 
         public ScheduleItemAdapter(Context context) {
             this(context, null);
@@ -350,53 +381,15 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final Cursor cursor) {
-            ((ItemViewHolder) viewHolder).update(isToday, new ScheduleItem(getResources(), cursor));
+            ((ItemViewHolder) viewHolder).update(isToday, cursor, getResources(), scheduleType);
         }
 
         @Override
-        public void onBindSectionViewHolder(RecyclerView.ViewHolder viewHolder, String section) {
-            ((SectionViewHolder) viewHolder).update(
-                    section,
-                    (isToday) ?
-                            getResources().getColor(R.color.blue_500) :
-                            getResources().getColor(R.color.sub_header_text_color)
-            );
-        }
-
-        @Override
-        protected HashMap<Integer, String> createSections(Cursor cursor) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(CalendarUtils.addDays(startOfWeek, dayOfWeek));
-
-            String section = String.format(DATE_FORMAT,
-                    calendar.get(Calendar.DAY_OF_MONTH),
-                    MONTHS[calendar.get(Calendar.MONTH)]
-            );
-
-            HashMap<Integer, String> sections = new HashMap<>();
-            sections.put(0, section);
-
-            return sections;
-        }
-
-        @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            switch (viewType) {
-                case TYPE_SECTION: {
-                    View view = LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.sub_header_with_divider, parent, false);
-                    return new SectionViewHolder(view);
-                }
-                case TYPE_ITEM: {
-                    View view = LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.schedule_list_item, parent, false);
-                    view.setOnClickListener(this);
-                    return new ItemViewHolder(view);
-                }
-                default:
-                    throw new IllegalArgumentException("There is no type that matches the type: " +
-                            viewType);
-            }
+        public ItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.schedule_list_item, parent, false);
+            view.setOnClickListener(this);
+            return new ItemViewHolder(view);
         }
 
         @Override
