@@ -1,162 +1,238 @@
 package ua.zp.rozklad.app.adapter;
 
-import android.content.Context;
 import android.database.Cursor;
+import android.database.DataSetObserver;
+import android.provider.BaseColumns;
 import android.support.v7.widget.RecyclerView;
 
 import java.util.HashMap;
-import java.util.Set;
 
-import ua.zp.rozklad.app.App;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 /**
  * @author Vojko Vladimir
  */
 public abstract class SectionCursorRecyclerViewAdapter<S>
-        extends CursorRecyclerViewAdapter<RecyclerView.ViewHolder> {
-    protected static final int TYPE_SECTION = 0;
-    protected static final int TYPE_ITEM = 1;
+        extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private static final String ROW_ID_COLUMN_NAME = BaseColumns._ID;
 
-    private HashMap<Integer, S> mSections;
+    public static final int TYPE_ITEM = 0;
+    public static final int TYPE_SECTION = 1;
 
-    /*
-    * Unusable yet. Continue development...
-    * */
-    private SectionCursorRecyclerViewAdapter(Context context, Cursor cursor) {
-        super(context, cursor);
-    }
+    private Cursor mCursor;
+    private boolean mDataValid;
+    private int mRowIDColumn;
+    private DataSetObserver mDataSetObserver;
 
-    @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        if (isSection(position)) {
-            onBindSectionViewHolder(viewHolder, getSectionItem(position));
-        } else {
-            super.onBindViewHolder(viewHolder, getPosition(position));
-        }
-    }
+    private ItemsAdapter mItemsAdapter;
 
-    public abstract void onBindSectionViewHolder(RecyclerView.ViewHolder viewHolder, S section);
-
-    @Override
-    public long getItemId(int position) {
-        if (isSection(position)) {
-            return 0;
-        }
-        return super.getItemId(getPosition(position));
-    }
-
-    private int getPosition(int position) {
-
-        for (int i = 0; i < position; i++) {
-            if (isSection(i)) {
-                position--;
-            }
+    public SectionCursorRecyclerViewAdapter(HashMap<Integer, S> sections, Cursor cursor) {
+        mCursor = cursor;
+        mDataValid = cursor != null;
+        mRowIDColumn = mDataValid ? mCursor.getColumnIndex(ROW_ID_COLUMN_NAME) : -1;
+        mDataSetObserver = new NotifyingDataSetObserver();
+        if (mCursor != null) {
+            mCursor.registerDataSetObserver(mDataSetObserver);
         }
 
-        return position;
+        mItemsAdapter = new ItemsAdapter(sections, mCursor);
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        return (isSection(position)) ? TYPE_SECTION : TYPE_ITEM;
-    }
-
-    @Override
-    public int getItemCount() {
-        return super.getItemCount() + getSectionItemCount();
-    }
-
-    protected S getSectionItem(int position) {
-        return mSections.get(position);
-    }
-
-    private boolean isSection(int position) {
-        return mSections != null && mSections.containsKey(position);
-    }
-
-    private int getSectionItemCount() {
-        if (mSections != null) {
-            return mSections.size();
-        }
-        return 0;
+    public Cursor getCursor() {
+        return mCursor;
     }
 
     /**
-     * Swap the cursor and create section items.
+     * Change the underlying cursor to a new cursor. If there is an existing cursor it will be
+     * closed.
      */
+    public void changeCursor(Cursor cursor) {
+        Cursor old = swapCursor(cursor);
+        if (old != null) {
+            old.close();
+        }
+    }
 
-    @Override
+    /**
+     * Swap in a new Cursor, returning the old Cursor.  Unlike
+     * {@link #changeCursor(Cursor)}, the returned old Cursor is <em>not</em>
+     * closed.
+     */
     public Cursor swapCursor(Cursor newCursor) {
-        Cursor oldCursor = super.swapCursor(newCursor);
+        if (newCursor == mCursor) {
+            return null;
+        }
 
-        if (newCursor == null) {
-            for (int position : mSections.keySet()) {
-                notifyItemRemoved(position);
-            }
-            mSections = null;
+        Cursor oldCursor = mCursor;
+
+        if (oldCursor != null && mDataSetObserver != null) {
+            oldCursor.unregisterDataSetObserver(mDataSetObserver);
+        }
+
+        mCursor = newCursor;
+
+        if (mCursor == null) {
+            mItemsAdapter.clear();
+            mRowIDColumn = -1;
+            mDataValid = false;
+            notifyDataSetChanged();
+            //There is no notifyDataSetInvalidated() method in RecyclerView.Adapter
         } else {
-            HashMap<Integer, S> oldSections = mSections;
-            mSections = createSections(newCursor);
-
-            if (oldSections == null || oldSections.size() == 0) {
-                for (int position : mSections.keySet()) {
-                    notifyItemInserted(position);
-                }
-            } else {
-                Set<Integer> set = oldSections.keySet();
-                if (set.retainAll(mSections.keySet())) {
-                    for (int position : set) {
-                        notifyItemChanged(position);
-                    }
-                }
-
-                set = oldSections.keySet();
-                if (set.removeAll(mSections.keySet())) {
-                    for (int position : set) {
-                        notifyItemRemoved(position);
-                    }
-                }
-
-                set = mSections.keySet();
-                if (set.removeAll(oldSections.keySet())) {
-                    for (int position : set) {
-                        notifyItemInserted(position);
-                    }
-                }
+            if (mDataSetObserver != null) {
+                mCursor.registerDataSetObserver(mDataSetObserver);
             }
+            mRowIDColumn = newCursor.getColumnIndexOrThrow(ROW_ID_COLUMN_NAME);
+            mDataValid = true;
 
-            App.LOG_D("Sections swaped");
+            ItemsAdapter oldItemsAdapter = mItemsAdapter;
+            mItemsAdapter = new ItemsAdapter(createSections(mCursor), mCursor);
+
+            if (oldItemsAdapter.hasItems()) {
+                int min = min(oldItemsAdapter.getCount(), mItemsAdapter.getCount());
+                int max = max(oldItemsAdapter.getCount(), mItemsAdapter.getCount());
+
+                for (int i = 0; i < min; i++) {
+                    if (oldItemsAdapter.isItem(i) == mItemsAdapter.isItem(i)) {
+                        notifyItemChanged(i);
+                    } else {
+                        notifyItemRemoved(i);
+                        notifyItemInserted(i);
+                    }
+                }
+
+                boolean isGrown = oldItemsAdapter.getCount() < mItemsAdapter.getCount();
+
+                for (int i = min; i < max; i++) {
+                    if (isGrown) {
+                        notifyItemInserted(i);
+                    } else {
+                        notifyItemRemoved(i);
+                    }
+                }
+
+            } else if (mItemsAdapter.hasItems()) {
+                notifyItemRangeInserted(0, mItemsAdapter.getCount());
+            }
         }
 
         return oldCursor;
     }
 
     protected abstract HashMap<Integer, S> createSections(Cursor cursor);
-//
-//    @Override
-//    protected void onItemChanged(int position) {
-//        super.onItemChanged(getSectionsBeforeCount(position) + position);
-//    }
-//
-//    @Override
-//    protected void onItemInserted(int position) {
-//        super.onItemInserted(getSectionsBeforeCount(position) + position);
-//    }
-//
-//    @Override
-//    protected void onItemRemoved(int position) {
-//        super.onItemRemoved(getSectionsBeforeCount(position) + position);
-//    }
-//
-//    protected int getSectionsBeforeCount(int position) {
-//        int count = 0;
-//
-//        for (int i = 0; i < position; i++) {
-//            if (isSection(i)) {
-//                count++;
-//            }
-//        }
-//
-//        return count;
-//    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        if (mItemsAdapter.isItem(position)) {
+            if (!mDataValid) {
+                throw new IllegalStateException("this should only be called when the cursor is valid");
+            }
+            int itemPosition = mItemsAdapter.getItemPosition(position);
+            if (!mCursor.moveToPosition(itemPosition)) {
+                throw new IllegalStateException("couldn't move cursor to position " + itemPosition);
+            }
+            onBindItemViewHolder(holder, mCursor);
+        } else {
+            onBindSectionViewHolder(holder, mItemsAdapter.getSection(position));
+        }
+    }
+
+    public abstract void onBindItemViewHolder(RecyclerView.ViewHolder holder, Cursor cursor);
+
+    public abstract void onBindSectionViewHolder(RecyclerView.ViewHolder holder, S section);
+
+    @Override
+    public int getItemCount() {
+        return mItemsAdapter.getCount();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        if (mItemsAdapter.isItem(position)) {
+            if (mDataValid && mCursor.moveToPosition(mItemsAdapter.getItemPosition(position))) {
+                return mCursor.getLong(mRowIDColumn);
+            }
+        }
+
+        return super.getItemId(position);
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return (mItemsAdapter.isItem(position)) ? TYPE_ITEM : TYPE_SECTION;
+    }
+
+    private class ItemsAdapter {
+        private HashMap<Integer, Boolean> mItems;
+        private HashMap<Integer, S> mSections;
+        private HashMap<Integer, Integer> mItemsPositions;
+
+        public ItemsAdapter(HashMap<Integer, S> sections, Cursor cursor) {
+            mItems = new HashMap<>();
+            mItemsPositions = new HashMap<>();
+            mSections = sections;
+
+            if (mSections == null) {
+                mSections = new HashMap<>();
+            }
+
+            if (cursor != null && cursor.moveToFirst()) {
+                for (int i = 0; i < cursor.getCount() + sections.size(); i++) {
+                    boolean isItem = !mSections.containsKey(i);
+                    mItems.put(i, isItem);
+                    if (isItem) {
+                        mItemsPositions.put(i, cursor.getPosition());
+                        cursor.moveToNext();
+                    }
+                }
+            }
+        }
+
+        public boolean hasItems() {
+            return getCount() != 0;
+        }
+
+        public int getCount() {
+            return mItems.size();
+        }
+
+        public boolean isItem(int position) {
+            return mItems.get(position);
+        }
+
+        public int getItemPosition(int position) {
+            if (isItem(position)) {
+                return mItemsPositions.get(position);
+            }
+
+            return -1;
+        }
+
+        public S getSection(int position) {
+            return mSections.get(position);
+        }
+
+        public void clear() {
+            mItems.clear();
+            mSections.clear();
+            mItemsPositions.clear();
+        }
+    }
+
+    private class NotifyingDataSetObserver extends DataSetObserver {
+        @Override
+        public void onChanged() {
+            super.onChanged();
+            mDataValid = true;
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onInvalidated() {
+            super.onInvalidated();
+            mDataValid = false;
+            notifyDataSetChanged();
+            //There is no notifyDataSetInvalidated() method in RecyclerView.Adapter
+        }
+    }
 }
