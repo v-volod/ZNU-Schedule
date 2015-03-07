@@ -1,5 +1,6 @@
 package ua.zp.rozklad.app.ui;
 
+import android.animation.ObjectAnimator;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;

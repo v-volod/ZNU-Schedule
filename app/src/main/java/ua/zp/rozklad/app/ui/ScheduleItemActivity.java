@@ -11,15 +11,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.util.CalendarUtils;
 
@@ -92,31 +83,30 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
             ((ImageView) time.findViewById(R.id.icon))
                     .setImageResource(R.drawable.ic_query_builder_white_24dp);
 
-            MapFragment mMapFragment = (MapFragment) getFragmentManager()
-                    .findFragmentById(R.id.map);
+//            MapFragment mMapFragment = (MapFragment) getFragmentManager()
+//                    .findFragmentById(R.id.map);
 
-            int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-
-            if (latitude == -1.0f && longitude == -1.0f || status != ConnectionResult.SUCCESS) {
-                getFragmentManager()
-                        .beginTransaction()
-                        .hide(mMapFragment)
-                        .commit();
-            } else {
-                mMapFragment.getMapAsync(new OnMapReadyCallback() {
-                    @Override
-                    public void onMapReady(final GoogleMap map) {
-                        LatLng campusLatLng = new LatLng(latitude, longitude);
-                        MarkerOptions mMarkerOptions = new MarkerOptions()
-                                .title(campus)
-                                .position(campusLatLng);
-
-                        map.setMyLocationEnabled(true);
-                        map.animateCamera(CameraUpdateFactory.newLatLngZoom(campusLatLng, 16));
-                        map.addMarker(mMarkerOptions).showInfoWindow();
-                    }
-                });
-            }
+//            int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+//            if (latitude == -1.0f && longitude == -1.0f || status != ConnectionResult.SUCCESS || disableMap) {
+//                getFragmentManager()
+//                        .beginTransaction()
+//                        .hide(mMapFragment)
+//                        .commit();
+//            } else {
+//                mMapFragment.getMapAsync(new OnMapReadyCallback() {
+//                    @Override
+//                    public void onMapReady(final GoogleMap map) {
+//                        LatLng campusLatLng = new LatLng(latitude, longitude);
+//                        MarkerOptions mMarkerOptions = new MarkerOptions()
+//                                .title(campus)
+//                                .position(campusLatLng);
+//
+//                        map.setMyLocationEnabled(true);
+//                        map.animateCamera(CameraUpdateFactory.newLatLngZoom(campusLatLng, 16));
+//                        map.addMarker(mMarkerOptions).showInfoWindow();
+//                    }
+//                });
+//            }
 
             if (lecturerName.isEmpty()) {
                 lecturerName = getString(R.string.not_specified);
@@ -149,6 +139,7 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
+                overridePendingTransition(R.animator.activity_open_alpha, R.animator.activity_close_translate_right);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -168,6 +159,7 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
                 Intent intent = new Intent(this, LecturerScheduleActivity.class);
                 intent.putExtra(LecturerScheduleActivity.ARG_LECTURER_ID, lecturerId);
                 startActivity(intent);
+                overridePendingTransition(R.animator.activity_open_translate_right, R.animator.activity_close_alpha);
                 break;
         }
     }

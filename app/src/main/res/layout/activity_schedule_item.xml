@@ -53,11 +53,11 @@
                     android:id="@+id/location"
                     layout="@layout/two_line_item_left_icon" />
 
-                <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:id="@+id/map"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:name="com.google.android.gms.maps.MapFragment" />
+                <!--<fragment xmlns:android="http://schemas.android.com/apk/res/android"-->
+                    <!--android:id="@+id/map"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="200dp"-->
+                    <!--android:name="com.google.android.gms.maps.MapFragment" />-->
 
                 <include
                     android:id="@+id/time"

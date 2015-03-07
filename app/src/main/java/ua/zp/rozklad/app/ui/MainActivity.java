@@ -1,8 +1,8 @@
 package ua.zp.rozklad.app.ui;
 
-import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Fragment;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -12,7 +12,6 @@ import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -478,7 +477,7 @@ public class MainActivity extends BaseActivity
         Intent intent = new Intent(this, ScheduleItemActivity.class);
         intent.putExtra(ScheduleItemActivity.ARG_SCHEDULE_ITEM_ID, scheduleItemId);
         startActivity(intent);
-        overridePendingTransition(R.animator.slide_in_left, R.animator.slide_out_right);
+        overridePendingTransition(R.animator.activity_open_translate_right, R.animator.activity_close_alpha);
     }
 
     @Override
@@ -486,6 +485,7 @@ public class MainActivity extends BaseActivity
         Intent intent = new Intent(this, LecturerScheduleActivity.class);
         intent.putExtra(LecturerScheduleActivity.ARG_LECTURER_ID, lecturerId);
         startActivity(intent);
+        overridePendingTransition(R.animator.activity_open_translate_right, R.animator.activity_close_alpha);
     }
 
     @Override
@@ -495,7 +495,6 @@ public class MainActivity extends BaseActivity
 
     private void replaceMainContent(Fragment fragment) {
         getFragmentManager().beginTransaction()
-//                .setCustomAnimations(R.animator.slide_in_left, R.animator.slide_out_right, 0, 0)
                 .replace(R.id.main_content, fragment).commit();
     }
 

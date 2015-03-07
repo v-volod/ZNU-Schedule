@@ -1,6 +1,7 @@
 package ua.zp.rozklad.app.ui;
 
 import android.accounts.Account;
+import android.animation.ObjectAnimator;
 import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.os.Build;
