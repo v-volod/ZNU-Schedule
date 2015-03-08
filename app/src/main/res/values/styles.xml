@@ -11,6 +11,10 @@
         <item name="toolbarTheme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
         <item name="toolbarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
         <item name="subHeaderTextColor">@color/sub_header_text_color</item>
+
+        <item name="md_positive_color">@color/green_500</item>
+        <item name="md_neutral_color">@color/blue_700</item>
+        <item name="md_negative_color">@color/red_500</item>
     </style>
 
     <style name="AppTheme" parent="AppTheme.Base">
@@ -20,6 +24,7 @@
 
     <!-- Login Screen Style -->
     <style name="LoginScreen.Base" parent="AppTheme">
+        <item name="colorPrimary">@color/grey_900</item>
         <item name="colorAccent">@color/teal_500</item>
     </style>
 
@@ -87,14 +92,6 @@
     <!-- LoginChooser -->
     <style name="LoginChooser">
         <item name="android:layout_marginBottom">@dimen/login_chooser_margin_bottom</item>
-    </style>
-
-    <!-- Extended toolbar styles -->
-    <style name="TwoLineTitle">
-        <item name="android:singleLine">false</item>
-        <item name="android:textAlignment">textEnd</item>
-        <item name="android:state_multiline">true</item>
-        <item name="android:minLines">2</item>
     </style>
 
 </resources>

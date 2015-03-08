@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -118,25 +119,10 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
                 });
             }
 
-            if (lecturerName.isEmpty()) {
-                lecturerName = getString(R.string.not_specified);
-                lecturer.setClickable(false);
-            }
-
-            if (locationText.isEmpty()) {
-                locationText = getString(R.string.not_specified);
-            }
-
-            setUpItem(lecturer, lecturerName, getString(R.string.lecturer));
-            setUpItem(classType, classTypeText, getString(R.string.type));
-            setUpItem(location, locationText, getString(R.string.location));
-            setUpItem(time, timeText, getString(R.string.time));
-
-
-            lecturer.setOnClickListener(this);
-            classType.setClickable(false);
-            location.setClickable(false);
-            time.setClickable(false);
+            setUpItem(lecturer, lecturerName, getString(R.string.lecturer), !lecturerName.isEmpty());
+            setUpItem(classType, classTypeText, getString(R.string.type), false);
+            setUpItem(location, locationText, getString(R.string.location), false);
+            setUpItem(time, timeText, getString(R.string.time), false);
         } else {
             finish();
         }
@@ -156,7 +142,13 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
     }
 
 
-    public void setUpItem(View view, String primary, String secondary) {
+    public void setUpItem(View view, String primary, String secondary, boolean isClickable) {
+        if (TextUtils.isEmpty(primary)) {
+            primary = getString(R.string.not_specified);
+        }
+        if (isClickable) {
+            view.setOnClickListener(this);
+        }
         ((TextView) view.findViewById(R.id.primary_text)).setText(primary);
         ((TextView) view.findViewById(R.id.secondary_text)).setText(secondary);
     }

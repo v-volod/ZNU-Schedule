@@ -188,9 +188,7 @@ public class ScheduleOfWeekFragment extends Fragment
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setColorSchemeResources(REFRESH_VIEW_COLOR_RES);
-        if (scheduleType == Type.BY_LECTURER) {
-            mSwipeRefreshLayout.setEnabled(false);
-        }
+        mSwipeRefreshLayout.setEnabled(false);
 
         return view;
     }

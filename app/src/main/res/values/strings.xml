@@ -8,7 +8,7 @@
     <string name="schedule">Розклад</string>
     <string name="action_today">Сьогодні</string>
     <string name="action_sync_schedule">Оновити розклад</string>
-    <string name="tag_line_text">Завжди актуальний розклад в твоїй кишені</string>
+    <string name="tag_line_text">Завжди актуальний розклад у твоїй кишені</string>
     <string name="choose_department_hint">Оберіть факультет&#8230;</string>
     <string name="choose_group_hint">Оберіть групу&#8230;</string>
     <string name="choose_subgroup_hint">Оберіть підгрупу&#8230;</string>
