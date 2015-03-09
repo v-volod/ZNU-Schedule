@@ -23,7 +23,6 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 import java.util.ArrayList;
 
 import ua.pp.rozkladznu.app.App;
-import ua.pp.rozkladznu.app.BuildConfig;
 import ua.pp.rozkladznu.app.R;
 import ua.pp.rozkladznu.app.account.GroupAuthenticator;
 import ua.pp.rozkladznu.app.account.GroupAuthenticatorHelper;
@@ -92,11 +91,16 @@ public class LoginActivity extends AccountAuthenticatorActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.login_button:
-                finishLogin(
-                        departmentAdapter.getSelectedDepartment(),
-                        groupAdapter.getSelectedGroup(),
-                        groupAdapter.getSelectedSubgroup()
-                );
+                new Thread() {
+                    @Override
+                    public void run() {
+                        finishLogin(
+                                departmentAdapter.getSelectedDepartment(),
+                                groupAdapter.getSelectedGroup(),
+                                groupAdapter.getSelectedSubgroup()
+                        );
+                    }
+                }.start();
                 break;
             case R.id.retry_button:
                 retryButton.setVisibility(View.GONE);
