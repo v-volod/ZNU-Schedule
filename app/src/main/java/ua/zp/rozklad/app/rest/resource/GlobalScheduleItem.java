@@ -6,11 +6,11 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 import ua.zp.rozklad.app.rest.RESTMethod;
 
 import static java.lang.Integer.parseInt;
+import static java.util.Calendar.getInstance;
 
 /**
  * @author Vojko Vladimir
@@ -112,8 +112,9 @@ public class GlobalScheduleItem extends Resource {
     private long parseDate(String dateToParse) {
         String[] date = dateToParse.split("-");
 
-        Calendar calendar = new GregorianCalendar();
-        calendar.set(parseInt(date[0]), parseInt(date[1]), parseInt(date[2]), 0, 0);
+        Calendar calendar = getInstance();
+        calendar.clear();
+        calendar.set(parseInt(date[0]), parseInt(date[1]) - 1, parseInt(date[2]));
 
         return calendar.getTimeInMillis();
     }
