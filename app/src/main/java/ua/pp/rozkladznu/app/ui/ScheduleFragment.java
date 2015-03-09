@@ -340,9 +340,12 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
                 status.setVisibility(View.GONE);
             }
 
-            String lecturerOrGroups = (scheduleType == Type.BY_GROUP) ?
-                    cursor.getString(Summary.Column.LECTURER_NAME) :
-                    cursor.getString(Summary.Column.GROUPS);
+            String lecturerOrGroups;
+            if (scheduleType == Type.BY_GROUP) {
+                lecturerOrGroups = cursor.getString(Summary.Column.LECTURER_NAME);
+            } else {
+                lecturerOrGroups =  cursor.getString(Summary.Column.GROUPS).replace(",", ", ");
+            }
             String audience = cursor.getString(Summary.Column.AUDIENCE_NUMBER);
             String campus = cursor.getString(Summary.Column.CAMPUS_NAME);
             String location = audience +
