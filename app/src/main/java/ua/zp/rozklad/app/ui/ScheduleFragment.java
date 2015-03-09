@@ -3,7 +3,6 @@ package ua.zp.rozklad.app.ui;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.LoaderManager;
-import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.content.res.Resources;
@@ -14,7 +13,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,18 +23,18 @@ import com.melnykov.fab.FloatingActionButton;
 import java.util.Calendar;
 import java.util.HashMap;
 
-import ua.zp.rozklad.app.App;
 import ua.zp.rozklad.app.R;
 import ua.zp.rozklad.app.adapter.SectionCursorRecyclerViewAdapter;
 import ua.zp.rozklad.app.util.CalendarUtils;
 
-import static java.lang.String.valueOf;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Selection;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.SortOrder;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineArgs;
 import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
 import static ua.zp.rozklad.app.provider.ScheduleContract.combineSortOrder;
+import static ua.zp.rozklad.app.provider.ScheduleContract.groupBySelection;
 
 /**
  * {@link Fragment} that displays the schedule with the specified filter criteria.
@@ -194,6 +192,8 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         CursorLoader loader = new CursorLoader(getActivity());
 
+        long dateMillis = CalendarUtils.addDays(startOfWeek, dayOfWeek);
+
         loader.setUri(FullSchedule.CONTENT_URI);
         loader.setProjection(Summary.PROJECTION);
         switch (id) {
@@ -202,21 +202,34 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
                         Selection.GROUP,
                         Selection.SUBGROUP,
                         Selection.DAY_OF_WEEK,
-                        Selection.PERIODICITY
+                        Selection.PERIODICITY,
+                        Selection.BEFORE_DATE,
+                        Selection.AFTER_DATE
+                ) + groupBySelection(FullSchedule.SCHEDULE_ID));
+                loader.setSelectionArgs(combineArgs(
+                        typeFilterId,
+                        subgroupId,
+                        dayOfWeek,
+                        periodicity,
+                        dateMillis,
+                        dateMillis
                 ));
-                loader.setSelectionArgs(new String[]{
-                        valueOf(typeFilterId), valueOf(subgroupId), valueOf(dayOfWeek), valueOf(periodicity)
-                });
                 break;
             case Type.BY_LECTURER:
                 loader.setSelection(combineSelection(
                         Selection.LECTURER,
                         Selection.DAY_OF_WEEK,
-                        Selection.PERIODICITY
+                        Selection.PERIODICITY,
+                        Selection.BEFORE_DATE,
+                        Selection.AFTER_DATE
+                ) + groupBySelection(FullSchedule.SCHEDULE_ID));
+                loader.setSelectionArgs(combineArgs(
+                        typeFilterId,
+                        dayOfWeek,
+                        periodicity,
+                        dateMillis,
+                        dateMillis
                 ));
-                loader.setSelectionArgs(new String[]{
-                        valueOf(typeFilterId), valueOf(dayOfWeek), valueOf(periodicity)
-                });
         }
         loader.setSortOrder(combineSortOrder(SortOrder.DAY_OF_WEEK, SortOrder.ACADEMIC_HOUR_NUM));
 
@@ -371,14 +384,14 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
 
         @Override
         public void onBindItemViewHolder(RecyclerView.ViewHolder holder, Cursor cursor) {
-            ((ItemViewHolder) holder).update(isToday,cursor, getResources(), scheduleType);
+            ((ItemViewHolder) holder).update(isToday, cursor, getResources(), scheduleType);
         }
 
         @Override
         public void onBindSectionViewHolder(RecyclerView.ViewHolder holder, String section) {
             SectionViewHolder sectionViewHolder = (SectionViewHolder) holder;
             sectionViewHolder.text.setText(section);
-            sectionViewHolder.text.setTextColor((isToday) ? COLOR_TODAY: COLOR_DEFAULT);
+            sectionViewHolder.text.setTextColor((isToday) ? COLOR_TODAY : COLOR_DEFAULT);
         }
 
         @Override

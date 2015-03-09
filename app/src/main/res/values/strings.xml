@@ -133,7 +133,7 @@
         <item>@string/not_specified</item>
         <item>Лекція</item>
         <item>Семінар</item>
-        <item>Лабораторна робота</item>
+        <item>Практика</item>
         <item>Консультація</item>
         <item>Екзамен</item>
     </string-array>

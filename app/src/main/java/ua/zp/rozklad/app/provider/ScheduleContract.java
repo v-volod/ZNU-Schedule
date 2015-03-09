@@ -95,6 +95,8 @@ public class ScheduleContract {
     private static final String AND = " AND ";
     private static final String OR = " OR ";
     private static final String EQ = " = ";
+    private static final String GEQ = " >= ";
+    private static final String LEQ = " <= ";
     private static final String ASC = " ASC";
     private static final String DESC = " DESC";
     private static final String GROUP_BY = " GROUP BY ";
@@ -473,6 +475,8 @@ public class ScheduleContract {
                 String PERIODICITY = "(" + FullSchedule.PERIODICITY + EQ + "0" +
                         OR + FullSchedule.PERIODICITY + EQ + "?)";
                 String DAY_OF_WEEK = FullSchedule.DAY_OF_WEEK + EQ + "?";
+                String AFTER_DATE = FullSchedule.START_DATE + LEQ + "?";
+                String BEFORE_DATE = FullSchedule.END_DATE + GEQ + "?";
             }
 
             interface SortOrder {

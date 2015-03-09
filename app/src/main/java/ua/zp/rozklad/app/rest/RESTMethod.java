@@ -26,7 +26,7 @@ import ua.zp.rozklad.app.BuildConfig;
  */
 public abstract class RESTMethod<R, T> implements Response.ErrorListener, Response.Listener<T> {
 
-    public static final String SITE_URL = "http://rozklad.5132.pp.ua/";
+    public static final String SITE_URL = "http://rozkladznu.pp.ua/";
     private static final String API = "api/v1/";
     private static final String API_URL = SITE_URL + API;
 

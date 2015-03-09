@@ -32,13 +32,14 @@ import ua.zp.rozklad.app.model.Periodicity;
 import ua.zp.rozklad.app.provider.ScheduleContract;
 import ua.zp.rozklad.app.sync.ScheduleSyncAdapter;
 import ua.zp.rozklad.app.ui.tabs.SlidingTabLayout;
+import ua.zp.rozklad.app.util.CalendarUtils;
 import ua.zp.rozklad.app.util.UiUtils;
 
 import static java.lang.Math.abs;
-import static java.lang.String.valueOf;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.Selection;
 import static ua.zp.rozklad.app.provider.ScheduleContract.FullSchedule.Summary.SortOrder;
+import static ua.zp.rozklad.app.provider.ScheduleContract.combineArgs;
 import static ua.zp.rozklad.app.provider.ScheduleContract.combineSelection;
 import static ua.zp.rozklad.app.provider.ScheduleContract.combineSortOrder;
 import static ua.zp.rozklad.app.provider.ScheduleContract.groupBySelection;
@@ -212,6 +213,11 @@ public class ScheduleOfWeekFragment extends Fragment
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         CursorLoader loader = new CursorLoader(getActivity());
 
+        // Monday
+        long startDateMillis = getStartOfWeekMillis(weeks[selectedWeekPosition]);
+        // Sunday
+        long endDateMillis = CalendarUtils.addDays(startDateMillis, 5);
+
         loader.setUri(FullSchedule.CONTENT_URI);
         loader.setProjection(new String[]{
                 FullSchedule.DAY_OF_WEEK,
@@ -219,25 +225,32 @@ public class ScheduleOfWeekFragment extends Fragment
         });
         switch (id) {
             case Type.BY_GROUP:
-                loader.setSelection(
-                        combineSelection(Selection.GROUP, Selection.SUBGROUP, Selection.PERIODICITY) +
-                                groupBySelection(FullSchedule.DAY_OF_WEEK)
+                loader.setSelection(combineSelection(
+                                Selection.GROUP,
+                                Selection.SUBGROUP,
+                                Selection.AFTER_DATE,
+                                Selection.BEFORE_DATE
+                        ) + groupBySelection(FullSchedule.DAY_OF_WEEK)
                 );
-                loader.setSelectionArgs(new String[]{
-                        valueOf(typeFilterId),
-                        valueOf(subgroupId),
-                        valueOf(periodicity.getPeriodicity(weeks[selectedWeekPosition]))
-                });
+                loader.setSelectionArgs(combineArgs(
+                        typeFilterId,
+                        subgroupId,
+                        startDateMillis,
+                        endDateMillis
+                ));
                 break;
             case Type.BY_LECTURER:
-                loader.setSelection(
-                        combineSelection(Selection.LECTURER, Selection.PERIODICITY) +
-                                groupBySelection(FullSchedule.DAY_OF_WEEK)
+                loader.setSelection(combineSelection(
+                                Selection.LECTURER,
+                                Selection.AFTER_DATE,
+                                Selection.BEFORE_DATE
+                        ) + groupBySelection(FullSchedule.DAY_OF_WEEK)
                 );
-                loader.setSelectionArgs(new String[]{
-                        valueOf(typeFilterId),
-                        valueOf(periodicity.getPeriodicity(weeks[selectedWeekPosition]))
-                });
+                loader.setSelectionArgs(combineArgs(
+                        typeFilterId,
+                        startDateMillis,
+                        endDateMillis
+                ));
                 break;
         }
         loader.setSortOrder(combineSortOrder(SortOrder.DAY_OF_WEEK, SortOrder.END_TIME_DESC));
