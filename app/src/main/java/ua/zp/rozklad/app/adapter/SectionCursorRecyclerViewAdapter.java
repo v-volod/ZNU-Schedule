@@ -185,6 +185,10 @@ public abstract class SectionCursorRecyclerViewAdapter<S>
                         cursor.moveToNext();
                     }
                 }
+            } else {
+                for (int i = 0; i < mSections.size(); i++) {
+                    mItems.put(i, false);
+                }
             }
         }
 
