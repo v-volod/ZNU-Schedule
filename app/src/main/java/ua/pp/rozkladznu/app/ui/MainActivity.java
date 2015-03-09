@@ -24,7 +24,6 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import java.util.ArrayList;
 
 import ua.pp.rozkladznu.app.App;
-import ua.pp.rozkladznu.app.BuildConfig;
 import ua.pp.rozkladznu.app.R;
 import ua.pp.rozkladznu.app.provider.ScheduleContract;
 import ua.pp.rozkladznu.app.util.MetricaUtils;
@@ -104,7 +103,6 @@ public class MainActivity extends BaseActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        App.LOG_D("MainActivity onCreate");
         setContentView(R.layout.activity_main);
 
         appBar = (Toolbar) findViewById(R.id.app_bar);
@@ -190,7 +188,7 @@ public class MainActivity extends BaseActivity
         drawerLayout.closeDrawer(Gravity.START);
         AccountManager mAccountManager = AccountManager.get(this);
         if (getAccount() != null) {
-            if (!BuildConfig.DEBUG)
+            if (App.getInstance().isMetricaInitialized())
                 MetricaUtils.reportGroupChange(getAccount());
             mAccountManager.removeAccount(getAccount().getBaseAccount(), null, new Handler());
             ContentValues values = new ContentValues();

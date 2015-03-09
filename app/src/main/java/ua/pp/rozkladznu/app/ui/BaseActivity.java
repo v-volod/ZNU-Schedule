@@ -29,14 +29,14 @@ public abstract class BaseActivity extends ActionBarActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (!BuildConfig.DEBUG)
+        if (App.getInstance().isMetricaInitialized())
             YandexMetrica.onPauseActivity(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (!BuildConfig.DEBUG)
+        if (App.getInstance().isMetricaInitialized())
             YandexMetrica.onResumeActivity(this);
 
         authenticateAccount();

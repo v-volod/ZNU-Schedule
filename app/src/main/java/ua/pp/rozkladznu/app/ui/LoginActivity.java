@@ -133,7 +133,7 @@ public class LoginActivity extends AccountAuthenticatorActivity
         boolean isAdded = accountManager.addAccountExplicitly(account, null, userData);
 
         if (isAdded) {
-            if (!BuildConfig.DEBUG)
+            if (App.getInstance().isMetricaInitialized())
                 MetricaUtils.reportGroupAdd(department, group, subgroup);
 
             final Intent intent = new Intent();
