@@ -62,11 +62,17 @@ public class LecturerScheduleActivity extends BaseActivity
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
-                overridePendingTransition(R.animator.activity_open_alpha, R.animator.activity_close_translate_right);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.animator.activity_open_alpha,
+                R.animator.activity_close_translate_right);
     }
 
     @Override

@@ -127,6 +127,13 @@ public class SettingsActivity extends BaseActivity implements View.OnClickListen
     }
 
     @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.animator.activity_open_alpha,
+                R.animator.activity_close_translate_right);
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.auto_sync:

@@ -376,11 +376,15 @@ public class MainActivity extends BaseActivity
             case NAV_DRAWER_ITEM_SETTINGS: {
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
+                overridePendingTransition(R.animator.activity_open_translate_right,
+                        R.animator.activity_close_alpha);
             }
             return;
             case NAV_DRAWER_ITEM_ABOUT: {
                 Intent intent = new Intent(this, AboutActivity.class);
                 startActivity(intent);
+                overridePendingTransition(R.animator.activity_open_translate_right,
+                        R.animator.activity_close_alpha);
             }
             return;
             case NAV_DRAWER_ITEM_SCHEDULE:
@@ -477,7 +481,8 @@ public class MainActivity extends BaseActivity
         Intent intent = new Intent(this, ScheduleItemActivity.class);
         intent.putExtra(ScheduleItemActivity.ARG_SCHEDULE_ITEM_ID, scheduleItemId);
         startActivity(intent);
-        overridePendingTransition(R.animator.activity_open_translate_right, R.animator.activity_close_alpha);
+        overridePendingTransition(R.animator.activity_open_translate_right,
+                R.animator.activity_close_alpha);
     }
 
     @Override
@@ -485,7 +490,8 @@ public class MainActivity extends BaseActivity
         Intent intent = new Intent(this, LecturerScheduleActivity.class);
         intent.putExtra(LecturerScheduleActivity.ARG_LECTURER_ID, lecturerId);
         startActivity(intent);
-        overridePendingTransition(R.animator.activity_open_translate_right, R.animator.activity_close_alpha);
+        overridePendingTransition(R.animator.activity_open_translate_right,
+                R.animator.activity_close_alpha);
     }
 
     @Override
