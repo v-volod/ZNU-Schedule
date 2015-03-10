@@ -416,11 +416,11 @@ public class MainActivity extends BaseActivity
 
     private void onScheduleSelected() {
         getSupportActionBar().setTitle(R.string.schedule);
-        getSupportActionBar().setSubtitle(0);
         hideAppBarShadow();
 
         Fragment fragment = getFragmentManager().findFragmentById(R.id.main_content);
         if (fragment == null || !(fragment instanceof ScheduleOfWeekFragment)) {
+            getSupportActionBar().setSubtitle(0);
             replaceMainContent(ScheduleOfWeekFragment.newInstance(getAccount()));
         } else {
             reloadSchedule();
