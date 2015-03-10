@@ -5,11 +5,11 @@
     <PreferenceCategory android:title="@string/general_settings" />
 
     <PreferenceScreen
-        android:key="ua.zp.rozklad.app.KEY_ACCOUNT_SYNC"
+        android:key="ua.pp.rozkladznu.app.KEY_ACCOUNT_SYNC"
         android:title="@string/app_settings">
         <intent
-            android:targetClass="ua.zp.rozklad.app.ui.SettingsActivity"
-            android:targetPackage="ua.zp.rozklad.app" />
+            android:targetClass="ua.pp.rozkladznu.app.ui.SettingsActivity"
+            android:targetPackage="ua.pp.rozkladznu.app" />
     </PreferenceScreen>
 
 </PreferenceScreen>

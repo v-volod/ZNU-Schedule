@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <sync-adapter xmlns:android="http://schemas.android.com/apk/res/android"
-    android:contentAuthority="ua.zp.rozklad.app.provider.ScheduleProvider"
+    android:contentAuthority="ua.pp.rozkladznu.app.provider.ScheduleProvider"
     android:accountType="rozklad.zp.ua.group"
     android:userVisible="true"
     android:allowParallelSyncs="false"

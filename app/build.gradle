@@ -5,12 +5,21 @@ android {
     buildToolsVersion "21.1.2"
 
     defaultConfig {
-        applicationId "ua.zp.rozklad.app"
         minSdkVersion 14
         targetSdkVersion 21
         versionCode 1
-        versionName "0.7 beta"
+        versionName "0.9 beta"
     }
+
+    signingConfigs {
+        debug {
+            storeFile file("debug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="ua.zp.rozklad.app">
+    package="ua.pp.rozkladznu.app">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -50,7 +50,7 @@
     </compatible-screens>
 
     <application
-        android:name=".App"
+        android:name="ua.pp.rozkladznu.app.App"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -63,7 +63,7 @@
             android:value="@string/maps_api_key" />
 
         <activity
-            android:name=".ui.MainActivity"
+            android:name="ua.pp.rozkladznu.app.ui.MainActivity"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -72,43 +72,43 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.LoginActivity"
+            android:name="ua.pp.rozkladznu.app.ui.LoginActivity"
             android:label="@string/title_activity_login"
             android:screenOrientation="portrait"
             android:theme="@style/LoginScreen" />
         <activity
-            android:name=".ui.ScheduleItemActivity"
+            android:name="ua.pp.rozkladznu.app.ui.ScheduleItemActivity"
             android:theme="@style/AppTheme.Purple" />
         <activity
-            android:name=".ui.LecturerScheduleActivity"
+            android:name="ua.pp.rozkladznu.app.ui.LecturerScheduleActivity"
             android:theme="@style/NoDrawerTheme" />
         <activity
-            android:name=".ui.AboutActivity"
+            android:name="ua.pp.rozkladznu.app.ui.AboutActivity"
             android:theme="@style/AppTheme.White"
-            android:parentActivityName=".ui.MainActivity"
+            android:parentActivityName="ua.pp.rozkladznu.app.ui.MainActivity"
             android:label="@string/about_app"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.MainActivity" />
+                android:value="ua.pp.rozkladznu.app.ui.MainActivity" />
         </activity>
 
         <activity
-            android:name=".ui.SettingsActivity"
+            android:name="ua.pp.rozkladznu.app.ui.SettingsActivity"
             android:configChanges="orientation|keyboard|keyboardHidden|screenSize|screenLayout|uiMode"
             android:label="@string/nav_drawer_item_settings"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.BlueGrey" />
 
         <provider
-            android:name=".provider.ScheduleProvider"
-            android:authorities="ua.zp.rozklad.app.provider.ScheduleProvider"
+            android:name="ua.pp.rozkladznu.app.provider.ScheduleProvider"
+            android:authorities="ua.pp.rozkladznu.app.provider.ScheduleProvider"
             android:exported="false"
             android:label="@string/schedule"
             android:syncable="true" />
 
         <service
-            android:name=".account.GroupAuthenticatorService"
+            android:name="ua.pp.rozkladznu.app.account.GroupAuthenticatorService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
@@ -120,7 +120,7 @@
         </service>
 
         <service
-            android:name=".sync.ScheduleSyncService"
+            android:name="ua.pp.rozkladznu.app.sync.ScheduleSyncService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -169,8 +169,8 @@
         </receiver>
 
         <provider
-            android:name="ua.zp.rozklad.app.provider.MetricaContentProvider"
-            android:authorities="ua.zp.rozklad.app.MetricaContentProvider"
+            android:name="ua.pp.rozkladznu.app.provider.MetricaContentProvider"
+            android:authorities="ua.pp.rozkladznu.app.MetricaContentProvider"
             android:enabled="true"
             android:exported="true" />
     </application>
