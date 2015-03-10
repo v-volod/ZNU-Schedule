@@ -64,7 +64,8 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
         if (cursor.moveToFirst()) {
             title.setText(cursor.getString(Column.SUBJECT_NAME));
             String lecturerName = cursor.getString(Column.LECTURER_NAME);
-            String classTypeText = classTypes[cursor.getInt(Column.CLASS_TYPE)];
+            String classTypeText = (cursor.getInt(Column.CLASS_TYPE) != 0) ?
+                    classTypes[cursor.getInt(Column.CLASS_TYPE)] : "";
             String timeText =
                     CalendarUtils.makeTime(cursor.getLong(Column.ACADEMIC_HOUR_STAT_TIME)) +
                             " - " + CalendarUtils.makeTime(cursor.getLong(Column.ACADEMIC_HOUR_END_TIME));
@@ -78,19 +79,12 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
 
             lecturerId = cursor.getLong(Column.SCHEDULE_LECTURER_ID);
 
+            cursor.close();
+
             View lecturer = findViewById(R.id.lecturer);
             View classType = findViewById(R.id.class_type);
             View location = findViewById(R.id.location);
             View time = findViewById(R.id.time);
-
-            ((ImageView) lecturer.findViewById(R.id.icon))
-                    .setImageResource(R.drawable.ic_person_white_24dp);
-            ((ImageView) classType.findViewById(R.id.icon))
-                    .setImageResource(R.drawable.ic_class_white_24dp);
-            ((ImageView) location.findViewById(R.id.icon))
-                    .setImageResource(R.drawable.ic_map_white_24dp);
-            ((ImageView) time.findViewById(R.id.icon))
-                    .setImageResource(R.drawable.ic_query_builder_white_24dp);
 
             MapFragment mMapFragment = (MapFragment) getFragmentManager()
                     .findFragmentById(R.id.map);
@@ -117,15 +111,18 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
                 });
             }
 
-            setUpItem(lecturer, lecturerName, getString(R.string.lecturer), !lecturerName.isEmpty());
-            setUpItem(classType, classTypeText, getString(R.string.type), false);
-            setUpItem(location, locationText, getString(R.string.location), false);
-            setUpItem(time, timeText, getString(R.string.time), false);
+            setUpItem(lecturer, R.drawable.ic_person_white_24dp, lecturerName,
+                    getString(R.string.lecturer), true);
+            setUpItem(classType, R.drawable.ic_class_white_24dp, classTypeText,
+                    getString(R.string.type), false);
+            setUpItem(location, R.drawable.ic_map_white_24dp, locationText,
+                    getString(R.string.location), false);
+            setUpItem(time, R.drawable.ic_query_builder_white_24dp, timeText,
+                    getString(R.string.time), false);
         } else {
+            cursor.close();
             finish();
         }
-
-        cursor.close();
     }
 
     @Override
@@ -147,13 +144,15 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
     }
 
 
-    public void setUpItem(View view, String primary, String secondary, boolean isClickable) {
+    public void setUpItem(View view, int iconResId, String primary, String secondary, boolean isClickable) {
         if (TextUtils.isEmpty(primary)) {
-            primary = getString(R.string.not_specified);
+            view.setVisibility(View.GONE);
+            return;
         }
         if (isClickable) {
             view.setOnClickListener(this);
         }
+        ((ImageView) view.findViewById(R.id.icon)).setImageResource(iconResId);
         ((TextView) view.findViewById(R.id.primary_text)).setText(primary);
         ((TextView) view.findViewById(R.id.secondary_text)).setText(secondary);
     }
