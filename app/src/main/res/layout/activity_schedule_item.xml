@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="ua.zp.rozklad.app.ui.MainActivity">
+    tools:context="ua.pp.rozkladznu.app.ui.MainActivity">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/app_bar"

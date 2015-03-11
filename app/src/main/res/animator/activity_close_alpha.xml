@@ -3,6 +3,6 @@
 
     <alpha android:fromAlpha="1"
            android:toAlpha="0.5"
-           android:duration="@android:integer/config_mediumAnimTime"/>
+           android:duration="@android:integer/config_shortAnimTime"/>
 
 </set>
