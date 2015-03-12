@@ -5,7 +5,6 @@ import com.yandex.metrica.YandexMetrica;
 import java.util.HashMap;
 import java.util.Map;
 
-import ua.pp.rozkladznu.app.App;
 import ua.pp.rozkladznu.app.account.GroupAccount;
 import ua.pp.rozkladznu.app.rest.resource.Department;
 import ua.pp.rozkladznu.app.rest.resource.Group;
@@ -28,8 +27,7 @@ public class MetricaUtils {
         attributes.put(DEPARTMENT, account.getDepartmentName());
         attributes.put(GROUP, account.getGroupName());
 
-        if (App.getInstance().isMetricaInitialized())
-            YandexMetrica.reportEvent(Events.CHANGE_GROUP, attributes);
+        YandexMetrica.reportEvent(Events.CHANGE_GROUP, attributes);
     }
 
     public static void reportGroupAdd(Department department, Group group, int subgroup) {
@@ -40,7 +38,6 @@ public class MetricaUtils {
             attributes.put(SUBGROUP, subgroup);
         }
 
-        if (App.getInstance().isMetricaInitialized())
-            YandexMetrica.reportEvent(Events.ADD_GROUP, attributes);
+        YandexMetrica.reportEvent(Events.ADD_GROUP, attributes);
     }
 }

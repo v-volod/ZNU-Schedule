@@ -410,14 +410,13 @@ public class ScheduleOfWeekFragment extends Fragment
                     GroupAccount groupAccount = App.getInstance()
                             .getGroupAuthenticatorHelper().getActiveAccount();
                     if (groupAccount != null) {
-                        boolean isSyncPending =
-                                ContentResolver.isSyncPending(
+                        boolean isSyncActive =
+                                ContentResolver.isSyncActive(
                                         groupAccount.getBaseAccount(),
                                         ScheduleContract.CONTENT_AUTHORITY
                                 );
 
-                        if (App.getInstance().isManualSyncActive() ||
-                                isSyncPending && App.getInstance().isManualSyncRequested()) {
+                        if (isSyncActive) {
                             showRefreshView();
                         }
                     }
@@ -436,11 +435,13 @@ public class ScheduleOfWeekFragment extends Fragment
     }
 
     private void showRefreshView() {
-        mSwipeRefreshLayout.setRefreshing(true);
+        if (!mSwipeRefreshLayout.isRefreshing())
+            mSwipeRefreshLayout.setRefreshing(true);
     }
 
     private void hideRefreshView() {
-        mSwipeRefreshLayout.setRefreshing(false);
+        if (mSwipeRefreshLayout.isRefreshing())
+            mSwipeRefreshLayout.setRefreshing(false);
     }
 
     public void performSync() {
@@ -461,8 +462,7 @@ public class ScheduleOfWeekFragment extends Fragment
                 ContentResolver.requestSync(account, ScheduleContract.CONTENT_AUTHORITY, bundle);
             }
 
-            mSwipeRefreshLayout.setRefreshing(true);
-            App.getInstance().setManualSyncRequested(true);
+            showRefreshView();
         }
     }
 
@@ -478,7 +478,7 @@ public class ScheduleOfWeekFragment extends Fragment
             int syncState = intent.getIntExtra(ScheduleSyncAdapter.EXTRA_SYNC_STATUS, -1);
             switch (syncState) {
                 case ScheduleSyncAdapter.SyncStatus.START:
-                    // Noop
+                    showRefreshView();
                     break;
                 case ScheduleSyncAdapter.SyncStatus.ABORTED_WITH_ERROR:
                 case ScheduleSyncAdapter.SyncStatus.FINISHED:

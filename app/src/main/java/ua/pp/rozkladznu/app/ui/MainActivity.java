@@ -2,7 +2,6 @@ package ua.pp.rozkladznu.app.ui;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
-import android.app.ActivityOptions;
 import android.app.Fragment;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -24,7 +23,6 @@ import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.util.ArrayList;
 
-import ua.pp.rozkladznu.app.App;
 import ua.pp.rozkladznu.app.R;
 import ua.pp.rozkladznu.app.provider.ScheduleContract;
 import ua.pp.rozkladznu.app.util.MetricaUtils;
@@ -189,8 +187,7 @@ public class MainActivity extends BaseActivity
         drawerLayout.closeDrawer(Gravity.START);
         AccountManager mAccountManager = AccountManager.get(this);
         if (getAccount() != null) {
-            if (App.getInstance().isMetricaInitialized())
-                MetricaUtils.reportGroupChange(getAccount());
+            MetricaUtils.reportGroupChange(getAccount());
             mAccountManager.removeAccount(getAccount().getBaseAccount(), null, new Handler());
             ContentValues values = new ContentValues();
             values.put(ScheduleContract.Group.UPDATED, 0);

@@ -26,6 +26,27 @@ public class GroupsProcessor extends Processor<Group>
         super(context);
     }
 
+    public void preProcess(ArrayList<Group> groups) {
+        Cursor cursor;
+
+        for (Group group : groups) {
+            cursor = mContentResolver.query(buildGroupUri(group.getId()),
+                    new String[]{ScheduleContract.Group.UPDATED}, null, null, null);
+
+            if (cursor.moveToFirst()) {
+                mContentResolver.update(
+                        buildGroupUri(group.getId()), buildValuesForPreUpdate(group), null, null
+                );
+            } else {
+                mContentResolver.insert(
+                        ScheduleContract.Group.CONTENT_URI, buildValuesForPreInsert(group)
+                );
+            }
+
+            cursor.close();
+        }
+    }
+
     @Override
     public void process(ArrayList<Group> groups) {
         Cursor cursor;
@@ -64,6 +85,26 @@ public class GroupsProcessor extends Processor<Group>
         values.put(ScheduleContract.Group.GROUP_NAME, group.getName());
         values.put(ScheduleContract.Group.SUBGROUP_COUNT, group.getSubgroupCount());
         values.put(ScheduleContract.Group.UPDATED, group.getLastUpdate());
+
+        return values;
+    }
+
+    protected ContentValues buildValuesForPreInsert(Group group) {
+        ContentValues values = buildValuesForPreUpdate(group);
+
+        values.put(ScheduleContract.Group._ID, group.getId());
+        values.put(ScheduleContract.Group.UPDATED, 0);
+
+        return values;
+    }
+
+    protected ContentValues buildValuesForPreUpdate(Group group) {
+        ContentValues values = new ContentValues();
+
+        values.put(ScheduleContract.Group.DEPARTMENT_ID, group.getDepartmentId());
+        values.put(ScheduleContract.Group.COURSE, group.getCourse());
+        values.put(ScheduleContract.Group.GROUP_NAME, group.getName());
+        values.put(ScheduleContract.Group.SUBGROUP_COUNT, group.getSubgroupCount());
 
         return values;
     }

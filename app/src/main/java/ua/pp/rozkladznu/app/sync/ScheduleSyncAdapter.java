@@ -4,7 +4,6 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
@@ -46,6 +45,7 @@ import ua.pp.rozkladznu.app.rest.resource.ScheduleItem;
 import ua.pp.rozkladznu.app.rest.resource.Subject;
 import ua.pp.rozkladznu.app.util.PreferencesUtils;
 
+import static java.lang.String.valueOf;
 import static ua.pp.rozkladznu.app.provider.ScheduleContract.Schedule;
 import static ua.pp.rozkladznu.app.provider.ScheduleContract.combineArgs;
 import static ua.pp.rozkladznu.app.provider.ScheduleContract.combineProjection;
@@ -59,11 +59,13 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static final String ACTION_SYNC_STATUS = App.TAG + ".ACTION_SYNC_STATUS";
     public static final String EXTRA_SYNC_STATUS = "SYNC_STATUS";
+
     public interface SyncStatus {
         int START = 0;
         int FINISHED = 1;
         int ABORTED_WITH_ERROR = 2;
     }
+
     private static final Intent SYNC_STATUS_BROADCAST = new Intent(ACTION_SYNC_STATUS);
 
     private GroupsProcessor groupsProcessor;
@@ -81,13 +83,8 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
                               ContentProviderClient provider, SyncResult syncResult) {
-        boolean isSyncRequestManual = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL);
-
-        if (isSyncRequestManual) {
-            App.getInstance().setManualSyncActive(true);
-            SYNC_STATUS_BROADCAST.putExtra(EXTRA_SYNC_STATUS, SyncStatus.START);
-            getContext().sendBroadcast(SYNC_STATUS_BROADCAST);
-        }
+        SYNC_STATUS_BROADCAST.putExtra(EXTRA_SYNC_STATUS, SyncStatus.START);
+        getContext().sendBroadcast(SYNC_STATUS_BROADCAST);
 
         PreferencesUtils mPrefUtils = App.getInstance().getPreferencesUtils();
         AccountManager manager = AccountManager.get(getContext());
@@ -101,11 +98,8 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
             CurrentWeek currentWeek = currentWeekMethodResponse.getResponse();
             mPrefUtils.savePeriodicity(currentWeek.getWeek(), currentWeek.getWeekOfYear());
         } else if (!mPrefUtils.getPeriodicity().isValid()) {
-            if (isSyncRequestManual) {
-                App.getInstance().setManualSyncActive(false);
-                SYNC_STATUS_BROADCAST.putExtra(EXTRA_SYNC_STATUS, SyncStatus.ABORTED_WITH_ERROR);
-                getContext().sendBroadcast(SYNC_STATUS_BROADCAST);
-            }
+            SYNC_STATUS_BROADCAST.putExtra(EXTRA_SYNC_STATUS, SyncStatus.ABORTED_WITH_ERROR);
+            getContext().sendBroadcast(SYNC_STATUS_BROADCAST);
             return;
         }
 
@@ -129,6 +123,7 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
                     .resolveDependencies(groupsResponse.getResponse());
 
             if (groups.size() == 1) {
+                groupsProcessor.preProcess(groupsResponse.getResponse());
                 if (performGroupScheduleSync(syncResult, groups.get(0))) {
                     groupsProcessor.process(groupsResponse.getResponse());
                 }
@@ -169,16 +164,13 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         campusesProcessor.clean();
         academicHoursProcessor.clean();
 
-        if (isSyncRequestManual) {
-            App.getInstance().setManualSyncActive(false);
-            SYNC_STATUS_BROADCAST.putExtra(EXTRA_SYNC_STATUS, SyncStatus.FINISHED);
-            getContext().sendBroadcast(SYNC_STATUS_BROADCAST);
-        }
+        SYNC_STATUS_BROADCAST.putExtra(EXTRA_SYNC_STATUS, SyncStatus.FINISHED);
+        getContext().sendBroadcast(SYNC_STATUS_BROADCAST);
     }
 
     private boolean performGroupScheduleSync(SyncResult syncResult, Group group) {
         GetScheduleMethod method = new GetScheduleMethod();
-        method.prepare(RESTMethod.Filter.BY_GROUP_ID, String.valueOf(group.getId()));
+        method.prepare(RESTMethod.Filter.BY_GROUP_ID, valueOf(group.getId()));
 
         MethodResponse<ArrayList<GlobalScheduleItem>> scheduleItemsResponse =
                 method.executeBlocking();
@@ -202,12 +194,6 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         boolean subjectsSynced = true;
         boolean academicHoursSynced = true;
         boolean lecturersSynced = true;
-
-        if (syncLecturerSchedule) {
-            scheduleProcessor.cleanGroupSchedule(scheduleItems);
-        } else {
-            scheduleProcessor.cleanLecturerSchedule(scheduleItems);
-        }
 
         ScheduleDependency dependency = scheduleProcessor.resolveDependencies(scheduleItems);
 
@@ -248,7 +234,7 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
         MethodResponse<ArrayList<Group>> groupsResponse = getGroups.executeBlocking();
 
         if (canProcess(groupsResponse, syncResult)) {
-            groupsProcessor.process(groupsResponse.getResponse());
+            groupsProcessor.preProcess(groupsResponse.getResponse());
         }
     }
 
@@ -325,11 +311,8 @@ public class ScheduleSyncAdapter extends AbstractThreadedSyncAdapter {
 
         MethodResponse<ArrayList<Lecturer>> response = method.executeBlocking();
 
-        if (canProcess(response, syncResult)) {
-            return performLecturersSync(syncResult, response.getResponse(), syncSchedule);
-        }
-
-        return false;
+        return canProcess(response, syncResult) &&
+                performLecturersSync(syncResult, response.getResponse(), syncSchedule);
     }
 
     private boolean performLecturersSync(SyncResult syncResult, ArrayList<Lecturer> lecturers,

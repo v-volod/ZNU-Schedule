@@ -7,7 +7,6 @@ import android.support.v7.app.ActionBarActivity;
 import com.yandex.metrica.YandexMetrica;
 
 import ua.pp.rozkladznu.app.App;
-import ua.pp.rozkladznu.app.BuildConfig;
 import ua.pp.rozkladznu.app.account.GroupAccount;
 import ua.pp.rozkladznu.app.account.GroupAuthenticatorHelper;
 
@@ -29,15 +28,13 @@ public abstract class BaseActivity extends ActionBarActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (App.getInstance().isMetricaInitialized())
-            YandexMetrica.onPauseActivity(this);
+        YandexMetrica.onPauseActivity(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (App.getInstance().isMetricaInitialized())
-            YandexMetrica.onResumeActivity(this);
+        YandexMetrica.onResumeActivity(this);
 
         authenticateAccount();
     }

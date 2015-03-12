@@ -21,7 +21,7 @@ public class App extends Application {
     private static final int METRICA_SESSION_TIMEOUT = 60;
 
     public static final String TAG = "ua.pp.rozkladznu.app.App";
-    public static final String LOG_TAG = "rozkladznu";
+    public static final String LOG_TAG = "ScheduleLOG";
 
     private static App mInstance;
 
@@ -29,27 +29,16 @@ public class App extends Application {
     private PreferencesUtils mPreferencesUtils;
     private GroupAuthenticatorHelper mGroupAuthenticatorHelper;
 
-    private final Object MANUAL_SYNC_ACTIVE_LOCK = new Object();
-    private boolean isManualSyncActive = false;
-
-    private final Object MANUAL_SYNC_REQUESTED_LOCK = new Object();
-    private boolean isManualSyncRequested = false;
-    private boolean isMetricaInitialized;
-
     @Override
     public void onCreate() {
         super.onCreate();
         mInstance = this;
-        if (!BuildConfig.DEBUG) {
-            YandexMetrica.initialize(this, METRICA_API_KEY);
-            YandexMetrica.setSessionTimeout(METRICA_SESSION_TIMEOUT);
-            isMetricaInitialized = true;
-        } else {
+        if (BuildConfig.DEBUG) {
             YandexMetrica.initialize(this, METRICA_API_DEBUG_KEY);
-            YandexMetrica.setSessionTimeout(METRICA_SESSION_TIMEOUT);
-            // Uncomment this for debugging Yandex Metrica
-            // isMetricaInitialized = true;
+        } else {
+            YandexMetrica.initialize(this, METRICA_API_KEY);
         }
+        YandexMetrica.setSessionTimeout(METRICA_SESSION_TIMEOUT);
     }
 
     public static synchronized App getInstance() {
@@ -93,35 +82,6 @@ public class App extends Application {
         }
 
         return mGroupAuthenticatorHelper;
-    }
-
-    public boolean isManualSyncActive() {
-        synchronized (MANUAL_SYNC_ACTIVE_LOCK) {
-            return isManualSyncActive;
-        }
-    }
-
-    public void setManualSyncActive(boolean isActive) {
-        synchronized (MANUAL_SYNC_ACTIVE_LOCK) {
-            isManualSyncActive = isActive;
-        }
-        setManualSyncRequested(false);
-    }
-
-    public boolean isManualSyncRequested() {
-        synchronized (MANUAL_SYNC_REQUESTED_LOCK) {
-            return isManualSyncRequested;
-        }
-    }
-
-    public void setManualSyncRequested(boolean isRequested) {
-        synchronized (MANUAL_SYNC_REQUESTED_LOCK) {
-            isManualSyncRequested = isRequested;
-        }
-    }
-
-    public boolean isMetricaInitialized() {
-        return isMetricaInitialized;
     }
 
     public static void LOG_D(String message) {
