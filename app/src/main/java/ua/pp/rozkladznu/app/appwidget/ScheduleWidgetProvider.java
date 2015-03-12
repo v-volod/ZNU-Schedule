@@ -14,7 +14,7 @@ public class ScheduleWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         for(int appWidgetId : appWidgetIds) {
-            
+
         }
         super.onUpdate(context, appWidgetManager, appWidgetIds);
     }
