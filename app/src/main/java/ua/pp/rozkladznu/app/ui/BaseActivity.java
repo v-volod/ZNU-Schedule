@@ -7,6 +7,7 @@ import android.support.v7.app.ActionBarActivity;
 import com.yandex.metrica.YandexMetrica;
 
 import ua.pp.rozkladznu.app.App;
+import ua.pp.rozkladznu.app.R;
 import ua.pp.rozkladznu.app.account.GroupAccount;
 import ua.pp.rozkladznu.app.account.GroupAuthenticatorHelper;
 
@@ -48,6 +49,13 @@ public abstract class BaseActivity extends ActionBarActivity {
     }
 
     @Override
+    protected void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        overridePendingTransition(R.animator.activity_open_alpha,
+                R.animator.activity_close_translate_down);
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_LOGIN) {
             switch (resultCode) {
@@ -83,6 +91,8 @@ public abstract class BaseActivity extends ActionBarActivity {
         if (!isLoginRequested) {
             mGroupAccount = null;
             startActivityForResult(new Intent(this, LoginActivity.class), REQUEST_LOGIN);
+            overridePendingTransition(R.animator.activity_open_translate_left,
+                    R.animator.activity_close_alpha);
             isLoginRequested = true;
         }
     }

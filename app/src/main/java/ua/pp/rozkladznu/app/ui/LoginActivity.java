@@ -110,6 +110,13 @@ public class LoginActivity extends AccountAuthenticatorActivity
     }
 
     @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.animator.activity_open_alpha,
+                R.animator.activity_close_translate_left);
+    }
+
+    @Override
     public void onBackPressed() {
         setResult(RESULT_CANCELED);
         finish();
