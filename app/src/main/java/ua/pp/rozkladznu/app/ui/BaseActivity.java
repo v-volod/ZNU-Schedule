@@ -49,13 +49,6 @@ public abstract class BaseActivity extends ActionBarActivity {
     }
 
     @Override
-    protected void onUserLeaveHint() {
-        super.onUserLeaveHint();
-        overridePendingTransition(R.animator.activity_open_alpha,
-                R.animator.activity_close_translate_down);
-    }
-
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_LOGIN) {
             switch (resultCode) {
