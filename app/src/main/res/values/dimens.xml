@@ -114,4 +114,7 @@
 
     <!-- ToolBar -->
     <dimen name="toolbar_elevation">3dp</dimen>
+
+    <!-- App Widget -->
+    <dimen name="widget_margin">0dp</dimen>
 </resources>

@@ -179,7 +179,7 @@
                 <action android:name=".appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data android:name=".appwidget.action.provider"
-                       android:resource="@xml/appwidget_info"
+                       android:resource="@xml/appwidget_info" />
         </receiver>
     </application>
 
