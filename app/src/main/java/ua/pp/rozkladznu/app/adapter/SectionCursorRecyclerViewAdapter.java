@@ -73,50 +73,56 @@ public abstract class SectionCursorRecyclerViewAdapter<S>
         mCursor = newCursor;
 
         if (mCursor == null) {
-            mItemsAdapter.clear();
             mRowIDColumn = -1;
             mDataValid = false;
-            notifyDataSetChanged();
-            //There is no notifyDataSetInvalidated() method in RecyclerView.Adapter
         } else {
             if (mDataSetObserver != null) {
                 mCursor.registerDataSetObserver(mDataSetObserver);
             }
             mRowIDColumn = newCursor.getColumnIndexOrThrow(ROW_ID_COLUMN_NAME);
             mDataValid = true;
-
-            ItemsAdapter oldItemsAdapter = mItemsAdapter;
-            mItemsAdapter = new ItemsAdapter(createSections(mCursor), mCursor);
-
-            if (oldItemsAdapter.hasItems()) {
-                int min = min(oldItemsAdapter.getCount(), mItemsAdapter.getCount());
-                int max = max(oldItemsAdapter.getCount(), mItemsAdapter.getCount());
-
-                for (int i = 0; i < min; i++) {
-                    if (oldItemsAdapter.isItem(i) == mItemsAdapter.isItem(i)) {
-                        notifyItemChanged(i);
-                    } else {
-                        notifyItemRemoved(i);
-                        notifyItemInserted(i);
-                    }
-                }
-
-                boolean isGrown = oldItemsAdapter.getCount() < mItemsAdapter.getCount();
-
-                for (int i = min; i < max; i++) {
-                    if (isGrown) {
-                        notifyItemInserted(i);
-                    } else {
-                        notifyItemRemoved(i);
-                    }
-                }
-
-            } else if (mItemsAdapter.hasItems()) {
-                notifyItemRangeInserted(0, mItemsAdapter.getCount());
-            }
         }
 
+        changeItemsAdapter(new ItemsAdapter(createSections(mCursor), mCursor));
+
         return oldCursor;
+    }
+
+    private void changeItemsAdapter(ItemsAdapter newItemsAdapter) {
+        ItemsAdapter oldItemsAdapter = mItemsAdapter;
+        mItemsAdapter = newItemsAdapter;
+
+        if (oldItemsAdapter.hasItems()) {
+            int min = min(oldItemsAdapter.getCount(), mItemsAdapter.getCount());
+            int max = max(oldItemsAdapter.getCount(), mItemsAdapter.getCount());
+
+            for (int i = 0; i < min; i++) {
+                if (oldItemsAdapter.isItem(i) == mItemsAdapter.isItem(i)) {
+                    notifyItemChanged(i);
+                } else {
+                    notifyItemRemoved(i);
+                    notifyItemInserted(i);
+                }
+            }
+
+            boolean isGrown = oldItemsAdapter.getCount() < mItemsAdapter.getCount();
+
+            for (int i = min; i < max; i++) {
+                if (isGrown) {
+                    notifyItemInserted(i);
+                } else {
+                    notifyItemRemoved(i);
+                }
+            }
+
+        } else if (mItemsAdapter.hasItems()) {
+            notifyItemRangeInserted(0, mItemsAdapter.getCount());
+        }
+    }
+
+    @Override
+    public void setHasStableIds(boolean hasStableIds) {
+        super.setHasStableIds(true);
     }
 
     protected abstract HashMap<Integer, S> createSections(Cursor cursor);
@@ -214,12 +220,6 @@ public abstract class SectionCursorRecyclerViewAdapter<S>
 
         public S getSection(int position) {
             return mSections.get(position);
-        }
-
-        public void clear() {
-            mItems.clear();
-            mSections.clear();
-            mItemsPositions.clear();
         }
     }
 
