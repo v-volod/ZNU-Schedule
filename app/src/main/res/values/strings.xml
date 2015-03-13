@@ -169,4 +169,7 @@
 
     <string name="maps_api_key">AIzaSyAYjzB1ic2B4s52v2E7kZPW1v9btZa_NDQ</string>
 
+    <!-- App Widget -->
+    <string name="widget_name">Розклад ЗНУ</string>
+
 </resources>
