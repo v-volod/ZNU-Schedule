@@ -14,14 +14,14 @@
     <string name="choose_subgroup_hint">Оберіть підгрупу&#8230;</string>
     <string name="subgroup_format_1">%d підгрупа</string>
     <string name="subgroup_format_2">&#160;(%d підгрупа)</string>
-    <string name="cancel">відмінити</string>
+    <string name="cancel">скасувати</string>
     <string name="login_button">УВІЙТИ</string>
     <string name="no_schedule">Поки що розклад відсутній</string>
     <string name="title_activity_login">Авторизація</string>
     <string name="numerator">чисельник</string>
     <string name="denominator">знаменник</string>
     <string name="day_off">Сьогодні вихідний</string>
-    <string name="can_not_create_account">Помилка, неможливо створити обліковий запис</string>
+    <string name="can_not_create_account">Помилка! Неможливо створити обліковий запис</string>
     <string name="one_account_allowed">Дозволено тільки один обліковий запис</string>
     <string name="error_already_has_account">Помилка! Ви вже маєте обліковий запис</string>
     <string name="no_loaded_schedule">Розклад на цей тиждень ще не завантажено, або відсутній</string>
@@ -57,7 +57,7 @@
 
     <string name="write_to_us_subject">@string/znu_schedule</string>
     <string name="write_to_us_doted">Написати нам&#8230;</string>
-    <string name="no_email_clients">На вашому телефоні немає жодного Email клієнту</string>
+    <string name="no_email_clients">На вашому телефоні немає жодного поштового клієнта</string>
     <!-- About -->
 
     <!-- NavigationDrawer List Items -->
