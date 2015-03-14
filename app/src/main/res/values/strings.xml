@@ -29,6 +29,7 @@
     <string name="subjects_list_is_empty">Список предметів ще не завантажено, або відсутній</string>
     <string name="not_specified">Не задано</string>
     <string name="retry">ПОВТОРИТИ</string>
+    <string name="found_mistake">Знайшли помилку?</string>
 
     <!-- About -->
     <string name="social">Соціальні мережі</string>

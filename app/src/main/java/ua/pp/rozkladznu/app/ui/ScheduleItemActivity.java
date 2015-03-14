@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -22,6 +23,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import ua.pp.rozkladznu.app.R;
 import ua.pp.rozkladznu.app.util.CalendarUtils;
+import ua.pp.rozkladznu.app.util.UiUtils;
 
 import static ua.pp.rozkladznu.app.provider.ScheduleContract.FullSchedule;
 import static ua.pp.rozkladznu.app.provider.ScheduleContract.FullSchedule.Summary.Column;
@@ -126,10 +128,19 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.default_menu, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
+                return true;
+            case R.id.action_report_mistake:
+                UiUtils.reportScheduleMistake(this, getAccount().getGroupId());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

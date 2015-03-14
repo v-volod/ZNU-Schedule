@@ -21,6 +21,8 @@ import java.util.concurrent.ExecutionException;
 import ua.pp.rozkladznu.app.App;
 import ua.pp.rozkladznu.app.BuildConfig;
 
+import static java.lang.String.format;
+
 /**
  * @author Vojko Vladimir
  */
@@ -195,5 +197,9 @@ public abstract class RESTMethod<R, T> implements Response.ErrorListener, Respon
     @Override
     public void onErrorResponse(VolleyError error) {
         callback.onError(generateResponseCode(error));
+    }
+
+    public static String getReportUrlForGroup(int groupId) {
+        return format("http://rozkladznu.pp.ua/groups/%d?mode=report", groupId);
     }
 }
