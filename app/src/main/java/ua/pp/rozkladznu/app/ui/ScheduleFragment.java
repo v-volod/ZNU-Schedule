@@ -353,11 +353,12 @@ public class ScheduleFragment extends Fragment implements LoaderManager.LoaderCa
                             (TextUtils.isEmpty(audience) ? "(" : " (") + campus + ")");
             int type = cursor.getInt(Summary.Column.CLASS_TYPE);
 
+            String[] classTypes = res.getStringArray(R.array.class_type);
             String info = lecturerOrGroups + "\n" +
                     ((TextUtils.isEmpty(location)) ? "" : location) +
-                    ((type == 0) ? "" :
+                    ((type == 0 || type >= classTypes.length) ? "" :
                             ((TextUtils.isEmpty(location) ? "" : ", ") +
-                                    res.getStringArray(R.array.class_type)[type]));
+                                    classTypes[type]));
 
             infoText.setText(info);
 

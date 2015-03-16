@@ -66,8 +66,9 @@ public class ScheduleItemActivity extends BaseActivity implements View.OnClickLi
         if (cursor.moveToFirst()) {
             title.setText(cursor.getString(Column.SUBJECT_NAME));
             String lecturerName = cursor.getString(Column.LECTURER_NAME);
-            String classTypeText = (cursor.getInt(Column.CLASS_TYPE) != 0) ?
-                    classTypes[cursor.getInt(Column.CLASS_TYPE)] : "";
+            int classTypeNum = cursor.getInt(Column.CLASS_TYPE);
+            String classTypeText = (classTypeNum != 0 && classTypeNum < classTypes.length) ?
+                    classTypes[classTypeNum] : "";
             String timeText =
                     CalendarUtils.makeTime(cursor.getLong(Column.ACADEMIC_HOUR_STAT_TIME)) +
                             " - " + CalendarUtils.makeTime(cursor.getLong(Column.ACADEMIC_HOUR_END_TIME));
