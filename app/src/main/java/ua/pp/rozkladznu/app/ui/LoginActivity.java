@@ -91,16 +91,22 @@ public class LoginActivity extends AccountAuthenticatorActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.login_button:
-                new Thread() {
-                    @Override
-                    public void run() {
-                        finishLogin(
-                                departmentAdapter.getSelectedDepartment(),
-                                groupAdapter.getSelectedGroup(),
-                                groupAdapter.getSelectedSubgroup()
-                        );
-                    }
-                }.start();
+                if (new GroupAuthenticatorHelper(this).hasAccount()) {
+                    Toast.makeText(
+                            this, R.string.error_already_has_account, Toast.LENGTH_SHORT
+                    ).show();
+                } else {
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            finishLogin(
+                                    departmentAdapter.getSelectedDepartment(),
+                                    groupAdapter.getSelectedGroup(),
+                                    groupAdapter.getSelectedSubgroup()
+                            );
+                        }
+                    }.start();
+                }
                 break;
             case R.id.retry_button:
                 retryButton.setVisibility(View.GONE);
@@ -135,11 +141,6 @@ public class LoginActivity extends AccountAuthenticatorActivity
         userData.putString(GroupAuthenticator.KEY_SUBGROUP, "" + subgroup);
         userData.putString(GroupAuthenticator.KEY_DEPARTMENT_NAME, department.getName());
 
-        if (new GroupAuthenticatorHelper(this).hasAccount()) {
-            Toast.makeText(this, R.string.error_already_has_account, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         final Account account = new Account(group.getName(), accountType);
         boolean isAdded = accountManager.addAccountExplicitly(account, null, userData);
 
@@ -166,7 +167,14 @@ public class LoginActivity extends AccountAuthenticatorActivity
             setResult(RESULT_OK, intent);
             finish();
         } else {
-            Toast.makeText(this, R.string.can_not_create_account, Toast.LENGTH_SHORT).show();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(
+                            LoginActivity.this, R.string.can_not_create_account, Toast.LENGTH_SHORT
+                    ).show();
+                }
+            });
         }
     }
 
