@@ -39,6 +39,7 @@ public class CalendarUtils {
         calendar.clear(Calendar.MINUTE);
         calendar.clear(Calendar.SECOND);
         calendar.clear(Calendar.MILLISECOND);
+        calendar.setFirstDayOfWeek(MONDAY);
         return calendar.getTimeInMillis();
     }
 
@@ -85,6 +86,7 @@ public class CalendarUtils {
         calendar.clear();
         calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.WEEK_OF_YEAR, weekOfYear);
+        calendar.setFirstDayOfWeek(MONDAY);
         return calendar.getTimeInMillis();
     }
 
